@@ -23,6 +23,7 @@ from worldcup_predictor.data_loader import (
 )
 from worldcup_predictor.history import head_to_head_record, team_summary, top_team_stats
 from worldcup_predictor.model import predict_match, prediction_to_frame
+from worldcup_predictor.tournament import run_tournament_simulation
 from worldcup_predictor.ui import disclaimer_box, format_percent, signal_dataframe
 
 
@@ -574,6 +575,7 @@ PAGE_OPTIONS = [
     "單場分析頁",
     "投注分析頁",
     "模型回測頁",
+    "冠軍機率預測",
     "即時賽況",
     "歷史世界盃數據分析",
     "國家隊世界盃戰績",
@@ -584,6 +586,23 @@ PAGE_OPTIONS = [
 page = st.sidebar.radio("功能選單", PAGE_OPTIONS)
 st.sidebar.divider()
 st.sidebar.caption("MVP 範圍：勝平負 1X2、2002~2022 世界盃歷史資料、可解釋模型")
+
+
+@st.cache_data(show_spinner=False)
+def cached_tournament_simulation(
+    fixtures: pd.DataFrame,
+    team_meta: pd.DataFrame,
+    worldcup_team_stats: pd.DataFrame,
+    recent_matches: pd.DataFrame,
+    simulations: int,
+) -> pd.DataFrame:
+    return run_tournament_simulation(
+        fixtures,
+        team_meta,
+        worldcup_team_stats,
+        recent_matches,
+        simulations=simulations,
+    )
 
 
 def selected_fixture(label: str = "選擇比賽") -> pd.Series:
@@ -1100,6 +1119,144 @@ def model_backtest_page() -> None:
     )
 
 
+def champion_probability_page() -> None:
+    page_header("冠軍機率預測", "以 Elo、Poisson、近期狀態、歷史世界盃表現與 Monte Carlo 模擬估算 2026 奪冠機率")
+    st.info(
+        "本頁透過 Elo Rating、Poisson 進球模型與 Monte Carlo 模擬，估算各隊在不同階段的晉級機率。"
+        "結果僅供資料分析與專題展示參考，不代表實際賽果。"
+    )
+    disclaimer_box()
+
+    simulations = 1000
+    with st.spinner("正在執行 1000 次 Monte Carlo 模擬..."):
+        simulation_df = cached_tournament_simulation(
+            fixtures_df,
+            team_meta_df,
+            wc_team_stats_df,
+            matches_df,
+            simulations,
+        )
+
+    top10 = simulation_df.head(10).copy()
+    champion = top10.iloc[0]
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("模擬次數", f"{simulations:,}", "Monte Carlo")
+    with cols[1]:
+        display_card("模擬隊伍", str(len(simulation_df)), "2026 參賽隊伍")
+    with cols[2]:
+        display_card("最高冠軍機率", format_percent(float(champion["champion_probability"])), champion["team_display"])
+    with cols[3]:
+        display_card("模型類型", "可解釋 AI", "Elo + Poisson")
+
+    st.subheader("奪冠機率排行榜 Top 10")
+    chart_df = top10.sort_values("champion_probability", ascending=True).copy()
+    chart_df["champion_label"] = chart_df["champion_probability"].map(format_percent)
+    chart = px.bar(
+        chart_df,
+        x="champion_probability",
+        y="team_display",
+        orientation="h",
+        text="champion_label",
+        labels={"champion_probability": "模擬冠軍機率", "team_display": "球隊"},
+        color="champion_probability",
+        color_continuous_scale=["#415a77", GOLD_LIGHT],
+    )
+    chart.update_traces(textposition="outside")
+    chart.update_xaxes(tickformat=".0%")
+    chart.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color=INK,
+        coloraxis_showscale=False,
+        margin=dict(l=10, r=40, t=10, b=10),
+    )
+    st.plotly_chart(chart, use_container_width=True)
+
+    ranking = top10[
+        [
+            "team_display",
+            "elo",
+            "history_score",
+            "recent_form",
+            "champion_probability",
+        ]
+    ].copy()
+    ranking["history_score"] = ranking["history_score"].map(format_percent)
+    ranking["recent_form"] = ranking["recent_form"].map(format_percent)
+    ranking["champion_probability"] = ranking["champion_probability"].map(format_percent)
+    st.dataframe(
+        ranking.rename(
+            columns={
+                "team_display": "球隊",
+                "elo": "Elo 分數",
+                "history_score": "歷史世界盃表現",
+                "recent_form": "近期狀態",
+                "champion_probability": "模擬冠軍機率",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.subheader("淘汰賽晉級機率")
+    stage_columns = [
+        "group_qualified_probability",
+        "round_16_probability",
+        "round_8_probability",
+        "semi_final_probability",
+        "final_probability",
+        "champion_probability",
+    ]
+    stage_labels = {
+        "group_qualified_probability": "小組出線機率",
+        "round_16_probability": "16 強機率",
+        "round_8_probability": "8 強機率",
+        "semi_final_probability": "4 強機率",
+        "final_probability": "決賽機率",
+        "champion_probability": "冠軍機率",
+    }
+    progression = simulation_df[["team_display", "elo", *stage_columns]].copy()
+    display_progression = progression.copy()
+    for column in stage_columns:
+        display_progression[column] = display_progression[column].map(format_percent)
+    st.dataframe(
+        display_progression.rename(
+            columns={
+                "team_display": "球隊",
+                "elo": "Elo 分數",
+                **stage_labels,
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    stage_chart = top10[["team_display", *stage_columns]].melt(
+        id_vars="team_display",
+        var_name="stage",
+        value_name="probability",
+    )
+    stage_chart["stage"] = stage_chart["stage"].map(stage_labels)
+    line = px.line(
+        stage_chart,
+        x="stage",
+        y="probability",
+        color="team_display",
+        markers=True,
+        labels={"stage": "階段", "probability": "晉級機率", "team_display": "球隊"},
+    )
+    line.update_yaxes(tickformat=".0%")
+    line.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color=INK,
+        legend_title_text="Top 10 球隊",
+    )
+    st.plotly_chart(line, use_container_width=True)
+
+
 def live_event_label(event_type: str) -> str:
     icons = {
         "Goal": "⚽",
@@ -1328,6 +1485,8 @@ elif page == "投注分析頁":
     betting_page()
 elif page == "模型回測頁":
     model_backtest_page()
+elif page == "冠軍機率預測":
+    champion_probability_page()
 elif page == "即時賽況":
     live_matches_page()
 elif page == "歷史世界盃數據分析":
