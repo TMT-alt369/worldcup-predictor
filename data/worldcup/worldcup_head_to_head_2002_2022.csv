@@ -1,0 +1,320 @@
+team_a,team_b,matches,team_a_wins,draws,team_b_wins,team_a_goals,team_b_goals,last_meeting_year
+Argentina,Nigeria,4,4,0,0,7,3,2018
+Argentina,Mexico,3,3,0,0,7,2,2022
+Argentina,Netherlands,3,0,3,0,2,2,2022
+Brazil,Croatia,3,2,1,0,5,2,2022
+Denmark,France,3,1,1,1,3,2,2022
+England,Sweden,3,1,2,0,5,3,2018
+France,Uruguay,3,1,2,0,2,0,2018
+Argentina,Germany,3,0,1,2,1,6,2014
+Ghana,United States,3,2,0,1,5,4,2014
+Argentina,Croatia,2,1,0,1,3,3,2022
+Argentina,France,2,0,1,1,6,7,2022
+Australia,Denmark,2,1,1,0,2,1,2022
+Australia,France,2,0,0,2,2,6,2022
+Brazil,Cameroon,2,1,0,1,4,2,2022
+Brazil,Serbia,2,2,0,0,4,0,2022
+Brazil,Switzerland,2,1,1,0,2,1,2022
+Costa Rica,Germany,2,0,0,2,4,8,2022
+Croatia,Japan,2,0,2,0,1,1,2022
+Croatia,Morocco,2,1,1,0,2,1,2022
+England,United States,2,0,2,0,1,1,2022
+Germany,Spain,2,0,1,1,1,2,2022
+Ghana,Portugal,2,0,0,2,3,5,2022
+Ghana,Uruguay,2,0,1,1,1,3,2022
+Morocco,Portugal,2,1,0,1,1,1,2022
+Morocco,Spain,2,0,2,0,2,2,2022
+Portugal,South Korea,2,0,0,2,1,3,2022
+Portugal,Uruguay,2,1,0,1,3,2,2022
+Serbia,Switzerland,2,0,0,2,3,5,2022
+South Korea,Uruguay,2,0,1,1,1,2,2022
+Belgium,Brazil,2,1,0,1,2,3,2018
+Belgium,England,2,2,0,0,3,0,2018
+Belgium,Japan,2,1,1,0,5,4,2018
+Belgium,Tunisia,2,1,1,0,6,3,2018
+Brazil,Costa Rica,2,2,0,0,7,2,2018
+Brazil,Mexico,2,1,1,0,2,0,2018
+Colombia,Japan,2,1,0,1,5,3,2018
+Germany,South Korea,2,1,0,1,1,2,2018
+Germany,Sweden,2,2,0,0,4,1,2018
+Iran,Portugal,2,0,1,1,1,3,2018
+Portugal,Spain,2,0,1,1,3,4,2018
+Belgium,Russia,2,2,0,0,4,2,2014
+Brazil,Chile,2,1,1,0,4,1,2014
+Brazil,Germany,2,1,0,1,3,7,2014
+Brazil,Netherlands,2,0,0,2,1,5,2014
+Chile,Spain,2,1,0,1,3,2,2014
+Croatia,Mexico,2,0,0,2,1,4,2014
+France,Switzerland,2,1,1,0,5,2,2014
+Germany,Ghana,2,1,1,0,3,2,2014
+Germany,Portugal,2,2,0,0,7,1,2014
+Germany,United States,2,2,0,0,2,0,2014
+Honduras,Switzerland,2,0,1,1,0,3,2014
+Netherlands,Spain,2,1,0,1,5,2,2014
+Portugal,United States,2,0,1,1,4,5,2014
+Paraguay,Spain,2,0,0,2,1,4,2010
+Brazil,Turkey,2,2,0,0,3,1,2002
+Argentina,Australia,1,1,0,0,2,1,2022
+Argentina,Poland,1,1,0,0,2,0,2022
+Argentina,Saudi Arabia,1,0,0,1,1,2,2022
+Australia,Tunisia,1,1,0,0,1,0,2022
+Belgium,Canada,1,1,0,0,1,0,2022
+Belgium,Croatia,1,0,1,0,0,0,2022
+Belgium,Morocco,1,0,0,1,0,2,2022
+Brazil,South Korea,1,1,0,0,4,1,2022
+Cameroon,Serbia,1,0,1,0,3,3,2022
+Cameroon,Switzerland,1,0,0,1,0,1,2022
+Canada,Croatia,1,0,0,1,1,4,2022
+Canada,Morocco,1,0,0,1,1,2,2022
+Costa Rica,Japan,1,1,0,0,1,0,2022
+Costa Rica,Spain,1,0,0,1,0,7,2022
+Denmark,Tunisia,1,0,1,0,0,0,2022
+Ecuador,Netherlands,1,0,1,0,1,1,2022
+Ecuador,Qatar,1,1,0,0,2,0,2022
+Ecuador,Senegal,1,0,0,1,1,2,2022
+England,France,1,0,0,1,1,2,2022
+England,Iran,1,1,0,0,6,2,2022
+England,Senegal,1,1,0,0,3,0,2022
+England,Wales,1,1,0,0,3,0,2022
+France,Morocco,1,1,0,0,2,0,2022
+France,Poland,1,1,0,0,3,1,2022
+France,Tunisia,1,0,0,1,0,1,2022
+Germany,Japan,1,0,0,1,1,2,2022
+Ghana,South Korea,1,1,0,0,3,2,2022
+Iran,United States,1,0,0,1,0,1,2022
+Iran,Wales,1,1,0,0,2,0,2022
+Japan,Spain,1,1,0,0,2,1,2022
+Mexico,Poland,1,0,1,0,0,0,2022
+Mexico,Saudi Arabia,1,1,0,0,2,1,2022
+Netherlands,Qatar,1,1,0,0,2,0,2022
+Netherlands,Senegal,1,1,0,0,2,0,2022
+Netherlands,United States,1,1,0,0,3,1,2022
+Poland,Saudi Arabia,1,1,0,0,2,0,2022
+Portugal,Switzerland,1,1,0,0,6,1,2022
+Qatar,Senegal,1,0,0,1,1,3,2022
+United States,Wales,1,0,1,0,1,1,2022
+Argentina,Iceland,1,0,1,0,1,1,2018
+Australia,Peru,1,0,0,1,0,2,2018
+Belgium,France,1,0,0,1,0,1,2018
+Belgium,Panama,1,1,0,0,3,0,2018
+Colombia,England,1,0,1,0,1,1,2018
+Colombia,Poland,1,1,0,0,3,0,2018
+Colombia,Senegal,1,1,0,0,1,0,2018
+Costa Rica,Serbia,1,0,0,1,0,1,2018
+Costa Rica,Switzerland,1,0,1,0,2,2,2018
+Croatia,Denmark,1,0,1,0,1,1,2018
+Croatia,England,1,1,0,0,2,1,2018
+Croatia,France,1,0,0,1,2,4,2018
+Croatia,Iceland,1,1,0,0,2,1,2018
+Croatia,Nigeria,1,1,0,0,2,0,2018
+Croatia,Russia,1,0,1,0,2,2,2018
+Denmark,Peru,1,1,0,0,1,0,2018
+Egypt,Russia,1,0,0,1,1,3,2018
+Egypt,Saudi Arabia,1,0,0,1,1,2,2018
+Egypt,Uruguay,1,0,0,1,0,1,2018
+England,Panama,1,1,0,0,6,1,2018
+England,Tunisia,1,1,0,0,2,1,2018
+France,Peru,1,1,0,0,1,0,2018
+Germany,Mexico,1,0,0,1,0,1,2018
+Iceland,Nigeria,1,0,0,1,0,2,2018
+Iran,Morocco,1,1,0,0,1,0,2018
+Iran,Spain,1,0,0,1,0,1,2018
+Japan,Poland,1,0,0,1,0,1,2018
+Japan,Senegal,1,0,1,0,2,2,2018
+Mexico,South Korea,1,1,0,0,2,1,2018
+Mexico,Sweden,1,0,0,1,0,3,2018
+Panama,Tunisia,1,0,0,1,1,2,2018
+Poland,Senegal,1,0,0,1,1,2,2018
+Russia,Saudi Arabia,1,1,0,0,5,0,2018
+Russia,Spain,1,0,1,0,1,1,2018
+Russia,Uruguay,1,0,0,1,0,3,2018
+Saudi Arabia,Uruguay,1,0,0,1,0,1,2018
+South Korea,Sweden,1,0,0,1,0,1,2018
+Sweden,Switzerland,1,1,0,0,1,0,2018
+Algeria,Belgium,1,0,0,1,1,2,2014
+Algeria,Germany,1,0,0,1,1,2,2014
+Algeria,Russia,1,0,1,0,1,1,2014
+Algeria,South Korea,1,1,0,0,4,2,2014
+Argentina,Belgium,1,1,0,0,1,0,2014
+Argentina,Bosnia and Herzegovina,1,1,0,0,2,1,2014
+Argentina,Iran,1,1,0,0,1,0,2014
+Argentina,Switzerland,1,1,0,0,1,0,2014
+Australia,Chile,1,0,0,1,1,3,2014
+Australia,Netherlands,1,0,0,1,2,3,2014
+Australia,Spain,1,0,0,1,0,3,2014
+Belgium,South Korea,1,1,0,0,1,0,2014
+Belgium,United States,1,1,0,0,2,1,2014
+Bosnia and Herzegovina,Iran,1,1,0,0,3,1,2014
+Bosnia and Herzegovina,Nigeria,1,0,0,1,0,1,2014
+Brazil,Colombia,1,1,0,0,2,1,2014
+Cameroon,Croatia,1,0,0,1,0,4,2014
+Cameroon,Mexico,1,0,0,1,0,1,2014
+Chile,Netherlands,1,0,0,1,0,2,2014
+Colombia,Greece,1,1,0,0,3,0,2014
+Colombia,Ivory Coast,1,1,0,0,2,1,2014
+Colombia,Uruguay,1,1,0,0,2,0,2014
+Costa Rica,England,1,0,1,0,0,0,2014
+Costa Rica,Greece,1,0,1,0,1,1,2014
+Costa Rica,Italy,1,1,0,0,1,0,2014
+Costa Rica,Netherlands,1,0,1,0,0,0,2014
+Costa Rica,Uruguay,1,1,0,0,3,1,2014
+Ecuador,France,1,0,1,0,0,0,2014
+Ecuador,Honduras,1,1,0,0,2,1,2014
+Ecuador,Switzerland,1,0,0,1,1,2,2014
+England,Italy,1,0,0,1,1,2,2014
+England,Uruguay,1,0,0,1,1,2,2014
+France,Germany,1,0,0,1,0,1,2014
+France,Honduras,1,1,0,0,3,0,2014
+France,Nigeria,1,1,0,0,2,0,2014
+Greece,Ivory Coast,1,1,0,0,2,1,2014
+Greece,Japan,1,0,1,0,0,0,2014
+Iran,Nigeria,1,0,1,0,0,0,2014
+Italy,Uruguay,1,0,0,1,0,1,2014
+Ivory Coast,Japan,1,1,0,0,2,1,2014
+Mexico,Netherlands,1,0,0,1,1,2,2014
+Russia,South Korea,1,0,1,0,1,1,2014
+Algeria,England,1,0,1,0,0,0,2010
+Algeria,Slovenia,1,0,0,1,0,1,2010
+Algeria,United States,1,0,0,1,0,1,2010
+Argentina,Greece,1,1,0,0,2,0,2010
+Argentina,South Korea,1,1,0,0,4,1,2010
+Australia,Germany,1,0,0,1,0,4,2010
+Australia,Ghana,1,0,1,0,1,1,2010
+Australia,Serbia,1,1,0,0,2,1,2010
+Brazil,Ivory Coast,1,1,0,0,3,1,2010
+Brazil,North Korea,1,1,0,0,2,1,2010
+Brazil,Portugal,1,0,1,0,0,0,2010
+Cameroon,Denmark,1,0,0,1,1,2,2010
+Cameroon,Japan,1,0,0,1,0,1,2010
+Cameroon,Netherlands,1,0,0,1,1,2,2010
+Chile,Honduras,1,1,0,0,1,0,2010
+Chile,Switzerland,1,1,0,0,1,0,2010
+Denmark,Japan,1,0,0,1,1,3,2010
+Denmark,Netherlands,1,0,0,1,0,2,2010
+England,Germany,1,0,0,1,1,4,2010
+England,Slovenia,1,1,0,0,1,0,2010
+France,Mexico,1,0,0,1,0,2,2010
+France,South Africa,1,0,0,1,1,2,2010
+Germany,Serbia,1,0,0,1,0,1,2010
+Germany,Uruguay,1,1,0,0,3,2,2010
+Ghana,Serbia,1,1,0,0,1,0,2010
+Greece,Nigeria,1,1,0,0,2,1,2010
+Greece,South Korea,1,0,0,1,0,2,2010
+Honduras,Spain,1,0,0,1,0,2,2010
+Italy,New Zealand,1,0,1,0,1,1,2010
+Italy,Paraguay,1,0,1,0,1,1,2010
+Italy,Slovakia,1,0,0,1,2,3,2010
+Ivory Coast,North Korea,1,1,0,0,3,0,2010
+Ivory Coast,Portugal,1,0,1,0,0,0,2010
+Japan,Netherlands,1,0,0,1,0,1,2010
+Japan,Paraguay,1,0,1,0,0,0,2010
+Mexico,South Africa,1,0,1,0,1,1,2010
+Mexico,Uruguay,1,0,0,1,0,1,2010
+Netherlands,Slovakia,1,1,0,0,2,1,2010
+Netherlands,Uruguay,1,1,0,0,3,2,2010
+New Zealand,Paraguay,1,0,1,0,0,0,2010
+New Zealand,Slovakia,1,0,1,0,1,1,2010
+Nigeria,South Korea,1,0,1,0,2,2,2010
+North Korea,Portugal,1,0,0,1,0,7,2010
+Paraguay,Slovakia,1,1,0,0,2,0,2010
+Slovenia,United States,1,0,1,0,2,2,2010
+South Africa,Uruguay,1,0,0,1,0,3,2010
+Spain,Switzerland,1,0,0,1,0,1,2010
+Angola,Iran,1,0,1,0,1,1,2006
+Angola,Mexico,1,0,1,0,0,0,2006
+Angola,Portugal,1,0,0,1,0,1,2006
+Argentina,Ivory Coast,1,1,0,0,2,1,2006
+Argentina,Serbia and Montenegro,1,1,0,0,6,0,2006
+Australia,Brazil,1,0,0,1,0,2,2006
+Australia,Croatia,1,0,1,0,2,2,2006
+Australia,Italy,1,0,0,1,0,1,2006
+Australia,Japan,1,1,0,0,3,1,2006
+Brazil,France,1,0,0,1,0,1,2006
+Brazil,Ghana,1,1,0,0,3,0,2006
+Brazil,Japan,1,1,0,0,4,1,2006
+Costa Rica,Ecuador,1,0,0,1,0,3,2006
+Costa Rica,Poland,1,0,0,1,1,2,2006
+Czech Republic,Ghana,1,0,0,1,0,2,2006
+Czech Republic,Italy,1,0,0,1,0,2,2006
+Czech Republic,United States,1,1,0,0,3,0,2006
+Ecuador,England,1,0,0,1,0,1,2006
+Ecuador,Germany,1,0,0,1,0,3,2006
+Ecuador,Poland,1,1,0,0,2,0,2006
+England,Paraguay,1,1,0,0,1,0,2006
+England,Portugal,1,0,1,0,0,0,2006
+England,Trinidad and Tobago,1,1,0,0,2,0,2006
+France,Italy,1,0,1,0,1,1,2006
+France,Portugal,1,1,0,0,1,0,2006
+France,South Korea,1,0,1,0,1,1,2006
+France,Spain,1,1,0,0,3,1,2006
+France,Togo,1,1,0,0,2,0,2006
+Germany,Italy,1,0,0,1,0,2,2006
+Germany,Poland,1,1,0,0,1,0,2006
+Ghana,Italy,1,0,0,1,0,2,2006
+Iran,Mexico,1,0,0,1,1,3,2006
+Italy,Ukraine,1,1,0,0,3,0,2006
+Italy,United States,1,0,1,0,1,1,2006
+Ivory Coast,Netherlands,1,0,0,1,1,2,2006
+Ivory Coast,Serbia and Montenegro,1,1,0,0,3,2,2006
+Mexico,Portugal,1,0,0,1,1,2,2006
+Netherlands,Portugal,1,0,0,1,0,1,2006
+Netherlands,Serbia and Montenegro,1,1,0,0,1,0,2006
+Paraguay,Sweden,1,0,0,1,0,1,2006
+Paraguay,Trinidad and Tobago,1,1,0,0,2,0,2006
+Saudi Arabia,Spain,1,0,0,1,0,1,2006
+Saudi Arabia,Tunisia,1,0,1,0,2,2,2006
+Saudi Arabia,Ukraine,1,0,0,1,0,4,2006
+South Korea,Switzerland,1,0,0,1,0,2,2006
+South Korea,Togo,1,1,0,0,2,1,2006
+Spain,Tunisia,1,1,0,0,3,1,2006
+Spain,Ukraine,1,1,0,0,4,0,2006
+Sweden,Trinidad and Tobago,1,0,1,0,0,0,2006
+Switzerland,Togo,1,1,0,0,2,0,2006
+Switzerland,Ukraine,1,0,1,0,0,0,2006
+Tunisia,Ukraine,1,0,0,1,0,1,2006
+Argentina,England,1,0,0,1,0,1,2002
+Argentina,Sweden,1,0,1,0,1,1,2002
+Brazil,China,1,1,0,0,4,0,2002
+Brazil,England,1,1,0,0,2,1,2002
+Cameroon,Germany,1,0,0,1,0,2,2002
+Cameroon,Republic of Ireland,1,0,1,0,1,1,2002
+Cameroon,Saudi Arabia,1,1,0,0,1,0,2002
+China,Costa Rica,1,0,0,1,0,2,2002
+China,Turkey,1,0,0,1,0,3,2002
+Costa Rica,Turkey,1,0,1,0,1,1,2002
+Croatia,Ecuador,1,0,0,1,0,1,2002
+Croatia,Italy,1,1,0,0,2,1,2002
+Denmark,England,1,0,0,1,0,3,2002
+Denmark,Senegal,1,0,1,0,1,1,2002
+Denmark,Uruguay,1,1,0,0,2,1,2002
+Ecuador,Italy,1,0,0,1,0,2,2002
+Ecuador,Mexico,1,0,0,1,1,2,2002
+England,Nigeria,1,0,1,0,0,0,2002
+France,Senegal,1,0,0,1,0,1,2002
+Germany,Paraguay,1,1,0,0,1,0,2002
+Germany,Republic of Ireland,1,0,1,0,1,1,2002
+Germany,Saudi Arabia,1,1,0,0,8,0,2002
+Italy,Mexico,1,0,1,0,1,1,2002
+Italy,South Korea,1,0,0,1,1,2,2002
+Japan,Russia,1,1,0,0,1,0,2002
+Japan,Tunisia,1,1,0,0,2,0,2002
+Japan,Turkey,1,0,0,1,0,1,2002
+Mexico,United States,1,0,0,1,0,2,2002
+Nigeria,Sweden,1,0,0,1,1,2,2002
+Paraguay,Slovenia,1,1,0,0,3,1,2002
+Paraguay,South Africa,1,0,1,0,2,2,2002
+Poland,Portugal,1,0,0,1,0,4,2002
+Poland,South Korea,1,0,0,1,0,2,2002
+Poland,United States,1,1,0,0,3,1,2002
+Republic of Ireland,Saudi Arabia,1,1,0,0,3,0,2002
+Republic of Ireland,Spain,1,0,1,0,1,1,2002
+Russia,Tunisia,1,1,0,0,2,0,2002
+Senegal,Sweden,1,1,0,0,2,1,2002
+Senegal,Turkey,1,0,0,1,0,1,2002
+Senegal,Uruguay,1,0,1,0,3,3,2002
+Slovenia,South Africa,1,0,0,1,0,1,2002
+Slovenia,Spain,1,0,0,1,1,3,2002
+South Africa,Spain,1,0,0,1,2,3,2002
+South Korea,Spain,1,0,1,0,0,0,2002
+South Korea,Turkey,1,0,0,1,2,3,2002
+South Korea,United States,1,0,1,0,1,1,2002

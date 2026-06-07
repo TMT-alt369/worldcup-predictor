@@ -1,0 +1,16 @@
+date,home_team,away_team,home_goals,away_goals,home_elo,away_elo
+2024-03-22,Argentina,Canada,2,0,1880,1680
+2024-06-10,Argentina,Japan,3,1,1890,1725
+2024-09-08,Canada,USA,1,1,1690,1765
+2024-10-12,France,Japan,2,1,1860,1730
+2024-11-16,France,Morocco,1,0,1875,1710
+2025-03-25,Japan,South Korea,1,1,1740,1720
+2025-06-08,Brazil,South Korea,3,0,1840,1710
+2025-09-05,Brazil,Mexico,2,2,1835,1745
+2025-10-11,England,USA,2,1,1810,1760
+2025-11-14,England,Germany,1,1,1815,1800
+2026-03-20,Spain,Morocco,2,0,1825,1725
+2026-03-21,Germany,Mexico,3,1,1805,1750
+2026-03-24,USA,Canada,2,0,1770,1695
+2026-03-25,Spain,France,1,2,1830,1885
+2026-03-26,Germany,Brazil,1,2,1810,1845

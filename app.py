@@ -1,0 +1,1342 @@
+import html
+
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+
+from worldcup_predictor.backtest import backtest
+from worldcup_predictor.betting import analyze_1x2
+from worldcup_predictor.data_loader import (
+    load_fixture_with_odds,
+    load_fixtures,
+    load_historical_matches,
+    load_live_events,
+    load_live_matches,
+    load_players,
+    load_team_meta,
+    load_worldcup_champions,
+    load_worldcup_head_to_head,
+    load_worldcup_matches,
+    load_worldcup_team_history,
+    load_worldcup_team_stats,
+    load_worldcup_top4,
+)
+from worldcup_predictor.history import head_to_head_record, team_summary, top_team_stats
+from worldcup_predictor.model import predict_match, prediction_to_frame
+from worldcup_predictor.ui import disclaimer_box, format_percent, signal_dataframe
+
+
+st.set_page_config(page_title="世足智慧預測中心", page_icon="⚽", layout="wide")
+
+GOLD = "#d6b25e"
+GOLD_LIGHT = "#f3d98b"
+NAVY = "#071426"
+NAVY_2 = "#10233e"
+INK = "#e9eef7"
+MUTED = "#9fb0ca"
+
+FLAGS = {
+    "Argentina": "🇦🇷",
+    "Brazil": "🇧🇷",
+    "Canada": "🇨🇦",
+    "Croatia": "🇭🇷",
+    "England": "🏴",
+    "France": "🇫🇷",
+    "Germany": "🇩🇪",
+    "Japan": "🇯🇵",
+    "Mexico": "🇲🇽",
+    "Morocco": "🇲🇦",
+    "South Korea": "🇰🇷",
+    "Spain": "🇪🇸",
+    "USA": "🇺🇸",
+    "United States": "🇺🇸",
+    "South Africa": "🇿🇦",
+    "Czechia": "🇨🇿",
+    "Bosnia and Herzegovina": "🇧🇦",
+    "Paraguay": "🇵🇾",
+    "Qatar": "🇶🇦",
+    "Switzerland": "🇨🇭",
+    "Haiti": "🇭🇹",
+    "Scotland": "🏴",
+    "Australia": "🇦🇺",
+    "Turkiye": "🇹🇷",
+    "Ivory Coast": "🇨🇮",
+    "Ecuador": "🇪🇨",
+    "Curacao": "🇨🇼",
+    "Netherlands": "🇳🇱",
+    "Sweden": "🇸🇪",
+    "Tunisia": "🇹🇳",
+    "Iran": "🇮🇷",
+    "New Zealand": "🇳🇿",
+    "Belgium": "🇧🇪",
+    "Egypt": "🇪🇬",
+    "Saudi Arabia": "🇸🇦",
+    "Uruguay": "🇺🇾",
+    "Cape Verde": "🇨🇻",
+    "Senegal": "🇸🇳",
+    "Iraq": "🇮🇶",
+    "Norway": "🇳🇴",
+    "Algeria": "🇩🇿",
+    "Austria": "🇦🇹",
+    "Jordan": "🇯🇴",
+    "Portugal": "🇵🇹",
+    "DR Congo": "🇨🇩",
+    "Uzbekistan": "🇺🇿",
+    "Colombia": "🇨🇴",
+    "Ghana": "🇬🇭",
+    "Panama": "🇵🇦",
+}
+
+TEAM_ZH = {
+    "Mexico": "墨西哥",
+    "South Africa": "南非",
+    "South Korea": "南韓",
+    "Czechia": "捷克",
+    "Canada": "加拿大",
+    "Bosnia and Herzegovina": "波士尼亞與赫塞哥維納",
+    "United States": "美國",
+    "USA": "美國",
+    "Paraguay": "巴拉圭",
+    "Qatar": "卡達",
+    "Switzerland": "瑞士",
+    "Brazil": "巴西",
+    "Morocco": "摩洛哥",
+    "Haiti": "海地",
+    "Scotland": "蘇格蘭",
+    "Australia": "澳洲",
+    "Turkiye": "土耳其",
+    "Ivory Coast": "象牙海岸",
+    "Ecuador": "厄瓜多",
+    "Germany": "德國",
+    "Curacao": "庫拉索",
+    "Netherlands": "荷蘭",
+    "Japan": "日本",
+    "Sweden": "瑞典",
+    "Tunisia": "突尼西亞",
+    "Iran": "伊朗",
+    "New Zealand": "紐西蘭",
+    "Belgium": "比利時",
+    "Egypt": "埃及",
+    "Saudi Arabia": "沙烏地阿拉伯",
+    "Uruguay": "烏拉圭",
+    "Spain": "西班牙",
+    "Cape Verde": "維德角",
+    "France": "法國",
+    "Senegal": "塞內加爾",
+    "Iraq": "伊拉克",
+    "Norway": "挪威",
+    "Argentina": "阿根廷",
+    "Algeria": "阿爾及利亞",
+    "Austria": "奧地利",
+    "Jordan": "約旦",
+    "Portugal": "葡萄牙",
+    "DR Congo": "剛果民主共和國",
+    "Uzbekistan": "烏茲別克",
+    "Colombia": "哥倫比亞",
+    "Ghana": "迦納",
+    "Panama": "巴拿馬",
+    "England": "英格蘭",
+    "Croatia": "克羅埃西亞",
+}
+
+
+def flag(team: str) -> str:
+    if "TEAM_FLAG_MAP" in globals():
+        return TEAM_FLAG_MAP.get(team, FLAGS.get(team, "🏳️"))
+    return FLAGS.get(team, "🏳️")
+
+
+def team_name(team: str, with_flag: bool = True) -> str:
+    if "TEAM_NAME_MAP" in globals():
+        name = TEAM_NAME_MAP.get(team, TEAM_ZH.get(team, team))
+    else:
+        name = TEAM_ZH.get(team, team)
+    return f"{flag(team)} {name}" if with_flag else name
+
+
+def matchup_text(row: pd.Series, with_flag: bool = True) -> str:
+    return f"{team_name(row['home_team'], with_flag)} vs {team_name(row['away_team'], with_flag)}"
+
+
+def taipei_datetime(row: pd.Series) -> pd.Timestamp:
+    value = row["datetime_taipei"] if "datetime_taipei" in row.index else row["date"]
+    return pd.to_datetime(value)
+
+
+def taipei_time_text(value) -> str:
+    return pd.to_datetime(value).strftime("%Y/%m/%d %H:%M")
+
+
+def fixture_time_text(row: pd.Series) -> str:
+    return taipei_time_text(taipei_datetime(row))
+
+
+def inject_theme() -> None:
+    st.markdown(
+        f"""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800;900&display=swap');
+        html, body, [class*="css"] {{
+            font-family: "Noto Sans TC", "Segoe UI", sans-serif;
+        }}
+        .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
+            background:
+                linear-gradient(180deg, rgba(7, 20, 38, 0.98), rgba(5, 12, 24, 1)),
+                {NAVY};
+            color: {INK};
+        }}
+        [data-testid="stHeader"] {{
+            background: rgba(7, 20, 38, 0.82);
+            backdrop-filter: blur(10px);
+        }}
+        .block-container {{
+            padding-top: 2.2rem;
+            padding-bottom: 1.4rem;
+            max-width: 1240px;
+        }}
+        [data-testid="stSidebar"] {{
+            background: #06101f;
+            border-right: 1px solid rgba(214, 178, 94, 0.22);
+        }}
+        [data-testid="stSidebar"] * {{ color: {INK}; }}
+        [data-testid="stSidebar"] [role="radiogroup"] label {{
+            background: rgba(16, 35, 62, 0.62);
+            border: 1px solid rgba(214, 178, 94, 0.12);
+            border-radius: 8px;
+            padding: 5px 8px;
+            margin-bottom: 4px;
+        }}
+        [data-testid="stSidebar"] [role="radiogroup"] label:hover {{
+            border-color: rgba(214, 178, 94, 0.42);
+            background: rgba(214, 178, 94, 0.10);
+        }}
+        h1, h2, h3 {{
+            color: {INK};
+            letter-spacing: 0;
+        }}
+        .stCaption, [data-testid="stCaptionContainer"] {{ color: {MUTED}; }}
+        .hero {{
+            display: grid;
+            grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+            gap: 28px;
+            align-items: stretch;
+            min-height: 380px;
+            padding: 36px;
+            border: 1px solid rgba(214, 178, 94, 0.32);
+            border-radius: 8px;
+            background:
+                radial-gradient(circle at 84% 16%, rgba(243, 217, 139, 0.22), transparent 30%),
+                linear-gradient(135deg, #071426 0%, #10233e 58%, #06101f 100%);
+            box-shadow: 0 26px 66px rgba(0, 0, 0, 0.36);
+            margin-bottom: 24px;
+            overflow: hidden;
+            position: relative;
+        }}
+        .hero:before {{
+            content: "";
+            position: absolute;
+            inset: auto -8% -35% -8%;
+            height: 58%;
+            border-top: 2px solid rgba(214, 178, 94, 0.4);
+            border-radius: 50% 50% 0 0;
+        }}
+        .hero-kicker {{
+            color: {GOLD_LIGHT};
+            font-size: 0.86rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }}
+        .hero-title {{
+            font-size: 3.2rem;
+            line-height: 1.08;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 14px;
+        }}
+        .hero-copy {{
+            color: #c8d3e6;
+            font-size: 1.08rem;
+            max-width: 720px;
+            line-height: 1.72;
+        }}
+        .hero-visual {{
+            position: relative;
+            min-height: 280px;
+            border-radius: 8px;
+            background:
+                linear-gradient(180deg, rgba(243, 217, 139, 0.18), rgba(243, 217, 139, 0.02)),
+                repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 18px);
+            border: 1px solid rgba(214, 178, 94, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }}
+        .hero-visual:before {{
+            content: "";
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border: 2px solid rgba(243, 217, 139, 0.36);
+            border-radius: 50%;
+        }}
+        .hero-visual:after {{
+            content: "FIFA WORLD CUP";
+            position: absolute;
+            bottom: 20px;
+            color: rgba(243, 217, 139, 0.76);
+            font-weight: 900;
+            letter-spacing: 0.16em;
+            font-size: 0.78rem;
+        }}
+        .trophy {{
+            font-size: 7.3rem;
+            filter: drop-shadow(0 18px 24px rgba(0,0,0,0.46));
+            z-index: 1;
+        }}
+        .page-title {{
+            padding: 18px 0 10px;
+            border-bottom: 1px solid rgba(214, 178, 94, 0.22);
+            margin-bottom: 20px;
+        }}
+        .timezone-badge {{
+            display: inline-flex;
+            align-items: center;
+            color: {GOLD_LIGHT};
+            border: 1px solid rgba(243, 217, 139, 0.38);
+            background: rgba(214, 178, 94, 0.11);
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }}
+        .page-title h1 {{
+            margin: 0;
+            font-size: 2.08rem;
+            font-weight: 900;
+        }}
+        .page-title p {{
+            margin: 7px 0 0;
+            color: {MUTED};
+            line-height: 1.6;
+        }}
+        .display-card {{
+            background: linear-gradient(180deg, rgba(16, 35, 62, 0.98), rgba(8, 21, 40, 0.98));
+            border: 1px solid rgba(214, 178, 94, 0.27);
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 14px 34px rgba(0,0,0,0.26);
+            margin-bottom: 14px;
+        }}
+        .card-label {{
+            color: {MUTED};
+            font-size: 0.83rem;
+            margin-bottom: 8px;
+        }}
+        .card-value {{
+            color: {GOLD_LIGHT};
+            font-size: 1.86rem;
+            line-height: 1.1;
+            font-weight: 900;
+        }}
+        .card-note {{
+            color: {MUTED};
+            font-size: 0.78rem;
+            margin-top: 8px;
+        }}
+        .score-card {{
+            text-align: center;
+            padding: 34px 18px;
+            border-color: rgba(243, 217, 139, 0.44);
+            background:
+                radial-gradient(circle at 50% 0%, rgba(243, 217, 139, 0.16), transparent 34%),
+                linear-gradient(180deg, rgba(16, 35, 62, 1), rgba(6, 16, 31, 1));
+        }}
+        .score-teams {{
+            color: #d9e3f4;
+            font-size: 1.08rem;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }}
+        .score-value {{
+            color: #fff;
+            font-size: 5.6rem;
+            line-height: 1;
+            font-weight: 900;
+            letter-spacing: 0;
+            text-shadow: 0 8px 28px rgba(0,0,0,0.42);
+        }}
+        .score-note {{
+            color: {GOLD_LIGHT};
+            margin-top: 12px;
+            font-weight: 800;
+        }}
+        .confidence-wrap {{
+            background: linear-gradient(180deg, rgba(16, 35, 62, 0.98), rgba(8, 21, 40, 0.98));
+            border: 1px solid rgba(214, 178, 94, 0.27);
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 14px 34px rgba(0,0,0,0.26);
+            margin-bottom: 14px;
+        }}
+        .confidence-wrap .card-value {{
+            margin-bottom: 10px;
+        }}
+        div[data-testid="stProgress"] > div > div > div {{
+            background: linear-gradient(90deg, {GOLD}, {GOLD_LIGHT});
+        }}
+        div[data-testid="stProgress"] > div > div {{
+            background: rgba(255,255,255,0.13);
+            border: 1px solid rgba(214,178,94,0.20);
+        }}
+        .risk-badge {{
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 11px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.86rem;
+            margin-left: 8px;
+            white-space: nowrap;
+        }}
+        .risk-low {{
+            background: rgba(46, 204, 113, 0.18);
+            color: #8ff0b4;
+            border: 1px solid rgba(46, 204, 113, 0.34);
+        }}
+        .risk-mid {{
+            background: rgba(243, 217, 139, 0.18);
+            color: {GOLD_LIGHT};
+            border: 1px solid rgba(243, 217, 139, 0.36);
+        }}
+        .risk-high {{
+            background: rgba(231, 76, 60, 0.18);
+            color: #ff9a8f;
+            border: 1px solid rgba(231, 76, 60, 0.34);
+        }}
+        .footer {{
+            margin-top: 34px;
+            padding: 20px 0 10px;
+            border-top: 1px solid rgba(214, 178, 94, 0.2);
+            color: {MUTED};
+            font-size: 0.82rem;
+            line-height: 1.7;
+        }}
+        .footer strong {{
+            color: {GOLD_LIGHT};
+        }}
+        div[data-testid="stDataFrame"] {{
+            border: 1px solid rgba(214, 178, 94, 0.18);
+            border-radius: 8px;
+            overflow: hidden;
+        }}
+        @media (max-width: 900px) {{
+            .hero {{
+                grid-template-columns: 1fr;
+                padding: 24px;
+            }}
+            .hero-title {{ font-size: 2.35rem; }}
+            .score-value {{ font-size: 3.35rem; }}
+            .risk-badge {{
+                margin-left: 0;
+                margin-top: 8px;
+            }}
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def page_header(title: str, caption: str) -> None:
+    st.markdown(
+        f"""
+        <div class="page-title">
+          <div class="timezone-badge">時區：台灣時間（UTC+8）</div>
+          <h1>{html.escape(title)}</h1>
+          <p>{html.escape(caption)}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def display_card(label: str, value: str, note: str | None = None) -> None:
+    note_html = f"<div class='card-note'>{html.escape(note)}</div>" if note else ""
+    st.markdown(
+        f"""
+        <div class="display-card">
+          <div class="card-label">{html.escape(label)}</div>
+          <div class="card-value">{html.escape(value)}</div>
+          {note_html}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def confidence_card(confidence: float) -> None:
+    percent = max(0, min(100, confidence * 100))
+    st.markdown(
+        f"""
+        <div class="confidence-wrap">
+          <div class="card-label">信心分數</div>
+          <div class="card-value">{percent:.1f}%</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.progress(int(round(percent)), text="模型信心指數")
+
+
+def risk_class(risk_level: str) -> str:
+    if risk_level == "低":
+        return "risk-low"
+    if risk_level == "中":
+        return "risk-mid"
+    return "risk-high"
+
+
+def risk_badge(risk_level: str) -> str:
+    return f"<span class='risk-badge {risk_class(risk_level)}'>風險：{html.escape(risk_level)}</span>"
+
+
+def footer() -> None:
+    st.markdown(
+        """
+        <div class="footer">
+          <strong>資料來源</strong>：Fjelstul World Cup Database、fixtures_real_2026.csv 真實賽程與展示用賠率資料<br>
+          <strong>模型說明</strong>：Poisson + Elo + 近期狀態 + 世界盃歷史表現輔助權重<br>
+          <strong>版本資訊</strong>：World Cup Prediction MVP v1.0 · Streamlit 展示版 · 僅供資料分析與作品展示參考，不保證獲利。
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+@st.cache_data
+def cached_data() -> tuple[pd.DataFrame, ...]:
+    fixtures = load_fixtures()
+    fixture_odds = load_fixture_with_odds()
+    matches = load_historical_matches()
+    team_meta = load_team_meta()
+    team_history = load_worldcup_team_history()
+    players = load_players()
+    live_matches = load_live_matches()
+    live_events = load_live_events()
+    wc_matches = load_worldcup_matches()
+    wc_team_stats = load_worldcup_team_stats()
+    wc_champions = load_worldcup_champions()
+    wc_top4 = load_worldcup_top4()
+    wc_head_to_head = load_worldcup_head_to_head()
+    return (
+        fixtures,
+        fixture_odds,
+        matches,
+        team_meta,
+        team_history,
+        players,
+        live_matches,
+        live_events,
+        wc_matches,
+        wc_team_stats,
+        wc_champions,
+        wc_top4,
+        wc_head_to_head,
+    )
+
+
+(
+    fixtures_df,
+    fixture_odds_df,
+    matches_df,
+    team_meta_df,
+    team_history_df,
+    players_df,
+    live_matches_df,
+    live_events_df,
+    wc_matches_df,
+    wc_team_stats_df,
+    wc_champions_df,
+    wc_top4_df,
+    wc_head_to_head_df,
+) = cached_data()
+
+TEAM_FLAG_MAP = dict(zip(team_meta_df["team"], team_meta_df["flag_emoji"]))
+TEAM_NAME_MAP = dict(zip(team_meta_df["team"], team_meta_df["team_zh"]))
+
+inject_theme()
+
+PAGE_OPTIONS = [
+    "首頁儀表板",
+    "賽程頁",
+    "單場分析頁",
+    "投注分析頁",
+    "模型回測頁",
+    "即時賽況",
+    "歷史世界盃數據分析",
+    "國家隊世界盃戰績",
+    "歷史交手分析",
+    "免責聲明頁",
+]
+
+page = st.sidebar.radio("功能選單", PAGE_OPTIONS)
+st.sidebar.divider()
+st.sidebar.caption("MVP 範圍：勝平負 1X2、2002~2022 世界盃歷史資料、可解釋模型")
+
+
+def selected_fixture(label: str = "選擇比賽") -> pd.Series:
+    labels = {
+        f"{taipei_time_text(row.datetime_taipei)} | {team_name(row.home_team)} vs {team_name(row.away_team)}": row.match_id
+        for row in fixture_odds_df.itertuples()
+    }
+    selected_label = st.selectbox(label, list(labels.keys()))
+    match_id = labels[selected_label]
+    return fixture_odds_df[fixture_odds_df["match_id"] == match_id].iloc[0]
+
+
+def fixtures_with_flags(df: pd.DataFrame) -> pd.DataFrame:
+    output = df.copy()
+    output["taiwan_time"] = output["datetime_taipei"].map(taipei_time_text)
+    output["matchup_display"] = output.apply(
+        lambda row: f"{team_name(row['home_team'])} vs {team_name(row['away_team'])}",
+        axis=1,
+    )
+    return output.rename(
+        columns={
+            "match_id": "賽事 ID",
+            "taiwan_time": "台灣時間",
+            "stage": "階段",
+            "matchup_display": "對戰",
+            "venue": "場地",
+            "home_odds": "主勝賠率",
+            "draw_odds": "和局賠率",
+            "away_odds": "客勝賠率",
+        }
+    )[
+        ["賽事 ID", "台灣時間", "階段", "對戰", "場地", "主勝賠率", "和局賠率", "客勝賠率"]
+    ]
+
+
+def team_history_row(team: str) -> dict:
+    row = team_history_df[team_history_df["team"] == team]
+    if row.empty:
+        return {
+            "team": team,
+            "tournaments_played": 0,
+            "best_finish": "No data",
+            "wins": 0,
+            "draws": 0,
+            "losses": 0,
+            "goals_for": 0,
+            "goals_against": 0,
+            "win_rate": 0.0,
+        }
+    return row.iloc[0].to_dict()
+
+
+def render_worldcup_history_block(home_team: str, away_team: str) -> None:
+    st.subheader("歷史戰績")
+    history = pd.DataFrame([team_history_row(home_team), team_history_row(away_team)])
+    history["team"] = history["team"].map(team_name)
+    history["win_rate"] = history["win_rate"].map(format_percent)
+    st.dataframe(
+        history.rename(
+            columns={
+                "team": "球隊",
+                "tournaments_played": "參賽屆數",
+                "best_finish": "最佳成績",
+                "wins": "勝場",
+                "draws": "平手",
+                "losses": "敗場",
+                "goals_for": "進球",
+                "goals_against": "失球",
+                "win_rate": "勝率",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+def key_players_for(team: str) -> pd.DataFrame:
+    return players_df[players_df["team"] == team].copy().sort_values(
+        ["recent_form_rating", "goal_rate"],
+        ascending=False,
+    )
+
+
+def h2h_summary(home_team: str, away_team: str) -> dict:
+    direct = wc_head_to_head_df[
+        (wc_head_to_head_df["team_a"] == home_team)
+        & (wc_head_to_head_df["team_b"] == away_team)
+    ]
+    reverse = wc_head_to_head_df[
+        (wc_head_to_head_df["team_a"] == away_team)
+        & (wc_head_to_head_df["team_b"] == home_team)
+    ]
+    if not direct.empty:
+        row = direct.iloc[0]
+        return {
+            "兩隊": f"{team_name(home_team)} vs {team_name(away_team)}",
+            "歷史交手次數": int(row["matches"]),
+            "主隊勝場": int(row["team_a_wins"]),
+            "平手": int(row["draws"]),
+            "客隊勝場": int(row["team_b_wins"]),
+            "最近一次交手年份": int(row["last_meeting_year"]),
+        }
+    if not reverse.empty:
+        row = reverse.iloc[0]
+        return {
+            "兩隊": f"{team_name(home_team)} vs {team_name(away_team)}",
+            "歷史交手次數": int(row["matches"]),
+            "主隊勝場": int(row["team_b_wins"]),
+            "平手": int(row["draws"]),
+            "客隊勝場": int(row["team_a_wins"]),
+            "最近一次交手年份": int(row["last_meeting_year"]),
+        }
+    return {
+        "兩隊": f"{team_name(home_team)} vs {team_name(away_team)}",
+        "歷史交手次數": 0,
+        "主隊勝場": 0,
+        "平手": 0,
+        "客隊勝場": 0,
+        "最近一次交手年份": "無 2002~2022 世界盃交手資料",
+    }
+
+
+def render_h2h_summary_block(home_team: str, away_team: str) -> None:
+    st.subheader("歷史交手摘要")
+    st.dataframe(pd.DataFrame([h2h_summary(home_team, away_team)]), use_container_width=True, hide_index=True)
+
+
+def render_key_players_block(home_team: str, away_team: str) -> None:
+    st.subheader("關鍵球員")
+    players = pd.concat([key_players_for(home_team), key_players_for(away_team)], ignore_index=True)
+    st.caption(f"主隊關鍵球員：{team_name(home_team)} ｜ 客隊關鍵球員：{team_name(away_team)}")
+    players["team_display"] = players["team"].map(team_name)
+    players["goal_rate_display"] = players["goal_rate"].map(format_percent)
+    st.dataframe(
+        players[
+            [
+                "team_display",
+                "player_name",
+                "position",
+                "national_goals",
+                "national_caps",
+                "goal_rate_display",
+                "recent_form_rating",
+            ]
+        ].rename(
+            columns={
+                "team_display": "球隊",
+                "player_name": "球員姓名",
+                "position": "位置",
+                "national_goals": "國家隊進球",
+                "national_caps": "國家隊出賽",
+                "goal_rate_display": "進球率",
+                "recent_form_rating": "近況評分",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    chart = px.bar(
+        players,
+        x="player_name",
+        y="goal_rate",
+        color="team_display",
+        barmode="group",
+        labels={"player_name": "球員", "goal_rate": "進球率", "team_display": "球隊"},
+        color_discrete_sequence=[GOLD, "#8aa0c3"],
+    )
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(chart, use_container_width=True)
+
+
+def betting_context(row: pd.Series) -> tuple[str, str, str]:
+    home_history = team_history_row(row["home_team"])
+    away_history = team_history_row(row["away_team"])
+    history_gap = float(home_history["win_rate"]) - float(away_history["win_rate"])
+    if abs(history_gap) < 0.05:
+        history_text = "歷史戰績接近，世界盃經驗差距不明顯。"
+    else:
+        leader = row["home_team"] if history_gap > 0 else row["away_team"]
+        history_text = f"{flag(leader)} {leader} 的 2002~2022 世界盃勝率較高，歷史表現略占優。"
+
+    home_players = key_players_for(row["home_team"])
+    away_players = key_players_for(row["away_team"])
+    home_rating = home_players["recent_form_rating"].mean() if not home_players.empty else 0
+    away_rating = away_players["recent_form_rating"].mean() if not away_players.empty else 0
+    if abs(home_rating - away_rating) < 0.25:
+        player_text = "雙方關鍵球員近況評分接近，球員面影響偏中性。"
+    else:
+        leader = row["home_team"] if home_rating > away_rating else row["away_team"]
+        player_text = f"{flag(leader)} {leader} 關鍵球員近況評分較佳，但僅作輔助說明。"
+
+    recent_matches = matches_df[
+        matches_df["home_team"].isin([row["home_team"], row["away_team"]])
+        | matches_df["away_team"].isin([row["home_team"], row["away_team"]])
+    ].tail(6)
+    total_goals = int(recent_matches["home_goals"].sum() + recent_matches["away_goals"].sum())
+    recent_text = f"近期樣本共 {len(recent_matches)} 場、總進球 {total_goals}，用於輔助理解攻守狀態。"
+    return history_text, player_text, recent_text
+
+
+def prediction_cards(row: pd.Series, compact: bool = False) -> None:
+    prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    signals = analyze_1x2(prediction, row["home_odds"], row["draw_odds"], row["away_odds"])
+    best_signal = max(signals, key=lambda signal: signal.edge)
+    teams = matchup_text(row)
+
+    st.markdown(
+        f"""
+        <div class="display-card score-card">
+          <div class="score-teams">{html.escape(teams)}</div>
+          <div class="score-value">{prediction.predicted_home_goals} : {prediction.predicted_away_goals}</div>
+          <div class="score-note">預測比分｜{html.escape(fixture_time_text(row))} 台灣時間</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("主勝機率", format_percent(prediction.home_win_probability))
+    with cols[1]:
+        display_card("和局機率", format_percent(prediction.draw_probability))
+    with cols[2]:
+        display_card("客勝機率", format_percent(prediction.away_win_probability))
+    with cols[3]:
+        confidence_card(prediction.confidence)
+
+    st.markdown(
+        f"""
+        <div class="display-card">
+          <div class="card-label">投注觀察</div>
+          <div class="card-value">{html.escape(best_signal.market)} · {html.escape(best_signal.recommendation)}
+            {risk_badge(best_signal.risk_level)}
+          </div>
+          <div class="card-note">優勢值：{format_percent(best_signal.edge)} · 賠率：{best_signal.odds:.2f}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if compact:
+        st.caption("快速分析僅供展示與資料參考，詳細內容請至單場分析頁與投注分析頁。")
+
+
+def dashboard_page() -> None:
+    metrics = backtest(matches_df, wc_team_stats_df, players_df)
+    upcoming_count = len(fixtures_df)
+    team_count = len(set(fixtures_df["home_team"]).union(set(fixtures_df["away_team"])))
+
+    st.markdown(
+        """
+        <section class="hero">
+          <div>
+            <div class="hero-kicker">WORLD CUP PREDICTION INTELLIGENCE</div>
+            <div class="timezone-badge">時區：台灣時間（UTC+8）</div>
+            <div class="hero-title">世足智慧預測中心</div>
+            <div class="hero-copy">
+              深藍金色世界盃儀表板，整合賽程、比分預測、勝平負機率、信心分數、
+              投注風險與 2002~2022 世界盃歷史資料，打造正式產品展示級 MVP。
+            </div>
+          </div>
+          <div class="hero-visual">
+            <div class="trophy">🏆</div>
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+    disclaimer_box()
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("待分析賽事", str(upcoming_count), "MVP 測試賽程")
+    with cols[1]:
+        display_card("涵蓋隊伍", str(team_count), "展示用國家隊")
+    with cols[2]:
+        display_card("歷史世界盃場次", str(len(wc_matches_df)), "2002~2022")
+    with cols[3]:
+        display_card("回測命中率", format_percent(metrics["accuracy"]), "測試資料")
+
+    st.subheader("近期賽程")
+    st.dataframe(
+        fixtures_with_flags(fixture_odds_df).drop(columns=["主勝賠率", "和局賠率", "客勝賠率"]),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.subheader("2002~2022 世界盃冠軍")
+    st.dataframe(wc_champions_df, use_container_width=True, hide_index=True)
+
+    goals = wc_matches_df.assign(total_goals=wc_matches_df["home_goals"] + wc_matches_df["away_goals"])
+    chart = px.bar(
+        goals.groupby("tournament_year", as_index=False)["total_goals"].sum(),
+        x="tournament_year",
+        y="total_goals",
+        labels={"tournament_year": "年份", "total_goals": "總進球"},
+        color_discrete_sequence=[GOLD],
+    )
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(chart, use_container_width=True)
+
+
+def fixtures_page() -> None:
+    page_header("賽程頁", "查看測試賽程、基本賠率，並直接選擇比賽查看分析摘要")
+    stage = st.selectbox("篩選階段", ["全部"] + sorted(fixtures_df["stage"].unique().tolist()))
+    filtered = fixture_odds_df if stage == "全部" else fixture_odds_df[fixture_odds_df["stage"] == stage]
+    st.dataframe(fixtures_with_flags(filtered), use_container_width=True, hide_index=True)
+    st.subheader("快速分析")
+    row = selected_fixture("選擇要分析的比賽")
+    prediction_cards(row, compact=True)
+
+
+def render_team_history_comparison(home_team: str, away_team: str) -> None:
+    comparison = pd.DataFrame(
+        [team_summary(wc_team_stats_df, home_team), team_summary(wc_team_stats_df, away_team)]
+    )
+    columns = [
+        "team",
+        "tournaments_played",
+        "matches",
+        "wins",
+        "draws",
+        "losses",
+        "goals_for",
+        "goals_against",
+        "goal_difference",
+        "win_rate",
+        "titles",
+        "top4_finishes",
+        "performance_score",
+    ]
+    st.dataframe(
+        comparison[columns].rename(
+            columns={
+                "team": "國家",
+                "tournaments_played": "參賽屆數",
+                "matches": "場次",
+                "wins": "勝",
+                "draws": "和",
+                "losses": "敗",
+                "goals_for": "進球",
+                "goals_against": "失球",
+                "goal_difference": "淨勝球",
+                "win_rate": "勝率",
+                "titles": "冠軍",
+                "top4_finishes": "四強次數",
+                "performance_score": "歷史表現分數",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+def match_analysis_page() -> None:
+    page_header("單場分析頁", "大型比分卡、勝平負機率、信心分數進度條與世界盃歷史表現")
+    disclaimer_box()
+    row = selected_fixture()
+    prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    prediction_cards(row)
+
+    probabilities = prediction_to_frame(prediction)
+    st.dataframe(
+        probabilities.assign(機率=probabilities["機率"].map(format_percent)),
+        use_container_width=True,
+        hide_index=True,
+    )
+    chart = px.pie(
+        probabilities,
+        values="機率",
+        names="結果",
+        title="勝平負機率分布",
+        color_discrete_sequence=[GOLD, "#6d7fa0", "#c8d3e6"],
+    )
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(chart, use_container_width=True)
+
+    st.subheader("世界盃歷史表現比較")
+    render_team_history_comparison(row["home_team"], row["away_team"])
+
+    render_worldcup_history_block(row["home_team"], row["away_team"])
+    render_h2h_summary_block(row["home_team"], row["away_team"])
+    render_key_players_block(row["home_team"], row["away_team"])
+
+    st.subheader("兩隊近期歷史資料")
+    team_matches = matches_df[
+        matches_df["home_team"].isin([row["home_team"], row["away_team"]])
+        | matches_df["away_team"].isin([row["home_team"], row["away_team"]])
+    ].tail(8)
+    st.dataframe(team_matches, use_container_width=True, hide_index=True)
+
+
+def betting_page() -> None:
+    page_header("投注分析頁", "比較模型機率與賠率隱含機率，並以風險色塊呈現建議等級")
+    disclaimer_box()
+    row = selected_fixture()
+    prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    signals = analyze_1x2(prediction, row["home_odds"], row["draw_odds"], row["away_odds"])
+
+    st.subheader(f"{fixture_time_text(row)} 台灣時間｜{matchup_text(row)}")
+    st.dataframe(signal_dataframe(signals), use_container_width=True, hide_index=True)
+
+    best_signal = max(signals, key=lambda signal: signal.edge)
+    st.markdown(
+        f"""
+        <div class="display-card">
+          <div class="card-label">目前最佳觀察方向</div>
+          <div class="card-value">{html.escape(best_signal.market)} · {html.escape(best_signal.recommendation)}
+            {risk_badge(best_signal.risk_level)}
+          </div>
+          <div class="card-note">此資訊僅供資料分析參考，不構成下注指示。</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.subheader("輔助分析說明")
+    history_text, player_text, recent_text = betting_context(row)
+    st.markdown(
+        f"""
+        <div class="display-card">
+          <div class="card-label">歷史戰績影響</div>
+          <div class="card-note">{html.escape(history_text)}</div>
+        </div>
+        <div class="display-card">
+          <div class="card-label">關鍵球員影響</div>
+          <div class="card-note">{html.escape(player_text)}</div>
+        </div>
+        <div class="display-card">
+          <div class="card-label">近期狀態影響</div>
+          <div class="card-note">{html.escape(recent_text)}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    comparison = pd.DataFrame(
+        [{"市場": s.market, "類型": "模型機率", "機率": s.model_probability} for s in signals]
+        + [{"市場": s.market, "類型": "隱含機率", "機率": s.implied_probability} for s in signals]
+    )
+    chart = px.bar(
+        comparison,
+        x="市場",
+        y="機率",
+        color="類型",
+        barmode="group",
+        color_discrete_sequence=[GOLD, "#8aa0c3"],
+    )
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(chart, use_container_width=True)
+
+
+def model_backtest_page() -> None:
+    page_header("模型回測頁", "以信心分層呈現 MVP 模型回測結果，提升預測可信度與可解釋性")
+    disclaimer_box()
+    metrics = backtest(matches_df, wc_team_stats_df, players_df)
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("回測場次", str(metrics["matches"]), "測試資料")
+    with cols[1]:
+        display_card("目前回測命中率", format_percent(metrics["accuracy"]), "勝平負方向")
+    with cols[2]:
+        display_card("ROI", format_percent(metrics["simulated_roi"]), "固定示範賠率")
+    with cols[3]:
+        confidence_card(metrics["average_confidence"])
+
+    st.subheader("信心級別命中率")
+    cols = st.columns(3)
+    with cols[0]:
+        display_card(
+            "高信心場次命中率",
+            format_percent(metrics["high_confidence_accuracy"]),
+            f"{metrics['high_confidence_matches']} 場",
+        )
+    with cols[1]:
+        display_card(
+            "中信心場次命中率",
+            format_percent(metrics["mid_confidence_accuracy"]),
+            f"{metrics['mid_confidence_matches']} 場",
+        )
+    with cols[2]:
+        display_card(
+            "低信心場次命中率",
+            format_percent(metrics["low_confidence_accuracy"]),
+            f"{metrics['low_confidence_matches']} 場",
+        )
+
+    bucket_df = pd.DataFrame(metrics["bucket_rows"])
+    if not bucket_df.empty:
+        bucket_df["confidence"] = bucket_df["confidence"].map(format_percent)
+        bucket_df["player_goal_feature_home"] = bucket_df["player_goal_feature_home"].map(format_percent)
+        bucket_df["player_goal_feature_away"] = bucket_df["player_goal_feature_away"].map(format_percent)
+        st.dataframe(
+            bucket_df.rename(
+                columns={
+                    "match": "比賽",
+                    "prediction": "預測",
+                    "actual": "實際",
+                    "correct": "是否命中",
+                    "confidence": "輔助信心分數",
+                    "confidence_bucket": "信心級別",
+                    "player_goal_feature_home": "主隊關鍵球員進球率",
+                    "player_goal_feature_away": "客隊關鍵球員進球率",
+                }
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    st.caption(
+        "高信心篩選使用模型信心分數加上關鍵球員進球率的輔助特徵；"
+        "此設定不改變原始比分預測，只用於回測分層與展示說明。"
+    )
+
+
+def live_event_label(event_type: str) -> str:
+    icons = {
+        "Goal": "⚽",
+        "Yellow Card": "🟨",
+        "Red Card": "🟥",
+        "Substitution": "🔄",
+    }
+    return f"{icons.get(event_type, '•')} {event_type}"
+
+
+def live_fixture_row(row: pd.Series) -> pd.Series | None:
+    matches = fixture_odds_df[
+        (fixture_odds_df["home_team"] == row["home_team"])
+        & (fixture_odds_df["away_team"] == row["away_team"])
+    ]
+    if matches.empty:
+        return None
+    return matches.iloc[0]
+
+
+def live_match_label(row: pd.Series) -> str:
+    fixture = live_fixture_row(row)
+    scheduled_time = fixture_time_text(fixture) if fixture is not None else "時間未定"
+    return (
+        f"{scheduled_time} | {team_name(row['home_team'])} "
+        f"{row['home_score']}-{row['away_score']} {team_name(row['away_team'])}"
+    )
+
+
+def live_matches_page() -> None:
+    page_header("即時賽況", "使用本地 mock 資料展示即時比分、事件與比賽數據，不含影音直播")
+    refresh_seconds = st.selectbox("刷新頻率", [30, 45, 60], index=1)
+    st.markdown(
+        f"<meta http-equiv='refresh' content='{refresh_seconds}'>",
+        unsafe_allow_html=True,
+    )
+    st.caption(f"展示頁會嘗試每 {refresh_seconds} 秒刷新一次；目前資料來源為本地 mock CSV。")
+    st.warning("展示資料／模擬即時賽況：目前未串接真實即時 API，比分、事件、控球率與射門數皆為本地展示資料。")
+
+    labels = {
+        live_match_label(row): row["live_match_id"]
+        for _, row in live_matches_df.iterrows()
+    }
+    selected = st.selectbox("選擇即時比賽", list(labels.keys()))
+    live_match_id = labels[selected]
+    row = live_matches_df[live_matches_df["live_match_id"] == live_match_id].iloc[0]
+    fixture = live_fixture_row(row)
+    scheduled_time = fixture_time_text(fixture) if fixture is not None else "時間未定"
+
+    st.markdown(
+        f"""
+        <div class="display-card score-card">
+          <div class="score-teams">{html.escape(team_name(row['home_team']))} vs {html.escape(team_name(row['away_team']))}</div>
+          <div class="score-value">{row['home_score']} : {row['away_score']}</div>
+          <div class="score-note">賽程時間：{html.escape(scheduled_time)} 台灣時間 · {html.escape(row['status'])} · {int(row['minute'])}' · 更新時間 {html.escape(str(row['updated_at']))}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    cols = st.columns(3)
+    with cols[0]:
+        display_card("射門", f"{row['home_shots']} : {row['away_shots']}")
+    with cols[1]:
+        display_card("控球率", f"{row['home_possession']}% : {row['away_possession']}%")
+    with cols[2]:
+        display_card("角球", f"{row['home_corners']} : {row['away_corners']}")
+
+    st.subheader("比賽事件")
+    events = live_events_df[live_events_df["live_match_id"] == live_match_id].copy()
+    if events.empty:
+        st.info("目前沒有事件資料。")
+    else:
+        events["事件"] = events["event_type"].map(live_event_label)
+        events["球隊"] = events["team"].map(lambda team: f"{flag(team)} {team}")
+        st.dataframe(
+            events[["minute", "事件", "球隊", "player", "detail"]].rename(
+                columns={
+                    "minute": "時間",
+                    "player": "球員",
+                    "detail": "內容",
+                }
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    st.subheader("技術統計")
+    stats = pd.DataFrame(
+        [
+            {"項目": "射門", row["home_team"]: row["home_shots"], row["away_team"]: row["away_shots"]},
+            {"項目": "控球率", row["home_team"]: row["home_possession"], row["away_team"]: row["away_possession"]},
+            {"項目": "角球", row["home_team"]: row["home_corners"], row["away_team"]: row["away_corners"]},
+        ]
+    )
+    stats_long = stats.melt(id_vars="項目", var_name="球隊", value_name="數值")
+    chart = px.bar(
+        stats_long,
+        x="項目",
+        y="數值",
+        color="球隊",
+        barmode="group",
+        color_discrete_sequence=[GOLD, "#8aa0c3"],
+    )
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(chart, use_container_width=True)
+
+
+def worldcup_history_page() -> None:
+    page_header("歷史世界盃數據分析", "2002~2022 世界盃比賽結果、冠軍、四強與整體趨勢")
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("涵蓋屆數", str(wc_matches_df["tournament_year"].nunique()), "2002~2022")
+    with cols[1]:
+        display_card("比賽場次", str(len(wc_matches_df)), "完整賽果")
+    with cols[2]:
+        display_card("參賽國家", str(wc_team_stats_df["team"].nunique()), "國家隊統計")
+    with cols[3]:
+        total_goals = int(wc_matches_df["home_goals"].sum() + wc_matches_df["away_goals"].sum())
+        display_card("總進球", str(total_goals), "歷史趨勢")
+
+    st.subheader("歷屆四強")
+    st.dataframe(wc_top4_df, use_container_width=True, hide_index=True)
+
+    goals_by_year = wc_matches_df.assign(
+        total_goals=wc_matches_df["home_goals"] + wc_matches_df["away_goals"]
+    ).groupby("tournament_year", as_index=False)["total_goals"].sum()
+    chart = px.line(
+        goals_by_year,
+        x="tournament_year",
+        y="total_goals",
+        markers=True,
+        color_discrete_sequence=[GOLD_LIGHT],
+    )
+    chart.update_traces(line=dict(width=4), marker=dict(size=10))
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(chart, use_container_width=True)
+
+    st.subheader("勝率最高國家 Top 12")
+    st.dataframe(top_team_stats(wc_team_stats_df), use_container_width=True, hide_index=True)
+
+
+def team_record_page() -> None:
+    page_header("國家隊世界盃戰績", "查看各國 2002~2022 世界盃勝率、進失球與四強成績")
+    teams = wc_team_stats_df["team"].sort_values().tolist()
+    selected_team = st.selectbox("選擇國家隊", teams)
+    summary = team_summary(wc_team_stats_df, selected_team)
+
+    st.subheader(f"{flag(selected_team)} {selected_team}")
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("參賽屆數", str(int(summary["tournaments_played"])))
+    with cols[1]:
+        display_card("勝率", format_percent(float(summary["win_rate"])))
+    with cols[2]:
+        display_card("冠軍", str(int(summary["titles"])))
+    with cols[3]:
+        display_card("四強次數", str(int(summary["top4_finishes"])))
+
+    st.subheader("完整戰績")
+    st.dataframe(pd.DataFrame([summary]), use_container_width=True, hide_index=True)
+
+    st.subheader("該隊世界盃比賽")
+    team_matches = wc_matches_df[
+        (wc_matches_df["home_team"] == selected_team) | (wc_matches_df["away_team"] == selected_team)
+    ]
+    st.dataframe(team_matches, use_container_width=True, hide_index=True)
+
+
+def head_to_head_page() -> None:
+    page_header("歷史交手分析", "查詢 2002~2022 世界盃任兩隊交手紀錄")
+    teams = sorted(set(wc_matches_df["home_team"]).union(set(wc_matches_df["away_team"])))
+    col1, col2 = st.columns(2)
+    team_a = col1.selectbox("國家隊 A", teams, index=teams.index("Argentina") if "Argentina" in teams else 0)
+    team_b = col2.selectbox("國家隊 B", teams, index=teams.index("France") if "France" in teams else 1)
+
+    if team_a == team_b:
+        st.info("請選擇兩支不同國家隊。")
+        return
+
+    st.subheader(f"{flag(team_a)} {team_a} vs {flag(team_b)} {team_b}")
+    st.dataframe(head_to_head_record(wc_head_to_head_df, team_a, team_b), use_container_width=True, hide_index=True)
+
+    st.subheader("交手比賽明細")
+    pair_matches = wc_matches_df[
+        ((wc_matches_df["home_team"] == team_a) & (wc_matches_df["away_team"] == team_b))
+        | ((wc_matches_df["home_team"] == team_b) & (wc_matches_df["away_team"] == team_a))
+    ]
+    if pair_matches.empty:
+        st.info("2002~2022 世界盃沒有交手紀錄。")
+    else:
+        st.dataframe(pair_matches, use_container_width=True, hide_index=True)
+
+
+def disclaimer_page() -> None:
+    page_header("免責聲明頁", "本 MVP 的分析邊界與投注風險說明")
+    st.markdown(
+        """
+        ### 重要聲明
+
+        本網站是資料分析與學習用途的世足比分預測 MVP，所有預測、機率、
+        信心分數、風險分級與投注訊號都只供參考。
+
+        ### 不保證事項
+
+        - 不保證預測比分命中。
+        - 不保證勝平負投注獲利。
+        - 不提供下注、金流、會員錢包或任何實際交易功能。
+        - 測試資料與歷史資料不代表即時官方資料。
+
+        ### 使用者責任
+
+        若使用者依據本網站資訊進行任何投注或財務決策，應自行承擔全部風險。
+        建議將本網站視為資料分析練習與模型展示，而不是保證獲利工具。
+        """
+    )
+
+
+if page == "首頁儀表板":
+    dashboard_page()
+elif page == "賽程頁":
+    fixtures_page()
+elif page == "單場分析頁":
+    match_analysis_page()
+elif page == "投注分析頁":
+    betting_page()
+elif page == "模型回測頁":
+    model_backtest_page()
+elif page == "即時賽況":
+    live_matches_page()
+elif page == "歷史世界盃數據分析":
+    worldcup_history_page()
+elif page == "國家隊世界盃戰績":
+    team_record_page()
+elif page == "歷史交手分析":
+    head_to_head_page()
+else:
+    disclaimer_page()
+
+footer()

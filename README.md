@@ -1,0 +1,112 @@
+# 世足比分預測網站 MVP
+
+這是一個使用 Streamlit 製作的世界盃比分預測與資料分析展示網站。網站提供 2026 世界盃賽程、單場比分預測、勝平負機率、投注輔助訊號、歷史世界盃資料、球隊/球員分析、模型回測與模擬即時賽況。
+
+> 本專案僅供資料分析、學習與作品展示使用，不提供下注、金流或保證獲利。
+
+## 功能
+
+- 首頁儀表板：賽程摘要、目前回測命中率、歷史世界盃視覺化
+- 賽程頁：2026 世界盃真實賽程，時間統一顯示台灣時間 UTC+8
+- 單場分析頁：預測比分、勝平負機率、信心分數、歷史戰績、關鍵球員、歷史交手
+- 投注分析頁：1X2 賠率、隱含機率、價值投注訊號與風險等級
+- 模型回測頁：目前回測命中率、高信心場次命中率、ROI 與信心分層
+- 即時賽況頁：本地 mock 資料展示比分、事件、控球率、射門數
+- 免責聲明頁：資料與投注風險說明
+
+## 技術架構
+
+- Python
+- Streamlit
+- Pandas
+- NumPy
+- Plotly
+
+## 專案結構
+
+```text
+.
+├── app.py
+├── requirements.txt
+├── README.md
+├── data/
+│   ├── fixtures_real_2026.csv
+│   ├── team_meta.csv
+│   ├── players.csv
+│   ├── historical_matches.csv
+│   ├── odds.csv
+│   ├── mock_live_matches.csv
+│   ├── mock_live_events.csv
+│   └── worldcup/
+│       ├── worldcup_matches_2002_2022.csv
+│       ├── worldcup_team_stats_2002_2022.csv
+│       ├── worldcup_champions_2002_2022.csv
+│       ├── worldcup_top4_2002_2022.csv
+│       └── worldcup_head_to_head_2002_2022.csv
+└── worldcup_predictor/
+    ├── backtest.py
+    ├── betting.py
+    ├── data_loader.py
+    ├── history.py
+    ├── model.py
+    └── ui.py
+```
+
+## 本機執行
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+開啟：
+
+```text
+http://localhost:8501
+```
+
+## Streamlit Community Cloud 部署
+
+部署入口檔案：
+
+```text
+app.py
+```
+
+Python 依賴：
+
+```text
+requirements.txt
+```
+
+本專案目前不需要 `.env`、API key 或 Streamlit secrets。資料皆使用 repo 內的本地 CSV。
+
+建議在 Streamlit Community Cloud 的 Advanced settings 選擇 Python 3.12。
+
+## 資料來源
+
+歷史世界盃資料主要參考 Fjelstul World Cup Database：
+
+- Repository: https://github.com/jfjelstul/worldcup
+- Author: Joshua C. Fjelstul, Ph.D.
+- License: CC-BY-SA 4.0
+
+2026 賽程、球員、賠率與即時賽況資料為 MVP 展示用本地 CSV。即時賽況頁明確標示為「展示資料／模擬即時賽況」。
+
+## 模型說明
+
+MVP 保留簡單可解釋模型：
+
+- Poisson 進球模型
+- Elo 評分
+- 近期狀態
+- 世界盃歷史表現輔助權重
+- 關鍵球員進球率作為回測分層與展示輔助
+
+模型輸出僅供資料分析參考，不代表實際比賽結果。
+
+## 免責聲明
+
+本網站不提供下注、金流、帳戶、會員或任何投注交易功能。所有預測、賠率分析與投注建議僅供資料分析與作品展示參考，不保證命中率或獲利。請自行承擔風險。

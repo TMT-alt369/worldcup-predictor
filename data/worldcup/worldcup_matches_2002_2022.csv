@@ -1,0 +1,385 @@
+match_id,tournament_year,stage,group_name,date,home_team,away_team,home_goals,away_goals,winner,is_draw,went_to_extra_time,went_to_penalties,home_penalties,away_penalties,stadium,city,host_country
+M-2002-01,2002,group stage,Group A,2002-05-31,France,Senegal,0,1,Senegal,False,0,0,0,0,Seoul World Cup Stadium,Seoul,South Korea
+M-2002-02,2002,group stage,Group E,2002-06-01,Republic of Ireland,Cameroon,1,1,Draw,True,0,0,0,0,Niigata Stadium,Niigata,Japan
+M-2002-03,2002,group stage,Group A,2002-06-01,Uruguay,Denmark,1,2,Denmark,False,0,0,0,0,Ulsan Munsu Football Stadium,Ulsan,South Korea
+M-2002-04,2002,group stage,Group E,2002-06-01,Germany,Saudi Arabia,8,0,Germany,False,0,0,0,0,Sapporo Dome,Sapporo,Japan
+M-2002-05,2002,group stage,Group F,2002-06-02,Argentina,Nigeria,1,0,Argentina,False,0,0,0,0,Kashima Stadium,Ibaraki,Japan
+M-2002-06,2002,group stage,Group B,2002-06-02,Paraguay,South Africa,2,2,Draw,True,0,0,0,0,Busan Asiad Stadium,Busan,South Korea
+M-2002-07,2002,group stage,Group F,2002-06-02,England,Sweden,1,1,Draw,True,0,0,0,0,Saitama Stadium,Saitama,Japan
+M-2002-08,2002,group stage,Group B,2002-06-02,Spain,Slovenia,3,1,Spain,False,0,0,0,0,Gwangju World Cup Stadium,Gwangju,South Korea
+M-2002-09,2002,group stage,Group G,2002-06-03,Croatia,Mexico,0,1,Mexico,False,0,0,0,0,Niigata Stadium,Niigata,Japan
+M-2002-10,2002,group stage,Group C,2002-06-03,Brazil,Turkey,2,1,Brazil,False,0,0,0,0,Ulsan Munsu Football Stadium,Ulsan,South Korea
+M-2002-11,2002,group stage,Group G,2002-06-03,Italy,Ecuador,2,0,Italy,False,0,0,0,0,Sapporo Dome,Sapporo,Japan
+M-2002-12,2002,group stage,Group C,2002-06-04,China,Costa Rica,0,2,Costa Rica,False,0,0,0,0,Gwangju World Cup Stadium,Gwangju,South Korea
+M-2002-13,2002,group stage,Group H,2002-06-04,Japan,Belgium,2,2,Draw,True,0,0,0,0,Saitama Stadium,Saitama,Japan
+M-2002-14,2002,group stage,Group D,2002-06-04,South Korea,Poland,2,0,South Korea,False,0,0,0,0,Busan Asiad Stadium,Busan,South Korea
+M-2002-15,2002,group stage,Group H,2002-06-05,Russia,Tunisia,2,0,Russia,False,0,0,0,0,Kobe Wing Stadium,Kobe,Japan
+M-2002-16,2002,group stage,Group D,2002-06-05,United States,Portugal,3,2,United States,False,0,0,0,0,Suwon World Cup Stadium,Suwon,South Korea
+M-2002-17,2002,group stage,Group E,2002-06-05,Germany,Republic of Ireland,1,1,Draw,True,0,0,0,0,Kashima Stadium,Ibaraki,Japan
+M-2002-18,2002,group stage,Group A,2002-06-06,Denmark,Senegal,1,1,Draw,True,0,0,0,0,Daegu World Cup Stadium,Daegu,South Korea
+M-2002-19,2002,group stage,Group E,2002-06-06,Cameroon,Saudi Arabia,1,0,Cameroon,False,0,0,0,0,Saitama Stadium,Saitama,Japan
+M-2002-20,2002,group stage,Group A,2002-06-06,France,Uruguay,0,0,Draw,True,0,0,0,0,Busan Asiad Stadium,Busan,South Korea
+M-2002-21,2002,group stage,Group F,2002-06-07,Sweden,Nigeria,2,1,Sweden,False,0,0,0,0,Kobe Wing Stadium,Kobe,Japan
+M-2002-22,2002,group stage,Group B,2002-06-07,Spain,Paraguay,3,1,Spain,False,0,0,0,0,Jeonju World Cup Stadium,Jeonju,South Korea
+M-2002-23,2002,group stage,Group F,2002-06-07,Argentina,England,0,1,England,False,0,0,0,0,Sapporo Dome,Sapporo,Japan
+M-2002-24,2002,group stage,Group B,2002-06-08,South Africa,Slovenia,1,0,South Africa,False,0,0,0,0,Daegu World Cup Stadium,Daegu,South Korea
+M-2002-25,2002,group stage,Group G,2002-06-08,Italy,Croatia,1,2,Croatia,False,0,0,0,0,Kashima Stadium,Ibaraki,Japan
+M-2002-26,2002,group stage,Group C,2002-06-08,Brazil,China,4,0,Brazil,False,0,0,0,0,Jeju World Cup Stadium,Seogwipo,South Korea
+M-2002-27,2002,group stage,Group G,2002-06-09,Mexico,Ecuador,2,1,Mexico,False,0,0,0,0,Miyagi Stadium,Miyagi,Japan
+M-2002-28,2002,group stage,Group C,2002-06-09,Costa Rica,Turkey,1,1,Draw,True,0,0,0,0,Incheon Munhak Stadium,Incheon,South Korea
+M-2002-29,2002,group stage,Group H,2002-06-09,Japan,Russia,1,0,Japan,False,0,0,0,0,International Stadium Yokohama,Yokohama,Japan
+M-2002-30,2002,group stage,Group D,2002-06-10,South Korea,United States,1,1,Draw,True,0,0,0,0,Daegu World Cup Stadium,Daegu,South Korea
+M-2002-31,2002,group stage,Group H,2002-06-10,Tunisia,Belgium,1,1,Draw,True,0,0,0,0,Ōita Stadium,Ōita,Japan
+M-2002-32,2002,group stage,Group D,2002-06-10,Portugal,Poland,4,0,Portugal,False,0,0,0,0,Jeonju World Cup Stadium,Jeonju,South Korea
+M-2002-33,2002,group stage,Group A,2002-06-11,Denmark,France,2,0,Denmark,False,0,0,0,0,Incheon Munhak Stadium,Incheon,South Korea
+M-2002-34,2002,group stage,Group A,2002-06-11,Senegal,Uruguay,3,3,Draw,True,0,0,0,0,Suwon World Cup Stadium,Suwon,South Korea
+M-2002-35,2002,group stage,Group E,2002-06-11,Cameroon,Germany,0,2,Germany,False,0,0,0,0,Shizuoka Stadium ECOPA,Shizuoka,Japan
+M-2002-36,2002,group stage,Group E,2002-06-11,Saudi Arabia,Republic of Ireland,0,3,Republic of Ireland,False,0,0,0,0,International Stadium Yokohama,Yokohama,Japan
+M-2002-37,2002,group stage,Group F,2002-06-12,Nigeria,England,0,0,Draw,True,0,0,0,0,Nagai Stadium,Osaka,Japan
+M-2002-38,2002,group stage,Group F,2002-06-12,Sweden,Argentina,1,1,Draw,True,0,0,0,0,Miyagi Stadium,Miyagi,Japan
+M-2002-39,2002,group stage,Group B,2002-06-12,Slovenia,Paraguay,1,3,Paraguay,False,0,0,0,0,Jeju World Cup Stadium,Seogwipo,South Korea
+M-2002-40,2002,group stage,Group B,2002-06-12,South Africa,Spain,2,3,Spain,False,0,0,0,0,Daejeon World Cup Stadium,Daejeon,South Korea
+M-2002-41,2002,group stage,Group C,2002-06-13,Costa Rica,Brazil,2,5,Brazil,False,0,0,0,0,Suwon World Cup Stadium,Suwon,South Korea
+M-2002-42,2002,group stage,Group C,2002-06-13,Turkey,China,3,0,Turkey,False,0,0,0,0,Seoul World Cup Stadium,Seoul,South Korea
+M-2002-43,2002,group stage,Group G,2002-06-13,Ecuador,Croatia,1,0,Ecuador,False,0,0,0,0,International Stadium Yokohama,Yokohama,Japan
+M-2002-44,2002,group stage,Group G,2002-06-13,Mexico,Italy,1,1,Draw,True,0,0,0,0,Ōita Stadium,Ōita,Japan
+M-2002-45,2002,group stage,Group H,2002-06-14,Belgium,Russia,3,2,Belgium,False,0,0,0,0,Shizuoka Stadium ECOPA,Shizuoka,Japan
+M-2002-46,2002,group stage,Group H,2002-06-14,Tunisia,Japan,0,2,Japan,False,0,0,0,0,Nagai Stadium,Osaka,Japan
+M-2002-47,2002,group stage,Group D,2002-06-14,Poland,United States,3,1,Poland,False,0,0,0,0,Daejeon World Cup Stadium,Daejeon,South Korea
+M-2002-48,2002,group stage,Group D,2002-06-14,Portugal,South Korea,0,1,South Korea,False,0,0,0,0,Incheon Munhak Stadium,Incheon,South Korea
+M-2002-49,2002,round of 16,not applicable,2002-06-15,Germany,Paraguay,1,0,Germany,False,0,0,0,0,Jeju World Cup Stadium,Seogwipo,South Korea
+M-2002-50,2002,round of 16,not applicable,2002-06-15,Denmark,England,0,3,England,False,0,0,0,0,Niigata Stadium,Niigata,Japan
+M-2002-51,2002,round of 16,not applicable,2002-06-16,Sweden,Senegal,1,2,Senegal,False,1,0,0,0,Ōita Stadium,Ōita,Japan
+M-2002-52,2002,round of 16,not applicable,2002-06-16,Spain,Republic of Ireland,1,1,Draw,True,1,1,3,2,Suwon World Cup Stadium,Suwon,South Korea
+M-2002-53,2002,round of 16,not applicable,2002-06-17,Mexico,United States,0,2,United States,False,0,0,0,0,Jeonju World Cup Stadium,Jeonju,South Korea
+M-2002-54,2002,round of 16,not applicable,2002-06-17,Brazil,Belgium,2,0,Brazil,False,0,0,0,0,Kobe Wing Stadium,Kobe,Japan
+M-2002-55,2002,round of 16,not applicable,2002-06-18,Japan,Turkey,0,1,Turkey,False,0,0,0,0,Miyagi Stadium,Miyagi,Japan
+M-2002-56,2002,round of 16,not applicable,2002-06-18,South Korea,Italy,2,1,South Korea,False,1,0,0,0,Daejeon World Cup Stadium,Daejeon,South Korea
+M-2002-57,2002,quarter-finals,not applicable,2002-06-21,England,Brazil,1,2,Brazil,False,0,0,0,0,Shizuoka Stadium ECOPA,Shizuoka,Japan
+M-2002-58,2002,quarter-finals,not applicable,2002-06-21,Germany,United States,1,0,Germany,False,0,0,0,0,Ulsan Munsu Football Stadium,Ulsan,South Korea
+M-2002-59,2002,quarter-finals,not applicable,2002-06-22,Spain,South Korea,0,0,Draw,True,1,1,3,5,Gwangju World Cup Stadium,Gwangju,South Korea
+M-2002-60,2002,quarter-finals,not applicable,2002-06-22,Senegal,Turkey,0,1,Turkey,False,1,0,0,0,Nagai Stadium,Osaka,Japan
+M-2002-61,2002,semi-finals,not applicable,2002-06-25,Germany,South Korea,1,0,Germany,False,0,0,0,0,Seoul World Cup Stadium,Seoul,South Korea
+M-2002-62,2002,semi-finals,not applicable,2002-06-26,Brazil,Turkey,1,0,Brazil,False,0,0,0,0,Saitama Stadium,Saitama,Japan
+M-2002-63,2002,third-place match,not applicable,2002-06-29,South Korea,Turkey,2,3,Turkey,False,0,0,0,0,Daegu World Cup Stadium,Daegu,South Korea
+M-2002-64,2002,final,not applicable,2002-06-30,Germany,Brazil,0,2,Brazil,False,0,0,0,0,International Stadium Yokohama,Yokohama,Japan
+M-2006-01,2006,group stage,Group A,2006-06-09,Germany,Costa Rica,4,2,Germany,False,0,0,0,0,Allianz Arena,Munich,Germany
+M-2006-02,2006,group stage,Group A,2006-06-09,Poland,Ecuador,0,2,Ecuador,False,0,0,0,0,Arena AufShalke,Gelsenkirchen,Germany
+M-2006-03,2006,group stage,Group B,2006-06-10,England,Paraguay,1,0,England,False,0,0,0,0,Waldstadion,Frankfurt,Germany
+M-2006-04,2006,group stage,Group B,2006-06-10,Trinidad and Tobago,Sweden,0,0,Draw,True,0,0,0,0,Westfalenstadion,Dortmund,Germany
+M-2006-05,2006,group stage,Group C,2006-06-10,Argentina,Ivory Coast,2,1,Argentina,False,0,0,0,0,Volksparkstadion,Hamburg,Germany
+M-2006-06,2006,group stage,Group C,2006-06-11,Serbia and Montenegro,Netherlands,0,1,Netherlands,False,0,0,0,0,Zentralstadion,Leipzig,Germany
+M-2006-07,2006,group stage,Group D,2006-06-11,Mexico,Iran,3,1,Mexico,False,0,0,0,0,Frankenstadion,Nuremberg,Germany
+M-2006-08,2006,group stage,Group D,2006-06-11,Angola,Portugal,0,1,Portugal,False,0,0,0,0,RheinEnergieStadion,Cologne,Germany
+M-2006-09,2006,group stage,Group F,2006-06-12,Australia,Japan,3,1,Australia,False,0,0,0,0,Fritz-Walter-Stadion,Kaiserslautern,Germany
+M-2006-10,2006,group stage,Group E,2006-06-12,United States,Czech Republic,0,3,Czech Republic,False,0,0,0,0,Arena AufShalke,Gelsenkirchen,Germany
+M-2006-11,2006,group stage,Group E,2006-06-12,Italy,Ghana,2,0,Italy,False,0,0,0,0,Niedersachsenstadion,Hanover,Germany
+M-2006-12,2006,group stage,Group G,2006-06-13,South Korea,Togo,2,1,South Korea,False,0,0,0,0,Waldstadion,Frankfurt,Germany
+M-2006-13,2006,group stage,Group G,2006-06-13,France,Switzerland,0,0,Draw,True,0,0,0,0,Neckarstadion,Stuttgart,Germany
+M-2006-14,2006,group stage,Group F,2006-06-13,Brazil,Croatia,1,0,Brazil,False,0,0,0,0,Olympiastadion,Berlin,Germany
+M-2006-15,2006,group stage,Group H,2006-06-14,Spain,Ukraine,4,0,Spain,False,0,0,0,0,Zentralstadion,Leipzig,Germany
+M-2006-16,2006,group stage,Group H,2006-06-14,Tunisia,Saudi Arabia,2,2,Draw,True,0,0,0,0,Allianz Arena,Munich,Germany
+M-2006-17,2006,group stage,Group A,2006-06-14,Germany,Poland,1,0,Germany,False,0,0,0,0,Westfalenstadion,Dortmund,Germany
+M-2006-18,2006,group stage,Group A,2006-06-15,Ecuador,Costa Rica,3,0,Ecuador,False,0,0,0,0,Volksparkstadion,Hamburg,Germany
+M-2006-19,2006,group stage,Group B,2006-06-15,England,Trinidad and Tobago,2,0,England,False,0,0,0,0,Frankenstadion,Nuremberg,Germany
+M-2006-20,2006,group stage,Group B,2006-06-15,Sweden,Paraguay,1,0,Sweden,False,0,0,0,0,Olympiastadion,Berlin,Germany
+M-2006-21,2006,group stage,Group C,2006-06-16,Argentina,Serbia and Montenegro,6,0,Argentina,False,0,0,0,0,Arena AufShalke,Gelsenkirchen,Germany
+M-2006-22,2006,group stage,Group C,2006-06-16,Netherlands,Ivory Coast,2,1,Netherlands,False,0,0,0,0,Neckarstadion,Stuttgart,Germany
+M-2006-23,2006,group stage,Group D,2006-06-16,Mexico,Angola,0,0,Draw,True,0,0,0,0,Niedersachsenstadion,Hanover,Germany
+M-2006-24,2006,group stage,Group D,2006-06-17,Portugal,Iran,2,0,Portugal,False,0,0,0,0,Waldstadion,Frankfurt,Germany
+M-2006-25,2006,group stage,Group E,2006-06-17,Czech Republic,Ghana,0,2,Ghana,False,0,0,0,0,RheinEnergieStadion,Cologne,Germany
+M-2006-26,2006,group stage,Group E,2006-06-17,Italy,United States,1,1,Draw,True,0,0,0,0,Fritz-Walter-Stadion,Kaiserslautern,Germany
+M-2006-27,2006,group stage,Group F,2006-06-18,Japan,Croatia,0,0,Draw,True,0,0,0,0,Frankenstadion,Nuremberg,Germany
+M-2006-28,2006,group stage,Group F,2006-06-18,Brazil,Australia,2,0,Brazil,False,0,0,0,0,Allianz Arena,Munich,Germany
+M-2006-29,2006,group stage,Group G,2006-06-18,France,South Korea,1,1,Draw,True,0,0,0,0,Zentralstadion,Leipzig,Germany
+M-2006-30,2006,group stage,Group G,2006-06-19,Togo,Switzerland,0,2,Switzerland,False,0,0,0,0,Westfalenstadion,Dortmund,Germany
+M-2006-31,2006,group stage,Group H,2006-06-19,Saudi Arabia,Ukraine,0,4,Ukraine,False,0,0,0,0,Volksparkstadion,Hamburg,Germany
+M-2006-32,2006,group stage,Group H,2006-06-19,Spain,Tunisia,3,1,Spain,False,0,0,0,0,Neckarstadion,Stuttgart,Germany
+M-2006-33,2006,group stage,Group A,2006-06-20,Costa Rica,Poland,1,2,Poland,False,0,0,0,0,Niedersachsenstadion,Hanover,Germany
+M-2006-34,2006,group stage,Group A,2006-06-20,Ecuador,Germany,0,3,Germany,False,0,0,0,0,Olympiastadion,Berlin,Germany
+M-2006-35,2006,group stage,Group B,2006-06-20,Paraguay,Trinidad and Tobago,2,0,Paraguay,False,0,0,0,0,Fritz-Walter-Stadion,Kaiserslautern,Germany
+M-2006-36,2006,group stage,Group B,2006-06-20,Sweden,England,2,2,Draw,True,0,0,0,0,RheinEnergieStadion,Cologne,Germany
+M-2006-37,2006,group stage,Group D,2006-06-21,Iran,Angola,1,1,Draw,True,0,0,0,0,Zentralstadion,Leipzig,Germany
+M-2006-38,2006,group stage,Group D,2006-06-21,Portugal,Mexico,2,1,Portugal,False,0,0,0,0,Arena AufShalke,Gelsenkirchen,Germany
+M-2006-39,2006,group stage,Group C,2006-06-21,Ivory Coast,Serbia and Montenegro,3,2,Ivory Coast,False,0,0,0,0,Allianz Arena,Munich,Germany
+M-2006-40,2006,group stage,Group C,2006-06-21,Netherlands,Argentina,0,0,Draw,True,0,0,0,0,Waldstadion,Frankfurt,Germany
+M-2006-41,2006,group stage,Group E,2006-06-22,Czech Republic,Italy,0,2,Italy,False,0,0,0,0,Volksparkstadion,Hamburg,Germany
+M-2006-42,2006,group stage,Group E,2006-06-22,Ghana,United States,2,1,Ghana,False,0,0,0,0,Frankenstadion,Nuremberg,Germany
+M-2006-43,2006,group stage,Group F,2006-06-22,Croatia,Australia,2,2,Draw,True,0,0,0,0,Neckarstadion,Stuttgart,Germany
+M-2006-44,2006,group stage,Group F,2006-06-22,Japan,Brazil,1,4,Brazil,False,0,0,0,0,Westfalenstadion,Dortmund,Germany
+M-2006-45,2006,group stage,Group H,2006-06-23,Saudi Arabia,Spain,0,1,Spain,False,0,0,0,0,Fritz-Walter-Stadion,Kaiserslautern,Germany
+M-2006-46,2006,group stage,Group H,2006-06-23,Ukraine,Tunisia,1,0,Ukraine,False,0,0,0,0,Olympiastadion,Berlin,Germany
+M-2006-47,2006,group stage,Group G,2006-06-23,Switzerland,South Korea,2,0,Switzerland,False,0,0,0,0,Niedersachsenstadion,Hanover,Germany
+M-2006-48,2006,group stage,Group G,2006-06-23,Togo,France,0,2,France,False,0,0,0,0,RheinEnergieStadion,Cologne,Germany
+M-2006-49,2006,round of 16,not applicable,2006-06-24,Germany,Sweden,2,0,Germany,False,0,0,0,0,Allianz Arena,Munich,Germany
+M-2006-50,2006,round of 16,not applicable,2006-06-24,Argentina,Mexico,2,1,Argentina,False,1,0,0,0,Zentralstadion,Leipzig,Germany
+M-2006-51,2006,round of 16,not applicable,2006-06-25,England,Ecuador,1,0,England,False,0,0,0,0,Neckarstadion,Stuttgart,Germany
+M-2006-52,2006,round of 16,not applicable,2006-06-25,Portugal,Netherlands,1,0,Portugal,False,0,0,0,0,Frankenstadion,Nuremberg,Germany
+M-2006-53,2006,round of 16,not applicable,2006-06-26,Italy,Australia,1,0,Italy,False,0,0,0,0,Fritz-Walter-Stadion,Kaiserslautern,Germany
+M-2006-54,2006,round of 16,not applicable,2006-06-26,Switzerland,Ukraine,0,0,Draw,True,1,1,0,3,RheinEnergieStadion,Cologne,Germany
+M-2006-55,2006,round of 16,not applicable,2006-06-27,Brazil,Ghana,3,0,Brazil,False,0,0,0,0,Westfalenstadion,Dortmund,Germany
+M-2006-56,2006,round of 16,not applicable,2006-06-27,Spain,France,1,3,France,False,0,0,0,0,Niedersachsenstadion,Hanover,Germany
+M-2006-57,2006,quarter-finals,not applicable,2006-06-30,Germany,Argentina,1,1,Draw,True,1,1,4,2,Olympiastadion,Berlin,Germany
+M-2006-58,2006,quarter-finals,not applicable,2006-06-30,Italy,Ukraine,3,0,Italy,False,0,0,0,0,Volksparkstadion,Hamburg,Germany
+M-2006-59,2006,quarter-finals,not applicable,2006-07-01,England,Portugal,0,0,Draw,True,1,1,1,3,Arena AufShalke,Gelsenkirchen,Germany
+M-2006-60,2006,quarter-finals,not applicable,2006-07-01,Brazil,France,0,1,France,False,0,0,0,0,Waldstadion,Frankfurt,Germany
+M-2006-61,2006,semi-finals,not applicable,2006-07-04,Germany,Italy,0,2,Italy,False,1,0,0,0,Westfalenstadion,Dortmund,Germany
+M-2006-62,2006,semi-finals,not applicable,2006-07-05,Portugal,France,0,1,France,False,0,0,0,0,Allianz Arena,Munich,Germany
+M-2006-63,2006,third-place match,not applicable,2006-07-08,Germany,Portugal,3,1,Germany,False,0,0,0,0,Neckarstadion,Stuttgart,Germany
+M-2006-64,2006,final,not applicable,2006-07-09,Italy,France,1,1,Draw,True,1,1,5,3,Olympiastadion,Berlin,Germany
+M-2010-01,2010,group stage,Group A,2010-06-11,South Africa,Mexico,1,1,Draw,True,0,0,0,0,Soccer City,Johannesburg,South Africa
+M-2010-02,2010,group stage,Group A,2010-06-11,Uruguay,France,0,0,Draw,True,0,0,0,0,Cape Town Stadium,Cape Town,South Africa
+M-2010-03,2010,group stage,Group B,2010-06-12,South Korea,Greece,2,0,South Korea,False,0,0,0,0,Nelson Mandela Bay Stadium,Port Elizabeth,South Africa
+M-2010-04,2010,group stage,Group B,2010-06-12,Argentina,Nigeria,1,0,Argentina,False,0,0,0,0,Ellis Park Stadium,Johannesburg,South Africa
+M-2010-05,2010,group stage,Group C,2010-06-12,England,United States,1,1,Draw,True,0,0,0,0,Royal Bafokeng Stadium,Rustenburg,South Africa
+M-2010-06,2010,group stage,Group C,2010-06-13,Algeria,Slovenia,0,1,Slovenia,False,0,0,0,0,Peter Mokaba Stadium,Polokwane,South Africa
+M-2010-07,2010,group stage,Group D,2010-06-13,Serbia,Ghana,0,1,Ghana,False,0,0,0,0,Loftus Versfeld Stadium,Pretoria,South Africa
+M-2010-08,2010,group stage,Group D,2010-06-13,Germany,Australia,4,0,Germany,False,0,0,0,0,Moses Mabhida Stadium,Durban,South Africa
+M-2010-09,2010,group stage,Group E,2010-06-14,Netherlands,Denmark,2,0,Netherlands,False,0,0,0,0,Soccer City,Johannesburg,South Africa
+M-2010-10,2010,group stage,Group E,2010-06-14,Japan,Cameroon,1,0,Japan,False,0,0,0,0,Free State Stadium,Bloemfontein,South Africa
+M-2010-11,2010,group stage,Group F,2010-06-14,Italy,Paraguay,1,1,Draw,True,0,0,0,0,Cape Town Stadium,Cape Town,South Africa
+M-2010-12,2010,group stage,Group F,2010-06-15,New Zealand,Slovakia,1,1,Draw,True,0,0,0,0,Royal Bafokeng Stadium,Rustenburg,South Africa
+M-2010-13,2010,group stage,Group G,2010-06-15,Ivory Coast,Portugal,0,0,Draw,True,0,0,0,0,Nelson Mandela Bay Stadium,Port Elizabeth,South Africa
+M-2010-14,2010,group stage,Group G,2010-06-15,Brazil,North Korea,2,1,Brazil,False,0,0,0,0,Ellis Park Stadium,Johannesburg,South Africa
+M-2010-15,2010,group stage,Group H,2010-06-16,Honduras,Chile,0,1,Chile,False,0,0,0,0,Mbombela Stadium,Nelspruit,South Africa
+M-2010-16,2010,group stage,Group H,2010-06-16,Spain,Switzerland,0,1,Switzerland,False,0,0,0,0,Moses Mabhida Stadium,Durban,South Africa
+M-2010-17,2010,group stage,Group A,2010-06-16,South Africa,Uruguay,0,3,Uruguay,False,0,0,0,0,Loftus Versfeld Stadium,Pretoria,South Africa
+M-2010-18,2010,group stage,Group B,2010-06-17,Argentina,South Korea,4,1,Argentina,False,0,0,0,0,Soccer City,Johannesburg,South Africa
+M-2010-19,2010,group stage,Group B,2010-06-17,Greece,Nigeria,2,1,Greece,False,0,0,0,0,Free State Stadium,Bloemfontein,South Africa
+M-2010-20,2010,group stage,Group A,2010-06-17,France,Mexico,0,2,Mexico,False,0,0,0,0,Peter Mokaba Stadium,Polokwane,South Africa
+M-2010-21,2010,group stage,Group D,2010-06-18,Germany,Serbia,0,1,Serbia,False,0,0,0,0,Nelson Mandela Bay Stadium,Port Elizabeth,South Africa
+M-2010-22,2010,group stage,Group C,2010-06-18,Slovenia,United States,2,2,Draw,True,0,0,0,0,Ellis Park Stadium,Johannesburg,South Africa
+M-2010-23,2010,group stage,Group C,2010-06-18,England,Algeria,0,0,Draw,True,0,0,0,0,Cape Town Stadium,Cape Town,South Africa
+M-2010-24,2010,group stage,Group E,2010-06-19,Netherlands,Japan,1,0,Netherlands,False,0,0,0,0,Moses Mabhida Stadium,Durban,South Africa
+M-2010-25,2010,group stage,Group D,2010-06-19,Ghana,Australia,1,1,Draw,True,0,0,0,0,Royal Bafokeng Stadium,Rustenburg,South Africa
+M-2010-26,2010,group stage,Group E,2010-06-19,Cameroon,Denmark,1,2,Denmark,False,0,0,0,0,Loftus Versfeld Stadium,Pretoria,South Africa
+M-2010-27,2010,group stage,Group F,2010-06-20,Slovakia,Paraguay,0,2,Paraguay,False,0,0,0,0,Free State Stadium,Bloemfontein,South Africa
+M-2010-28,2010,group stage,Group F,2010-06-20,Italy,New Zealand,1,1,Draw,True,0,0,0,0,Mbombela Stadium,Nelspruit,South Africa
+M-2010-29,2010,group stage,Group G,2010-06-20,Brazil,Ivory Coast,3,1,Brazil,False,0,0,0,0,Soccer City,Johannesburg,South Africa
+M-2010-30,2010,group stage,Group G,2010-06-21,Portugal,North Korea,7,0,Portugal,False,0,0,0,0,Cape Town Stadium,Cape Town,South Africa
+M-2010-31,2010,group stage,Group H,2010-06-21,Chile,Switzerland,1,0,Chile,False,0,0,0,0,Nelson Mandela Bay Stadium,Port Elizabeth,South Africa
+M-2010-32,2010,group stage,Group H,2010-06-21,Spain,Honduras,2,0,Spain,False,0,0,0,0,Ellis Park Stadium,Johannesburg,South Africa
+M-2010-33,2010,group stage,Group A,2010-06-22,France,South Africa,1,2,South Africa,False,0,0,0,0,Free State Stadium,Bloemfontein,South Africa
+M-2010-34,2010,group stage,Group A,2010-06-22,Mexico,Uruguay,0,1,Uruguay,False,0,0,0,0,Royal Bafokeng Stadium,Rustenburg,South Africa
+M-2010-35,2010,group stage,Group B,2010-06-22,Greece,Argentina,0,2,Argentina,False,0,0,0,0,Peter Mokaba Stadium,Polokwane,South Africa
+M-2010-36,2010,group stage,Group B,2010-06-22,Nigeria,South Korea,2,2,Draw,True,0,0,0,0,Moses Mabhida Stadium,Durban,South Africa
+M-2010-37,2010,group stage,Group C,2010-06-23,Slovenia,England,0,1,England,False,0,0,0,0,Nelson Mandela Bay Stadium,Port Elizabeth,South Africa
+M-2010-38,2010,group stage,Group C,2010-06-23,United States,Algeria,1,0,United States,False,0,0,0,0,Loftus Versfeld Stadium,Pretoria,South Africa
+M-2010-39,2010,group stage,Group D,2010-06-23,Australia,Serbia,2,1,Australia,False,0,0,0,0,Mbombela Stadium,Nelspruit,South Africa
+M-2010-40,2010,group stage,Group D,2010-06-23,Ghana,Germany,0,1,Germany,False,0,0,0,0,Soccer City,Johannesburg,South Africa
+M-2010-41,2010,group stage,Group F,2010-06-24,Paraguay,New Zealand,0,0,Draw,True,0,0,0,0,Peter Mokaba Stadium,Polokwane,South Africa
+M-2010-42,2010,group stage,Group F,2010-06-24,Slovakia,Italy,3,2,Slovakia,False,0,0,0,0,Ellis Park Stadium,Johannesburg,South Africa
+M-2010-43,2010,group stage,Group E,2010-06-24,Cameroon,Netherlands,1,2,Netherlands,False,0,0,0,0,Cape Town Stadium,Cape Town,South Africa
+M-2010-44,2010,group stage,Group E,2010-06-24,Denmark,Japan,1,3,Japan,False,0,0,0,0,Royal Bafokeng Stadium,Rustenburg,South Africa
+M-2010-45,2010,group stage,Group G,2010-06-25,North Korea,Ivory Coast,0,3,Ivory Coast,False,0,0,0,0,Mbombela Stadium,Nelspruit,South Africa
+M-2010-46,2010,group stage,Group G,2010-06-25,Portugal,Brazil,0,0,Draw,True,0,0,0,0,Moses Mabhida Stadium,Durban,South Africa
+M-2010-47,2010,group stage,Group H,2010-06-25,Chile,Spain,1,2,Spain,False,0,0,0,0,Loftus Versfeld Stadium,Pretoria,South Africa
+M-2010-48,2010,group stage,Group H,2010-06-25,Switzerland,Honduras,0,0,Draw,True,0,0,0,0,Free State Stadium,Bloemfontein,South Africa
+M-2010-49,2010,round of 16,not applicable,2010-06-26,Uruguay,South Korea,2,1,Uruguay,False,0,0,0,0,Nelson Mandela Bay Stadium,Port Elizabeth,South Africa
+M-2010-50,2010,round of 16,not applicable,2010-06-26,United States,Ghana,1,2,Ghana,False,1,0,0,0,Royal Bafokeng Stadium,Rustenburg,South Africa
+M-2010-51,2010,round of 16,not applicable,2010-06-27,Germany,England,4,1,Germany,False,0,0,0,0,Free State Stadium,Bloemfontein,South Africa
+M-2010-52,2010,round of 16,not applicable,2010-06-27,Argentina,Mexico,3,1,Argentina,False,0,0,0,0,Soccer City,Johannesburg,South Africa
+M-2010-53,2010,round of 16,not applicable,2010-06-28,Netherlands,Slovakia,2,1,Netherlands,False,0,0,0,0,Moses Mabhida Stadium,Durban,South Africa
+M-2010-54,2010,round of 16,not applicable,2010-06-28,Brazil,Chile,3,0,Brazil,False,0,0,0,0,Ellis Park Stadium,Johannesburg,South Africa
+M-2010-55,2010,round of 16,not applicable,2010-06-29,Paraguay,Japan,0,0,Draw,True,1,1,5,3,Loftus Versfeld Stadium,Pretoria,South Africa
+M-2010-56,2010,round of 16,not applicable,2010-06-29,Spain,Portugal,1,0,Spain,False,0,0,0,0,Cape Town Stadium,Cape Town,South Africa
+M-2010-57,2010,quarter-finals,not applicable,2010-07-02,Netherlands,Brazil,2,1,Netherlands,False,0,0,0,0,Nelson Mandela Bay Stadium,Port Elizabeth,South Africa
+M-2010-58,2010,quarter-finals,not applicable,2010-07-02,Uruguay,Ghana,1,1,Draw,True,1,1,4,2,Soccer City,Johannesburg,South Africa
+M-2010-59,2010,quarter-finals,not applicable,2010-07-03,Argentina,Germany,0,4,Germany,False,0,0,0,0,Cape Town Stadium,Cape Town,South Africa
+M-2010-60,2010,quarter-finals,not applicable,2010-07-03,Paraguay,Spain,0,1,Spain,False,0,0,0,0,Ellis Park Stadium,Johannesburg,South Africa
+M-2010-61,2010,semi-finals,not applicable,2010-07-06,Uruguay,Netherlands,2,3,Netherlands,False,0,0,0,0,Cape Town Stadium,Cape Town,South Africa
+M-2010-62,2010,semi-finals,not applicable,2010-07-07,Germany,Spain,0,1,Spain,False,0,0,0,0,Moses Mabhida Stadium,Durban,South Africa
+M-2010-63,2010,third-place match,not applicable,2010-07-10,Uruguay,Germany,2,3,Germany,False,0,0,0,0,Nelson Mandela Bay Stadium,Port Elizabeth,South Africa
+M-2010-64,2010,final,not applicable,2010-07-11,Netherlands,Spain,0,1,Spain,False,1,0,0,0,Soccer City,Johannesburg,South Africa
+M-2014-01,2014,group stage,Group A,2014-06-12,Brazil,Croatia,3,1,Brazil,False,0,0,0,0,Arena Corinthians,São Paulo,Brazil
+M-2014-02,2014,group stage,Group A,2014-06-13,Mexico,Cameroon,1,0,Mexico,False,0,0,0,0,Arena das Dunas,Natal,Brazil
+M-2014-03,2014,group stage,Group B,2014-06-13,Spain,Netherlands,1,5,Netherlands,False,0,0,0,0,Arena Fonte Nova,Salvador,Brazil
+M-2014-04,2014,group stage,Group B,2014-06-13,Chile,Australia,3,1,Chile,False,0,0,0,0,Arena Pantanal,Cuiabá,Brazil
+M-2014-05,2014,group stage,Group C,2014-06-14,Colombia,Greece,3,0,Colombia,False,0,0,0,0,Estádio Mineirão,Belo Horizonte,Brazil
+M-2014-06,2014,group stage,Group D,2014-06-14,Uruguay,Costa Rica,1,3,Costa Rica,False,0,0,0,0,Estádio Castelão,Fortaleza,Brazil
+M-2014-07,2014,group stage,Group D,2014-06-14,England,Italy,1,2,Italy,False,0,0,0,0,Arena da Amazônia,Manaus,Brazil
+M-2014-08,2014,group stage,Group C,2014-06-14,Ivory Coast,Japan,2,1,Ivory Coast,False,0,0,0,0,Arena Pernambuco,Recife,Brazil
+M-2014-09,2014,group stage,Group E,2014-06-15,Switzerland,Ecuador,2,1,Switzerland,False,0,0,0,0,Estádio Nacional,Brasília,Brazil
+M-2014-10,2014,group stage,Group E,2014-06-15,France,Honduras,3,0,France,False,0,0,0,0,Estádio Beira-Rio,Porto Alegre,Brazil
+M-2014-11,2014,group stage,Group F,2014-06-15,Argentina,Bosnia and Herzegovina,2,1,Argentina,False,0,0,0,0,Estádio do Maracanã,Rio de Janeiro,Brazil
+M-2014-12,2014,group stage,Group G,2014-06-16,Germany,Portugal,4,0,Germany,False,0,0,0,0,Arena Fonte Nova,Salvador,Brazil
+M-2014-13,2014,group stage,Group F,2014-06-16,Iran,Nigeria,0,0,Draw,True,0,0,0,0,Arena da Baixada,Curitiba,Brazil
+M-2014-14,2014,group stage,Group G,2014-06-16,Ghana,United States,1,2,United States,False,0,0,0,0,Arena das Dunas,Natal,Brazil
+M-2014-15,2014,group stage,Group H,2014-06-17,Belgium,Algeria,2,1,Belgium,False,0,0,0,0,Estádio Mineirão,Belo Horizonte,Brazil
+M-2014-16,2014,group stage,Group A,2014-06-17,Brazil,Mexico,0,0,Draw,True,0,0,0,0,Estádio Castelão,Fortaleza,Brazil
+M-2014-17,2014,group stage,Group H,2014-06-17,Russia,South Korea,1,1,Draw,True,0,0,0,0,Arena Pantanal,Cuiabá,Brazil
+M-2014-18,2014,group stage,Group B,2014-06-18,Australia,Netherlands,2,3,Netherlands,False,0,0,0,0,Estádio Beira-Rio,Porto Alegre,Brazil
+M-2014-19,2014,group stage,Group B,2014-06-18,Spain,Chile,0,2,Chile,False,0,0,0,0,Estádio do Maracanã,Rio de Janeiro,Brazil
+M-2014-20,2014,group stage,Group A,2014-06-18,Cameroon,Croatia,0,4,Croatia,False,0,0,0,0,Arena da Amazônia,Manaus,Brazil
+M-2014-21,2014,group stage,Group C,2014-06-19,Colombia,Ivory Coast,2,1,Colombia,False,0,0,0,0,Estádio Nacional,Brasília,Brazil
+M-2014-22,2014,group stage,Group D,2014-06-19,Uruguay,England,2,1,Uruguay,False,0,0,0,0,Arena Corinthians,São Paulo,Brazil
+M-2014-23,2014,group stage,Group C,2014-06-19,Japan,Greece,0,0,Draw,True,0,0,0,0,Arena das Dunas,Natal,Brazil
+M-2014-24,2014,group stage,Group D,2014-06-20,Italy,Costa Rica,0,1,Costa Rica,False,0,0,0,0,Arena Pernambuco,Recife,Brazil
+M-2014-25,2014,group stage,Group E,2014-06-20,Switzerland,France,2,5,France,False,0,0,0,0,Arena Fonte Nova,Salvador,Brazil
+M-2014-26,2014,group stage,Group E,2014-06-20,Honduras,Ecuador,1,2,Ecuador,False,0,0,0,0,Arena da Baixada,Curitiba,Brazil
+M-2014-27,2014,group stage,Group F,2014-06-21,Argentina,Iran,1,0,Argentina,False,0,0,0,0,Estádio Mineirão,Belo Horizonte,Brazil
+M-2014-28,2014,group stage,Group G,2014-06-21,Germany,Ghana,2,2,Draw,True,0,0,0,0,Estádio Castelão,Fortaleza,Brazil
+M-2014-29,2014,group stage,Group F,2014-06-21,Nigeria,Bosnia and Herzegovina,1,0,Nigeria,False,0,0,0,0,Arena Pantanal,Cuiabá,Brazil
+M-2014-30,2014,group stage,Group H,2014-06-22,Belgium,Russia,1,0,Belgium,False,0,0,0,0,Estádio do Maracanã,Rio de Janeiro,Brazil
+M-2014-31,2014,group stage,Group H,2014-06-22,South Korea,Algeria,2,4,Algeria,False,0,0,0,0,Estádio Beira-Rio,Porto Alegre,Brazil
+M-2014-32,2014,group stage,Group G,2014-06-22,United States,Portugal,2,2,Draw,True,0,0,0,0,Arena da Amazônia,Manaus,Brazil
+M-2014-33,2014,group stage,Group B,2014-06-23,Australia,Spain,0,3,Spain,False,0,0,0,0,Arena da Baixada,Curitiba,Brazil
+M-2014-34,2014,group stage,Group B,2014-06-23,Netherlands,Chile,2,0,Netherlands,False,0,0,0,0,Arena Corinthians,São Paulo,Brazil
+M-2014-35,2014,group stage,Group A,2014-06-23,Cameroon,Brazil,1,4,Brazil,False,0,0,0,0,Estádio Nacional,Brasília,Brazil
+M-2014-36,2014,group stage,Group A,2014-06-23,Croatia,Mexico,1,3,Mexico,False,0,0,0,0,Arena Pernambuco,Recife,Brazil
+M-2014-37,2014,group stage,Group D,2014-06-24,Costa Rica,England,0,0,Draw,True,0,0,0,0,Estádio Mineirão,Belo Horizonte,Brazil
+M-2014-38,2014,group stage,Group D,2014-06-24,Italy,Uruguay,0,1,Uruguay,False,0,0,0,0,Arena das Dunas,Natal,Brazil
+M-2014-39,2014,group stage,Group C,2014-06-24,Japan,Colombia,1,4,Colombia,False,0,0,0,0,Arena Pantanal,Cuiabá,Brazil
+M-2014-40,2014,group stage,Group C,2014-06-24,Greece,Ivory Coast,2,1,Greece,False,0,0,0,0,Estádio Castelão,Fortaleza,Brazil
+M-2014-41,2014,group stage,Group F,2014-06-25,Bosnia and Herzegovina,Iran,3,1,Bosnia and Herzegovina,False,0,0,0,0,Arena Fonte Nova,Salvador,Brazil
+M-2014-42,2014,group stage,Group F,2014-06-25,Nigeria,Argentina,2,3,Argentina,False,0,0,0,0,Estádio Beira-Rio,Porto Alegre,Brazil
+M-2014-43,2014,group stage,Group E,2014-06-25,Honduras,Switzerland,0,3,Switzerland,False,0,0,0,0,Arena da Amazônia,Manaus,Brazil
+M-2014-44,2014,group stage,Group E,2014-06-25,Ecuador,France,0,0,Draw,True,0,0,0,0,Estádio do Maracanã,Rio de Janeiro,Brazil
+M-2014-45,2014,group stage,Group G,2014-06-26,Portugal,Ghana,2,1,Portugal,False,0,0,0,0,Estádio Nacional,Brasília,Brazil
+M-2014-46,2014,group stage,Group G,2014-06-26,United States,Germany,0,1,Germany,False,0,0,0,0,Arena Pernambuco,Recife,Brazil
+M-2014-47,2014,group stage,Group H,2014-06-26,Algeria,Russia,1,1,Draw,True,0,0,0,0,Arena da Baixada,Curitiba,Brazil
+M-2014-48,2014,group stage,Group H,2014-06-26,South Korea,Belgium,0,1,Belgium,False,0,0,0,0,Arena Corinthians,São Paulo,Brazil
+M-2014-49,2014,round of 16,not applicable,2014-06-28,Brazil,Chile,1,1,Draw,True,1,1,3,2,Estádio Mineirão,Belo Horizonte,Brazil
+M-2014-50,2014,round of 16,not applicable,2014-06-28,Colombia,Uruguay,2,0,Colombia,False,0,0,0,0,Estádio do Maracanã,Rio de Janeiro,Brazil
+M-2014-51,2014,round of 16,not applicable,2014-06-29,Netherlands,Mexico,2,1,Netherlands,False,0,0,0,0,Estádio Castelão,Fortaleza,Brazil
+M-2014-52,2014,round of 16,not applicable,2014-06-29,Costa Rica,Greece,1,1,Draw,True,1,1,5,3,Arena Pernambuco,Recife,Brazil
+M-2014-53,2014,round of 16,not applicable,2014-06-30,France,Nigeria,2,0,France,False,0,0,0,0,Estádio Nacional,Brasília,Brazil
+M-2014-54,2014,round of 16,not applicable,2014-06-30,Germany,Algeria,2,1,Germany,False,1,0,0,0,Estádio Beira-Rio,Porto Alegre,Brazil
+M-2014-55,2014,round of 16,not applicable,2014-07-01,Argentina,Switzerland,1,0,Argentina,False,1,0,0,0,Arena Corinthians,São Paulo,Brazil
+M-2014-56,2014,round of 16,not applicable,2014-07-01,Belgium,United States,2,1,Belgium,False,1,0,0,0,Arena Fonte Nova,Salvador,Brazil
+M-2014-57,2014,quarter-finals,not applicable,2014-07-04,France,Germany,0,1,Germany,False,0,0,0,0,Estádio do Maracanã,Rio de Janeiro,Brazil
+M-2014-58,2014,quarter-finals,not applicable,2014-07-04,Brazil,Colombia,2,1,Brazil,False,0,0,0,0,Estádio Castelão,Fortaleza,Brazil
+M-2014-59,2014,quarter-finals,not applicable,2014-07-05,Argentina,Belgium,1,0,Argentina,False,0,0,0,0,Estádio Nacional,Brasília,Brazil
+M-2014-60,2014,quarter-finals,not applicable,2014-07-05,Netherlands,Costa Rica,0,0,Draw,True,1,1,4,3,Arena Fonte Nova,Salvador,Brazil
+M-2014-61,2014,semi-finals,not applicable,2014-07-08,Brazil,Germany,1,7,Germany,False,0,0,0,0,Estádio Mineirão,Belo Horizonte,Brazil
+M-2014-62,2014,semi-finals,not applicable,2014-07-09,Netherlands,Argentina,0,0,Draw,True,1,1,2,4,Arena Corinthians,São Paulo,Brazil
+M-2014-63,2014,third-place match,not applicable,2014-07-12,Brazil,Netherlands,0,3,Netherlands,False,0,0,0,0,Estádio Nacional,Brasília,Brazil
+M-2014-64,2014,final,not applicable,2014-07-13,Germany,Argentina,1,0,Germany,False,1,0,0,0,Estádio do Maracanã,Rio de Janeiro,Brazil
+M-2018-01,2018,group stage,Group A,2018-06-14,Russia,Saudi Arabia,5,0,Russia,False,0,0,0,0,Luzhniki Stadium,Moscow,Russia
+M-2018-02,2018,group stage,Group A,2018-06-15,Egypt,Uruguay,0,1,Uruguay,False,0,0,0,0,Central Stadium,Yekaterinburg,Russia
+M-2018-03,2018,group stage,Group B,2018-06-15,Morocco,Iran,0,1,Iran,False,0,0,0,0,Krestovsky Stadium,Saint Petersburg,Russia
+M-2018-04,2018,group stage,Group B,2018-06-15,Portugal,Spain,3,3,Draw,True,0,0,0,0,Fisht Olympic Stadium,Sochi,Russia
+M-2018-05,2018,group stage,Group C,2018-06-16,France,Australia,2,1,France,False,0,0,0,0,Kazan Arena,Kazan,Russia
+M-2018-06,2018,group stage,Group D,2018-06-16,Argentina,Iceland,1,1,Draw,True,0,0,0,0,Otkritie Arena,Moscow,Russia
+M-2018-07,2018,group stage,Group C,2018-06-16,Peru,Denmark,0,1,Denmark,False,0,0,0,0,Mordovia Arena,Saransk,Russia
+M-2018-08,2018,group stage,Group D,2018-06-16,Croatia,Nigeria,2,0,Croatia,False,0,0,0,0,Kaliningrad Stadium,Kaliningrad,Russia
+M-2018-09,2018,group stage,Group E,2018-06-17,Costa Rica,Serbia,0,1,Serbia,False,0,0,0,0,Samara Arena,Samara,Russia
+M-2018-10,2018,group stage,Group F,2018-06-17,Germany,Mexico,0,1,Mexico,False,0,0,0,0,Luzhniki Stadium,Moscow,Russia
+M-2018-11,2018,group stage,Group E,2018-06-17,Brazil,Switzerland,1,1,Draw,True,0,0,0,0,Rostov Arena,Rostov-on-Don,Russia
+M-2018-12,2018,group stage,Group F,2018-06-18,Sweden,South Korea,1,0,Sweden,False,0,0,0,0,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+M-2018-13,2018,group stage,Group G,2018-06-18,Belgium,Panama,3,0,Belgium,False,0,0,0,0,Fisht Olympic Stadium,Sochi,Russia
+M-2018-14,2018,group stage,Group G,2018-06-18,Tunisia,England,1,2,England,False,0,0,0,0,Volgograd Arena,Volgograd,Russia
+M-2018-15,2018,group stage,Group H,2018-06-19,Colombia,Japan,1,2,Japan,False,0,0,0,0,Mordovia Arena,Saransk,Russia
+M-2018-16,2018,group stage,Group H,2018-06-19,Poland,Senegal,1,2,Senegal,False,0,0,0,0,Otkritie Arena,Moscow,Russia
+M-2018-17,2018,group stage,Group A,2018-06-19,Russia,Egypt,3,1,Russia,False,0,0,0,0,Krestovsky Stadium,Saint Petersburg,Russia
+M-2018-18,2018,group stage,Group B,2018-06-20,Portugal,Morocco,1,0,Portugal,False,0,0,0,0,Luzhniki Stadium,Moscow,Russia
+M-2018-19,2018,group stage,Group A,2018-06-20,Uruguay,Saudi Arabia,1,0,Uruguay,False,0,0,0,0,Rostov Arena,Rostov-on-Don,Russia
+M-2018-20,2018,group stage,Group B,2018-06-20,Iran,Spain,0,1,Spain,False,0,0,0,0,Kazan Arena,Kazan,Russia
+M-2018-21,2018,group stage,Group C,2018-06-21,Denmark,Australia,1,1,Draw,True,0,0,0,0,Samara Arena,Samara,Russia
+M-2018-22,2018,group stage,Group C,2018-06-21,France,Peru,1,0,France,False,0,0,0,0,Central Stadium,Yekaterinburg,Russia
+M-2018-23,2018,group stage,Group D,2018-06-21,Argentina,Croatia,0,3,Croatia,False,0,0,0,0,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+M-2018-24,2018,group stage,Group E,2018-06-22,Brazil,Costa Rica,2,0,Brazil,False,0,0,0,0,Krestovsky Stadium,Saint Petersburg,Russia
+M-2018-25,2018,group stage,Group D,2018-06-22,Nigeria,Iceland,2,0,Nigeria,False,0,0,0,0,Volgograd Arena,Volgograd,Russia
+M-2018-26,2018,group stage,Group E,2018-06-22,Serbia,Switzerland,1,2,Switzerland,False,0,0,0,0,Kaliningrad Stadium,Kaliningrad,Russia
+M-2018-27,2018,group stage,Group G,2018-06-23,Belgium,Tunisia,5,2,Belgium,False,0,0,0,0,Otkritie Arena,Moscow,Russia
+M-2018-28,2018,group stage,Group F,2018-06-23,South Korea,Mexico,1,2,Mexico,False,0,0,0,0,Rostov Arena,Rostov-on-Don,Russia
+M-2018-29,2018,group stage,Group F,2018-06-23,Germany,Sweden,2,1,Germany,False,0,0,0,0,Fisht Olympic Stadium,Sochi,Russia
+M-2018-30,2018,group stage,Group G,2018-06-24,England,Panama,6,1,England,False,0,0,0,0,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+M-2018-31,2018,group stage,Group H,2018-06-24,Japan,Senegal,2,2,Draw,True,0,0,0,0,Central Stadium,Yekaterinburg,Russia
+M-2018-32,2018,group stage,Group H,2018-06-24,Poland,Colombia,0,3,Colombia,False,0,0,0,0,Kazan Arena,Kazan,Russia
+M-2018-33,2018,group stage,Group A,2018-06-25,Saudi Arabia,Egypt,2,1,Saudi Arabia,False,0,0,0,0,Volgograd Arena,Volgograd,Russia
+M-2018-34,2018,group stage,Group A,2018-06-25,Uruguay,Russia,3,0,Uruguay,False,0,0,0,0,Samara Arena,Samara,Russia
+M-2018-35,2018,group stage,Group B,2018-06-25,Spain,Morocco,2,2,Draw,True,0,0,0,0,Kaliningrad Stadium,Kaliningrad,Russia
+M-2018-36,2018,group stage,Group B,2018-06-25,Iran,Portugal,1,1,Draw,True,0,0,0,0,Mordovia Arena,Saransk,Russia
+M-2018-37,2018,group stage,Group C,2018-06-26,Australia,Peru,0,2,Peru,False,0,0,0,0,Fisht Olympic Stadium,Sochi,Russia
+M-2018-38,2018,group stage,Group C,2018-06-26,Denmark,France,0,0,Draw,True,0,0,0,0,Luzhniki Stadium,Moscow,Russia
+M-2018-39,2018,group stage,Group D,2018-06-26,Iceland,Croatia,1,2,Croatia,False,0,0,0,0,Rostov Arena,Rostov-on-Don,Russia
+M-2018-40,2018,group stage,Group D,2018-06-26,Nigeria,Argentina,1,2,Argentina,False,0,0,0,0,Krestovsky Stadium,Saint Petersburg,Russia
+M-2018-41,2018,group stage,Group F,2018-06-27,South Korea,Germany,2,0,South Korea,False,0,0,0,0,Kazan Arena,Kazan,Russia
+M-2018-42,2018,group stage,Group F,2018-06-27,Mexico,Sweden,0,3,Sweden,False,0,0,0,0,Central Stadium,Yekaterinburg,Russia
+M-2018-43,2018,group stage,Group E,2018-06-27,Serbia,Brazil,0,2,Brazil,False,0,0,0,0,Otkritie Arena,Moscow,Russia
+M-2018-44,2018,group stage,Group E,2018-06-27,Switzerland,Costa Rica,2,2,Draw,True,0,0,0,0,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+M-2018-45,2018,group stage,Group H,2018-06-28,Japan,Poland,0,1,Poland,False,0,0,0,0,Volgograd Arena,Volgograd,Russia
+M-2018-46,2018,group stage,Group H,2018-06-28,Senegal,Colombia,0,1,Colombia,False,0,0,0,0,Samara Arena,Samara,Russia
+M-2018-47,2018,group stage,Group G,2018-06-28,England,Belgium,0,1,Belgium,False,0,0,0,0,Kaliningrad Stadium,Kaliningrad,Russia
+M-2018-48,2018,group stage,Group G,2018-06-28,Panama,Tunisia,1,2,Tunisia,False,0,0,0,0,Mordovia Arena,Saransk,Russia
+M-2018-49,2018,round of 16,not applicable,2018-06-30,France,Argentina,4,3,France,False,0,0,0,0,Kazan Arena,Kazan,Russia
+M-2018-50,2018,round of 16,not applicable,2018-06-30,Uruguay,Portugal,2,1,Uruguay,False,0,0,0,0,Fisht Olympic Stadium,Sochi,Russia
+M-2018-51,2018,round of 16,not applicable,2018-07-01,Spain,Russia,1,1,Draw,True,1,1,3,4,Luzhniki Stadium,Moscow,Russia
+M-2018-52,2018,round of 16,not applicable,2018-07-01,Croatia,Denmark,1,1,Draw,True,1,1,3,2,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+M-2018-53,2018,round of 16,not applicable,2018-07-02,Brazil,Mexico,2,0,Brazil,False,0,0,0,0,Samara Arena,Samara,Russia
+M-2018-54,2018,round of 16,not applicable,2018-07-02,Belgium,Japan,3,2,Belgium,False,0,0,0,0,Rostov Arena,Rostov-on-Don,Russia
+M-2018-55,2018,round of 16,not applicable,2018-07-03,Sweden,Switzerland,1,0,Sweden,False,0,0,0,0,Krestovsky Stadium,Saint Petersburg,Russia
+M-2018-56,2018,round of 16,not applicable,2018-07-03,Colombia,England,1,1,Draw,True,1,1,3,4,Otkritie Arena,Moscow,Russia
+M-2018-57,2018,quarter-finals,not applicable,2018-07-06,Uruguay,France,0,2,France,False,0,0,0,0,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+M-2018-58,2018,quarter-finals,not applicable,2018-07-06,Brazil,Belgium,1,2,Belgium,False,0,0,0,0,Kazan Arena,Kazan,Russia
+M-2018-59,2018,quarter-finals,not applicable,2018-07-07,Sweden,England,0,2,England,False,0,0,0,0,Samara Arena,Samara,Russia
+M-2018-60,2018,quarter-finals,not applicable,2018-07-07,Russia,Croatia,2,2,Draw,True,1,1,3,4,Fisht Olympic Stadium,Sochi,Russia
+M-2018-61,2018,semi-finals,not applicable,2018-07-10,France,Belgium,1,0,France,False,0,0,0,0,Krestovsky Stadium,Saint Petersburg,Russia
+M-2018-62,2018,semi-finals,not applicable,2018-07-11,Croatia,England,2,1,Croatia,False,1,0,0,0,Luzhniki Stadium,Moscow,Russia
+M-2018-63,2018,third-place match,not applicable,2018-07-14,Belgium,England,2,0,Belgium,False,0,0,0,0,Krestovsky Stadium,Saint Petersburg,Russia
+M-2018-64,2018,final,not applicable,2018-07-15,France,Croatia,4,2,France,False,0,0,0,0,Luzhniki Stadium,Moscow,Russia
+M-2022-01,2022,group stage,Group A,2022-11-20,Qatar,Ecuador,0,2,Ecuador,False,0,0,0,0,Al Bayt Stadium,Al Khor,Qatar
+M-2022-02,2022,group stage,Group B,2022-11-21,England,Iran,6,2,England,False,0,0,0,0,Khalifa International Stadium,Al Rayyan,Qatar
+M-2022-03,2022,group stage,Group A,2022-11-21,Senegal,Netherlands,0,2,Netherlands,False,0,0,0,0,Al Thumama Stadium,Doha,Qatar
+M-2022-04,2022,group stage,Group B,2022-11-21,United States,Wales,1,1,Draw,True,0,0,0,0,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+M-2022-05,2022,group stage,Group C,2022-11-22,Argentina,Saudi Arabia,1,2,Saudi Arabia,False,0,0,0,0,Lusail Stadium,Lusail,Qatar
+M-2022-06,2022,group stage,Group D,2022-11-22,Denmark,Tunisia,0,0,Draw,True,0,0,0,0,Education City Stadium,Al Rayyan,Qatar
+M-2022-07,2022,group stage,Group C,2022-11-22,Mexico,Poland,0,0,Draw,True,0,0,0,0,Stadium 974,Doha,Qatar
+M-2022-08,2022,group stage,Group D,2022-11-22,France,Australia,4,1,France,False,0,0,0,0,Al Janoub Stadium,Al Wakrah,Qatar
+M-2022-09,2022,group stage,Group F,2022-11-23,Morocco,Croatia,0,0,Draw,True,0,0,0,0,Al Bayt Stadium,Al Khor,Qatar
+M-2022-10,2022,group stage,Group E,2022-11-23,Germany,Japan,1,2,Japan,False,0,0,0,0,Khalifa International Stadium,Al Rayyan,Qatar
+M-2022-11,2022,group stage,Group E,2022-11-23,Spain,Costa Rica,7,0,Spain,False,0,0,0,0,Al Thumama Stadium,Doha,Qatar
+M-2022-12,2022,group stage,Group F,2022-11-23,Belgium,Canada,1,0,Belgium,False,0,0,0,0,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+M-2022-13,2022,group stage,Group G,2022-11-24,Switzerland,Cameroon,1,0,Switzerland,False,0,0,0,0,Al Janoub Stadium,Al Wakrah,Qatar
+M-2022-14,2022,group stage,Group H,2022-11-24,Uruguay,South Korea,0,0,Draw,True,0,0,0,0,Education City Stadium,Al Rayyan,Qatar
+M-2022-15,2022,group stage,Group H,2022-11-24,Portugal,Ghana,3,2,Portugal,False,0,0,0,0,Stadium 974,Doha,Qatar
+M-2022-16,2022,group stage,Group G,2022-11-24,Brazil,Serbia,2,0,Brazil,False,0,0,0,0,Lusail Stadium,Lusail,Qatar
+M-2022-17,2022,group stage,Group B,2022-11-25,Wales,Iran,0,2,Iran,False,0,0,0,0,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+M-2022-18,2022,group stage,Group A,2022-11-25,Qatar,Senegal,1,3,Senegal,False,0,0,0,0,Al Thumama Stadium,Doha,Qatar
+M-2022-19,2022,group stage,Group A,2022-11-25,Netherlands,Ecuador,1,1,Draw,True,0,0,0,0,Khalifa International Stadium,Al Rayyan,Qatar
+M-2022-20,2022,group stage,Group B,2022-11-25,England,United States,0,0,Draw,True,0,0,0,0,Al Bayt Stadium,Al Khor,Qatar
+M-2022-21,2022,group stage,Group D,2022-11-26,Tunisia,Australia,0,1,Australia,False,0,0,0,0,Al Janoub Stadium,Al Wakrah,Qatar
+M-2022-22,2022,group stage,Group C,2022-11-26,Poland,Saudi Arabia,2,0,Poland,False,0,0,0,0,Education City Stadium,Al Rayyan,Qatar
+M-2022-23,2022,group stage,Group D,2022-11-26,France,Denmark,2,1,France,False,0,0,0,0,Stadium 974,Doha,Qatar
+M-2022-24,2022,group stage,Group C,2022-11-26,Argentina,Mexico,2,0,Argentina,False,0,0,0,0,Lusail Stadium,Lusail,Qatar
+M-2022-25,2022,group stage,Group E,2022-11-27,Japan,Costa Rica,0,1,Costa Rica,False,0,0,0,0,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+M-2022-26,2022,group stage,Group F,2022-11-27,Belgium,Morocco,0,2,Morocco,False,0,0,0,0,Al Thumama Stadium,Doha,Qatar
+M-2022-27,2022,group stage,Group F,2022-11-27,Croatia,Canada,4,1,Croatia,False,0,0,0,0,Khalifa International Stadium,Al Rayyan,Qatar
+M-2022-28,2022,group stage,Group E,2022-11-27,Spain,Germany,1,1,Draw,True,0,0,0,0,Al Bayt Stadium,Al Khor,Qatar
+M-2022-29,2022,group stage,Group G,2022-11-28,Cameroon,Serbia,3,3,Draw,True,0,0,0,0,Al Janoub Stadium,Al Wakrah,Qatar
+M-2022-30,2022,group stage,Group H,2022-11-28,South Korea,Ghana,2,3,Ghana,False,0,0,0,0,Education City Stadium,Al Rayyan,Qatar
+M-2022-31,2022,group stage,Group G,2022-11-28,Brazil,Switzerland,1,0,Brazil,False,0,0,0,0,Stadium 974,Doha,Qatar
+M-2022-32,2022,group stage,Group H,2022-11-28,Portugal,Uruguay,2,0,Portugal,False,0,0,0,0,Lusail Stadium,Lusail,Qatar
+M-2022-33,2022,group stage,Group A,2022-11-29,Ecuador,Senegal,1,2,Senegal,False,0,0,0,0,Khalifa International Stadium,Al Rayyan,Qatar
+M-2022-34,2022,group stage,Group A,2022-11-29,Netherlands,Qatar,2,0,Netherlands,False,0,0,0,0,Al Bayt Stadium,Al Khor,Qatar
+M-2022-35,2022,group stage,Group B,2022-11-29,Iran,United States,0,1,United States,False,0,0,0,0,Al Thumama Stadium,Doha,Qatar
+M-2022-36,2022,group stage,Group B,2022-11-29,Wales,England,0,3,England,False,0,0,0,0,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+M-2022-37,2022,group stage,Group D,2022-11-30,Australia,Denmark,1,0,Australia,False,0,0,0,0,Al Janoub Stadium,Al Wakrah,Qatar
+M-2022-38,2022,group stage,Group D,2022-11-30,Tunisia,France,1,0,Tunisia,False,0,0,0,0,Education City Stadium,Al Rayyan,Qatar
+M-2022-39,2022,group stage,Group C,2022-11-30,Poland,Argentina,0,2,Argentina,False,0,0,0,0,Stadium 974,Doha,Qatar
+M-2022-40,2022,group stage,Group C,2022-11-30,Saudi Arabia,Mexico,1,2,Mexico,False,0,0,0,0,Lusail Stadium,Lusail,Qatar
+M-2022-41,2022,group stage,Group F,2022-12-01,Canada,Morocco,1,2,Morocco,False,0,0,0,0,Al Thumama Stadium,Doha,Qatar
+M-2022-42,2022,group stage,Group F,2022-12-01,Croatia,Belgium,0,0,Draw,True,0,0,0,0,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+M-2022-43,2022,group stage,Group E,2022-12-01,Costa Rica,Germany,2,4,Germany,False,0,0,0,0,Al Bayt Stadium,Al Khor,Qatar
+M-2022-44,2022,group stage,Group E,2022-12-01,Japan,Spain,2,1,Japan,False,0,0,0,0,Khalifa International Stadium,Al Rayyan,Qatar
+M-2022-45,2022,group stage,Group H,2022-12-02,Ghana,Uruguay,0,2,Uruguay,False,0,0,0,0,Al Janoub Stadium,Al Wakrah,Qatar
+M-2022-46,2022,group stage,Group H,2022-12-02,South Korea,Portugal,2,1,South Korea,False,0,0,0,0,Education City Stadium,Al Rayyan,Qatar
+M-2022-47,2022,group stage,Group G,2022-12-02,Cameroon,Brazil,1,0,Cameroon,False,0,0,0,0,Lusail Stadium,Lusail,Qatar
+M-2022-48,2022,group stage,Group G,2022-12-02,Serbia,Switzerland,2,3,Switzerland,False,0,0,0,0,Stadium 974,Doha,Qatar
+M-2022-49,2022,round of 16,not applicable,2022-12-03,Netherlands,United States,3,1,Netherlands,False,0,0,0,0,Khalifa International Stadium,Al Rayyan,Qatar
+M-2022-50,2022,round of 16,not applicable,2022-12-03,Argentina,Australia,2,1,Argentina,False,0,0,0,0,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+M-2022-51,2022,round of 16,not applicable,2022-12-04,France,Poland,3,1,France,False,0,0,0,0,Al Thumama Stadium,Doha,Qatar
+M-2022-52,2022,round of 16,not applicable,2022-12-04,England,Senegal,3,0,England,False,0,0,0,0,Al Bayt Stadium,Al Khor,Qatar
+M-2022-53,2022,round of 16,not applicable,2022-12-05,Japan,Croatia,1,1,Draw,True,1,1,1,3,Al Janoub Stadium,Al Wakrah,Qatar
+M-2022-54,2022,round of 16,not applicable,2022-12-05,Brazil,South Korea,4,1,Brazil,False,0,0,0,0,Stadium 974,Doha,Qatar
+M-2022-55,2022,round of 16,not applicable,2022-12-06,Morocco,Spain,0,0,Draw,True,1,1,3,0,Education City Stadium,Al Rayyan,Qatar
+M-2022-56,2022,round of 16,not applicable,2022-12-06,Portugal,Switzerland,6,1,Portugal,False,0,0,0,0,Lusail Stadium,Lusail,Qatar
+M-2022-57,2022,quarter-finals,not applicable,2022-12-09,Croatia,Brazil,1,1,Draw,True,1,1,4,2,Education City Stadium,Al Rayyan,Qatar
+M-2022-58,2022,quarter-finals,not applicable,2022-12-09,Netherlands,Argentina,2,2,Draw,True,1,1,3,4,Lusail Stadium,Lusail,Qatar
+M-2022-59,2022,quarter-finals,not applicable,2022-12-10,Morocco,Portugal,1,0,Morocco,False,0,0,0,0,Al Thumama Stadium,Doha,Qatar
+M-2022-60,2022,quarter-finals,not applicable,2022-12-10,England,France,1,2,France,False,0,0,0,0,Al Bayt Stadium,Al Khor,Qatar
+M-2022-61,2022,semi-finals,not applicable,2022-12-13,Argentina,Croatia,3,0,Argentina,False,0,0,0,0,Lusail Stadium,Lusail,Qatar
+M-2022-62,2022,semi-finals,not applicable,2022-12-14,France,Morocco,2,0,France,False,0,0,0,0,Al Bayt Stadium,Al Khor,Qatar
+M-2022-63,2022,third-place match,not applicable,2022-12-17,Croatia,Morocco,2,1,Croatia,False,0,0,0,0,Khalifa International Stadium,Al Rayyan,Qatar
+M-2022-64,2022,final,not applicable,2022-12-18,Argentina,France,3,3,Draw,True,1,1,4,2,Lusail Stadium,Lusail,Qatar
