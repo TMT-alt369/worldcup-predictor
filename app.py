@@ -2952,7 +2952,7 @@ def live_matches_page() -> None:
     st.markdown(f"<meta http-equiv='refresh' content='{refresh_seconds}'>", unsafe_allow_html=True)
 
     target_date = pd.Timestamp.now(tz="Asia/Taipei").date()
-    live_matches, live_events, data_source, live_debug = load_live_matches_with_debug(
+    live_matches, live_events, data_source, _live_debug = load_live_matches_with_debug(
         st.secrets,
         live_matches_df,
         live_events_df,
@@ -2960,24 +2960,11 @@ def live_matches_page() -> None:
     )
 
     is_mock_source = "mock" in str(data_source).lower() or "展示" in str(data_source)
-    st.caption(f"時區：台灣時間（UTC+8）｜每 {refresh_seconds} 秒自動刷新｜資料來源：{data_source}")
     if is_mock_source:
-        st.warning("目前為展示資料／模擬即時賽況，非真實即時比分。請在 Streamlit Secrets 設定 FOOTBALL_API_KEY 以啟用 API-Football。")
+        st.warning("🟡 展示資料（目前 API 無可用賽事）")
     else:
-        st.success("目前資料來源：API-Football 即時資料。")
-
-    with st.expander("API 連線診斷", expanded=is_mock_source):
-        debug_rows = [
-            {"項目": "程式讀取的 Secret 名稱", "結果": str(live_debug.get("secret_name", "FOOTBALL_API_KEY"))},
-            {"項目": "Secret 是否存在", "結果": "是" if live_debug.get("secret_exists") else "否"},
-            {"項目": "API 測試是否成功", "結果": "是" if live_debug.get("api_test_success") else "否"},
-            {"項目": "HTTP 狀態碼", "結果": str(live_debug.get("http_status") or "未呼叫 / 無回應")},
-            {"項目": "API 回傳內容摘要", "結果": str(live_debug.get("api_summary") or "無摘要")},
-            {"項目": "查詢參數", "結果": str(live_debug.get("api_params") or "未呼叫 API")},
-            {"項目": "Fallback 原因", "結果": str(live_debug.get("fallback_reason") or "未使用 fallback")},
-            {"項目": "錯誤原因", "結果": str(live_debug.get("error") or "無")},
-        ]
-        st.dataframe(pd.DataFrame(debug_rows), use_container_width=True, hide_index=True)
+        st.success("🟢 API-Football 即時資料")
+    st.caption(f"時區：台灣時間（UTC+8）｜每 {refresh_seconds} 秒自動刷新")
 
     if live_matches.empty:
         st.info("目前沒有可顯示的即時賽況資料。")
