@@ -574,6 +574,7 @@ inject_theme()
 
 PAGE_OPTIONS = [
     "首頁儀表板",
+    "世界盃賽程表",
     "賽程頁",
     "單場分析頁",
     "投注分析頁",
@@ -916,9 +917,18 @@ def dashboard_page() -> None:
 
 
 def fixtures_page() -> None:
-    page_header("賽程頁", "查看測試賽程、基本賠率，並直接選擇比賽查看分析摘要")
-    stage = st.selectbox("篩選階段", ["全部"] + sorted(fixtures_df["stage"].unique().tolist()))
+    page_header("世界盃賽程表", "2026 世界盃賽程、台灣時間、階段篩選與球隊搜尋")
+    st.caption("若官方完整分組或淘汰賽對戰尚未齊全，本頁使用本地展示資料／模擬資料補足頁面展示。")
+    cols = st.columns([1, 1.4])
+    stage = cols[0].selectbox("篩選階段", ["全部"] + sorted(fixtures_df["stage"].unique().tolist()))
+    keyword = cols[1].text_input("搜尋球隊", "")
     filtered = fixture_odds_df if stage == "全部" else fixture_odds_df[fixture_odds_df["stage"] == stage]
+    if keyword.strip():
+        term = keyword.strip()
+        filtered = filtered[
+            filtered["home_team"].str.contains(term, case=False, na=False)
+            | filtered["away_team"].str.contains(term, case=False, na=False)
+        ]
     st.dataframe(fixtures_with_flags(filtered), use_container_width=True, hide_index=True)
     st.subheader("快速分析")
     row = selected_fixture("選擇要分析的比賽")
@@ -2475,6 +2485,8 @@ def presentation_mode_page() -> None:
 
 if page == "首頁儀表板":
     dashboard_page()
+elif page == "世界盃賽程表":
+    fixtures_page()
 elif page == "賽程頁":
     fixtures_page()
 elif page == "單場分析頁":
