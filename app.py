@@ -447,6 +447,88 @@ def inject_theme() -> None:
                 margin-top: 8px;
             }}
         }}
+        @media (max-width: 768px) {{
+            .block-container {{
+                padding: 1rem 0.75rem 5.2rem;
+                max-width: 100%;
+            }}
+            .hero {{
+                min-height: auto;
+                padding: 18px;
+                gap: 16px;
+                margin-bottom: 16px;
+            }}
+            .hero-title {{
+                font-size: 1.92rem;
+                line-height: 1.18;
+            }}
+            .hero-copy {{
+                font-size: 0.98rem;
+                line-height: 1.62;
+            }}
+            .hero-visual {{
+                min-height: 180px;
+            }}
+            .trophy {{
+                font-size: 5rem;
+            }}
+            .page-title {{
+                padding: 12px 0 8px;
+                margin-bottom: 14px;
+            }}
+            .page-title h1 {{
+                font-size: 1.55rem;
+            }}
+            .page-title p {{
+                font-size: 0.95rem;
+            }}
+            .display-card,
+            .confidence-wrap {{
+                padding: 16px;
+                margin-bottom: 12px;
+            }}
+            .card-value {{
+                font-size: 1.45rem;
+                overflow-wrap: anywhere;
+            }}
+            .score-card {{
+                padding: 28px 12px;
+                margin-left: auto;
+                margin-right: auto;
+            }}
+            .score-teams {{
+                font-size: 1rem;
+                line-height: 1.45;
+            }}
+            .score-value {{
+                font-size: 4rem;
+                text-align: center;
+            }}
+            div[data-testid="stDataFrame"] {{
+                max-width: 100%;
+                overflow-x: auto;
+            }}
+            div[data-testid="stDataFrame"] iframe {{
+                max-width: 100%;
+            }}
+            [data-testid="stHorizontalBlock"] {{
+                gap: 0.7rem;
+            }}
+            [data-testid="stSidebar"] [role="radiogroup"] label {{
+                padding: 9px 10px;
+                font-size: 0.96rem;
+                line-height: 1.35;
+            }}
+            .js-plotly-plot,
+            .plot-container,
+            .svg-container {{
+                max-width: 100% !important;
+            }}
+            .footer {{
+                padding-bottom: 42px;
+                font-size: 0.78rem;
+            }}
+        }}
         </style>
         """,
         unsafe_allow_html=True,
