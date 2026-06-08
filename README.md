@@ -84,7 +84,7 @@ Python 依賴：
 requirements.txt
 ```
 
-本專案目前不需要 `.env`、API key 或 Streamlit secrets。資料皆使用 repo 內的本地 CSV。
+本專案不使用 `.env`，也不會把 API key 寫入公開檔案。即時賽況若需要真實資料，請透過 Streamlit Secrets 設定 `FOOTBALL_API_KEY`；未設定時會自動使用 repo 內的本地 CSV 展示資料。
 
 建議在 Streamlit Community Cloud 的 Advanced settings 選擇 Python 3.12。
 
@@ -136,18 +136,15 @@ Manage app -> Settings -> Secrets
 
 加入以下任一組 key：
 
-```toml
-FOOTBALL_DATA_API_KEY = "你的 football-data.org API key"
-API_FOOTBALL_KEY = "你的 API-Football API key"
-```
+請新增一個 Secret 欄位：`FOOTBALL_API_KEY`。欄位值填入你在 API-Football 取得的私密 key，請不要提交到 GitHub。
 
-若兩個 key 都存在，V7 會優先嘗試 `API-Football` 以取得事件與技術統計，失敗或無資料時再嘗試 `football-data.org`，最後才使用本地 fallback CSV。
+V7 會優先嘗試 `API-Football` 以取得事件與技術統計，失敗、無資料或未設定 Secrets 時會使用本地 fallback CSV。
 
 ## V7 世界盃智慧預測中心
 
 V7 延伸既有 V1~V5，不重做模型主流程，新增：
 
-- 真實即時資訊：`API_FOOTBALL_KEY` 存在時優先使用 API-Football 讀取今日比賽、比分、比賽狀態、事件與技術統計；無 key、API 無資料或額度不足時使用本地 fallback。
+- 真實即時資訊：Streamlit Secrets 中存在 `FOOTBALL_API_KEY` 時優先使用 API-Football 讀取今日比賽、比分、比賽狀態、事件與技術統計；無 key、API 無資料或額度不足時使用本地 fallback。
 - 球員資料庫：新增 `data/players_2026.csv`，欄位包含姓名、國籍、位置、年齡、身高、身價、國家隊出賽與進球、資料來源。若未匯入官方完整名單，頁面會標示 fallback 資料來源。
 - 冠軍機率 TOP20：使用 Elo Rating、Poisson 進球模型與 10000 次 Monte Carlo Simulation，顯示排名、國旗、Elo 與奪冠率。
 - 小組出線機率分析：以 Plotly 長條圖與排名表顯示各隊小組出線率。
@@ -170,11 +167,7 @@ V8 將球員資料庫升級為真實 squad-list 資料版本：
 
 API-Football secrets 可額外設定：
 
-```toml
-API_FOOTBALL_KEY = "你的 API-Football API key"
-API_FOOTBALL_LEAGUE_ID = "1"
-API_FOOTBALL_SEASON = "2026"
-```
+請在 Streamlit Cloud Secrets 新增 `FOOTBALL_API_KEY` 欄位；欄位值只放在 Streamlit Cloud，不要寫入 repo。
 
 若沒有 API key，即時賽況會使用 Fallback Dataset，頁面會清楚標示資料來源。
 

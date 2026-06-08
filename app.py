@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from worldcup_predictor.api_client import load_live_data
+from utils.live_api import load_live_matches_from_secrets as load_live_data
 from worldcup_predictor.backtest import backtest
 from worldcup_predictor.betting import analyze_1x2
 from worldcup_predictor.data_loader import (
@@ -2940,6 +2940,116 @@ def presentation_mode_page() -> None:
     chart = px.bar(top5, x="champion_probability", y="team_display", orientation="h", text="label", color="champion_probability", color_continuous_scale=["#415a77", GOLD_LIGHT])
     chart.update_xaxes(tickformat=".0%")
     chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+    st.plotly_chart(chart, use_container_width=True)
+
+
+def live_matches_page() -> None:
+    page_header("即時實況", "使用 Streamlit Secrets 串接 API-Football；未設定金鑰或 API 無資料時自動使用展示資料。")
+    refresh_seconds = 45
+    st.markdown(f"<meta http-equiv='refresh' content='{refresh_seconds}'>", unsafe_allow_html=True)
+
+    target_date = pd.Timestamp.now(tz="Asia/Taipei").date()
+    live_matches, live_events, data_source = load_live_data(
+        st.secrets,
+        live_matches_df,
+        live_events_df,
+        target_date=target_date,
+    )
+
+    is_mock_source = "mock" in str(data_source).lower() or "展示" in str(data_source)
+    st.caption(f"時區：台灣時間（UTC+8）｜每 {refresh_seconds} 秒自動刷新｜資料來源：{data_source}")
+    if is_mock_source:
+        st.warning("目前為展示資料／模擬即時賽況，非真實即時比分。請在 Streamlit Secrets 設定 FOOTBALL_API_KEY 以啟用 API-Football。")
+    else:
+        st.success("目前資料來源：API-Football 即時資料。")
+
+    if live_matches.empty:
+        st.info("目前沒有可顯示的即時賽況資料。")
+        return
+
+    live_matches = live_matches.copy()
+    live_matches["live_match_id"] = live_matches["live_match_id"].astype(str)
+    live_events = live_events.copy()
+    if not live_events.empty and "live_match_id" in live_events.columns:
+        live_events["live_match_id"] = live_events["live_match_id"].astype(str)
+
+    def option_label(row: pd.Series) -> str:
+        return (
+            f"{live_time_text(row.get('scheduled_time'))} | "
+            f"{team_name(row.get('home_team', 'TBD'))} "
+            f"{row.get('home_score', 0)}-{row.get('away_score', 0)} "
+            f"{team_name(row.get('away_team', 'TBD'))}"
+        )
+
+    labels = {option_label(row): row["live_match_id"] for _, row in live_matches.iterrows()}
+    selected = st.selectbox("選擇比賽", list(labels.keys()))
+    live_match_id = labels[selected]
+    row = live_matches[live_matches["live_match_id"] == live_match_id].iloc[0]
+    scheduled_time = live_time_text(row.get("scheduled_time"))
+    venue = row.get("venue", "未提供")
+
+    st.markdown(
+        f"""
+        <div class="display-card score-card">
+          <div class="score-teams">{html.escape(team_name(row.get('home_team', 'TBD')))} vs {html.escape(team_name(row.get('away_team', 'TBD')))}</div>
+          <div class="score-value">{row.get('home_score', 0)} : {row.get('away_score', 0)}</div>
+          <div class="score-note">比賽時間：{html.escape(scheduled_time)} ｜ 狀態：{html.escape(str(row.get('status', '未提供')))} ｜ 分鐘：{int(row.get('minute', 0) or 0)}' ｜ 場地：{html.escape(str(venue))}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    stat_cols = st.columns(3)
+    with stat_cols[0]:
+        display_card("射門數", f"{int(row.get('home_shots', 0))} : {int(row.get('away_shots', 0))}")
+    with stat_cols[1]:
+        display_card("控球率", f"{int(row.get('home_possession', 50))}% : {int(row.get('away_possession', 50))}%")
+    with stat_cols[2]:
+        display_card("角球", f"{int(row.get('home_corners', 0))} : {int(row.get('away_corners', 0))}")
+
+    st.subheader("比賽事件")
+    if live_events.empty or "live_match_id" not in live_events.columns:
+        events = pd.DataFrame()
+    else:
+        events = live_events[live_events["live_match_id"] == live_match_id].copy()
+
+    if events.empty:
+        st.info("目前沒有進球、黃牌、紅牌或換人事件資料。")
+    else:
+        events["事件"] = events["event_type"].map(live_event_label)
+        events["球隊"] = events["team"].map(lambda team: f"{flag(team)} {team_name(team, with_flag=False)}")
+        event_columns = ["minute", "事件", "球隊", "player", "detail"]
+        available_event_columns = [column for column in event_columns if column in events.columns]
+        st.dataframe(
+            events[available_event_columns].rename(
+                columns={
+                    "minute": "時間",
+                    "player": "球員",
+                    "detail": "說明",
+                }
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    st.subheader("技術統計")
+    stats = pd.DataFrame(
+        [
+            {"指標": "射門數", row["home_team"]: row.get("home_shots", 0), row["away_team"]: row.get("away_shots", 0)},
+            {"指標": "控球率", row["home_team"]: row.get("home_possession", 50), row["away_team"]: row.get("away_possession", 50)},
+            {"指標": "角球", row["home_team"]: row.get("home_corners", 0), row["away_team"]: row.get("away_corners", 0)},
+        ]
+    )
+    stats_long = stats.melt(id_vars="指標", var_name="球隊", value_name="數值")
+    chart = px.bar(
+        stats_long,
+        x="指標",
+        y="數值",
+        color="球隊",
+        barmode="group",
+        color_discrete_sequence=[GOLD, "#8aa0c3"],
+    )
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
     st.plotly_chart(chart, use_container_width=True)
 
 

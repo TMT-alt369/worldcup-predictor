@@ -234,7 +234,7 @@ def load_live_data(
     fallback_events: pd.DataFrame,
     target_date: date | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, str]:
-    api_football_key = secret_value(secrets, "API_FOOTBALL_KEY")
+    api_football_key = secret_value(secrets, "FOOTBALL_API_KEY")
     api_football_league = secret_value(secrets, "API_FOOTBALL_LEAGUE_ID") or "1"
     api_football_season = secret_value(secrets, "API_FOOTBALL_SEASON") or "2026"
     football_data_key = secret_value(secrets, "FOOTBALL_DATA_API_KEY")
