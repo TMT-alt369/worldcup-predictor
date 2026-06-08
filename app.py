@@ -21,6 +21,7 @@ from worldcup_predictor.data_loader import (
     load_worldcup_team_stats,
     load_worldcup_top4,
 )
+from worldcup_predictor.elo import build_elo_rankings
 from worldcup_predictor.history import head_to_head_record, team_summary, top_team_stats
 from worldcup_predictor.model import predict_match, prediction_to_frame
 from worldcup_predictor.tournament import run_tournament_simulation
@@ -576,6 +577,7 @@ PAGE_OPTIONS = [
     "投注分析頁",
     "模型回測頁",
     "冠軍機率預測",
+    "Elo 世界排名",
     "即時賽況",
     "歷史世界盃數據分析",
     "國家隊世界盃戰績",
@@ -1257,6 +1259,77 @@ def champion_probability_page() -> None:
     st.plotly_chart(line, use_container_width=True)
 
 
+def elo_ranking_page() -> None:
+    page_header("Elo 世界排名", "以本地 team_meta.csv 的 Elo Rating 建立 2026 世界盃參賽隊伍排名")
+    st.info(
+        "Elo Rating 用於衡量球隊相對強度。本頁排名資料為專題展示用本地資料，"
+        "可作為單場預測與冠軍機率模擬的輔助參考，不代表官方 FIFA 排名。"
+    )
+
+    rankings = build_elo_rankings(team_meta_df)
+    top10 = rankings.head(10).copy()
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("排名隊伍", str(len(rankings)), "2026 參賽隊伍")
+    with cols[1]:
+        leader = rankings.iloc[0]
+        display_card("Elo 第一名", leader["team_display"], f"{int(leader['elo'])} 分")
+    with cols[2]:
+        display_card("平均 Elo", f"{rankings['elo'].mean():.0f}", "展示資料")
+    with cols[3]:
+        display_card("資料來源", "team_meta.csv", "本地 Elo 欄位")
+
+    st.subheader("前 10 名排行榜")
+    chart_df = top10.sort_values("elo", ascending=True)
+    chart = px.bar(
+        chart_df,
+        x="elo",
+        y="team_display",
+        orientation="h",
+        text="elo",
+        color="elo",
+        color_continuous_scale=["#415a77", GOLD_LIGHT],
+        labels={"elo": "Elo 分數", "team_display": "球隊"},
+    )
+    chart.update_traces(textposition="outside")
+    chart.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color=INK,
+        coloraxis_showscale=False,
+        margin=dict(l=10, r=40, t=10, b=10),
+    )
+    st.plotly_chart(chart, use_container_width=True)
+
+    st.subheader("完整 Elo 排名表")
+    sort_mode = st.selectbox("排序方式", ["Elo 高到低", "Elo 低到高"])
+    table = rankings.sort_values("elo", ascending=sort_mode == "Elo 低到高").copy()
+    st.dataframe(
+        table[
+            [
+                "rank",
+                "team_display",
+                "country_code",
+                "elo",
+                "elo_tier",
+                "fifa_ranking",
+            ]
+        ].rename(
+            columns={
+                "rank": "排名",
+                "team_display": "球隊",
+                "country_code": "國碼",
+                "elo": "Elo 分數",
+                "elo_tier": "級距",
+                "fifa_ranking": "FIFA 排名",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
 def live_event_label(event_type: str) -> str:
     icons = {
         "Goal": "⚽",
@@ -1487,6 +1560,8 @@ elif page == "模型回測頁":
     model_backtest_page()
 elif page == "冠軍機率預測":
     champion_probability_page()
+elif page == "Elo 世界排名":
+    elo_ranking_page()
 elif page == "即時賽況":
     live_matches_page()
 elif page == "歷史世界盃數據分析":
