@@ -17,6 +17,7 @@ def ensure_player_columns(players: pd.DataFrame) -> pd.DataFrame:
         "jersey_number": 0,
         "age": 0,
         "height_cm": 0,
+        "preferred_foot": "待資料源補齊",
         "market_value_eur_m": 0.0,
         "club": "待官方名單公布",
         "nationality": "",
@@ -55,6 +56,8 @@ def player_database(players: pd.DataFrame, team_meta: pd.DataFrame) -> pd.DataFr
     data["nationality"] = data["nationality"].replace("", pd.NA).fillna(data["team_zh"])
     data["national_team"] = data["flag_emoji"] + " " + data["team_zh"]
     data["position_zh"] = data["position"].map(POSITION_ZH).fillna(data["position"])
+    data["market_value_eur_m"] = pd.to_numeric(data["market_value_eur_m"], errors="coerce").fillna(0)
+    data["height_cm"] = pd.to_numeric(data["height_cm"], errors="coerce").fillna(0).astype(int)
 
     if (data["jersey_number"].fillna(0) == 0).all():
         data["jersey_number"] = data.groupby("team").cumcount() + 7
@@ -69,6 +72,7 @@ def player_database(players: pd.DataFrame, team_meta: pd.DataFrame) -> pd.DataFr
         "position_zh",
         "age",
         "height_cm",
+        "preferred_foot",
         "market_value_eur_m",
         "club",
         "team",

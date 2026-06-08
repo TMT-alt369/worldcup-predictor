@@ -100,9 +100,9 @@ def load_players() -> pd.DataFrame:
         players["data_source"] = "local_fallback_players"
     if "squad_status" not in players.columns:
         players["squad_status"] = "fallback_demo_partial"
-    players["goal_rate"] = (
-        players["national_goals"] / players["national_caps"].replace(0, pd.NA)
-    ).fillna(0)
+    caps = pd.to_numeric(players["national_caps"], errors="coerce").replace(0, pd.NA)
+    goals = pd.to_numeric(players["national_goals"], errors="coerce").fillna(0)
+    players["goal_rate"] = (goals / caps).astype("Float64").fillna(0).astype(float)
     return players
 
 

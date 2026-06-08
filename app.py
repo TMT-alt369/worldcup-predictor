@@ -581,10 +581,12 @@ PAGE_OPTIONS = [
     "冠軍機率預測",
     "小組出線機率分析",
     "晉級機率分析",
+    "世界盃模擬器",
     "Elo 世界排名",
     "即時賽況",
     "球員資料庫",
     "國家隊資料中心",
+    "專題展示模式",
     "歷史世界盃數據分析",
     "國家隊世界盃戰績",
     "歷史交手分析",
@@ -1838,17 +1840,19 @@ def advancement_probability_page() -> None:
 
 
 def player_database_page() -> None:
-    page_header("球員資料庫", "V7 球員搜尋、國家篩選、位置篩選與互動式資料表")
-    st.info("若 API 尚未提供完整 2026 最終名單，本頁會使用本地 fallback 球員資料並保留資料來源欄位。")
-
+    page_header("球員資料庫", "V8 真實名單資料：關鍵字搜尋、國家/位置篩選、身價與年齡排序")
     database = player_database(players_df, team_meta_df)
+    source_text = database["data_source"].mode().iloc[0] if not database.empty else "無資料"
+    st.caption(f"資料來源：{source_text}｜目前載入 {len(database):,} 名球員、{database['team'].nunique()} 支國家隊")
+
     teams = ["全部"] + database["national_team"].dropna().sort_values().unique().tolist()
     positions = ["全部"] + database["position_zh"].dropna().sort_values().unique().tolist()
 
-    cols = st.columns([1.1, 1.0, 1.4])
+    cols = st.columns([1.0, 0.9, 1.2, 1.0])
     selected_team = cols[0].selectbox("國家隊", teams)
     selected_position = cols[1].selectbox("位置", positions)
     keyword = cols[2].text_input("輸入球員姓名", "")
+    sort_mode = cols[3].selectbox("排序", ["身價高到低", "身價低到高", "年齡高到低", "年齡低到高", "出賽多到少"])
 
     filtered = database.copy()
     if selected_team != "全部":
@@ -1857,6 +1861,15 @@ def player_database_page() -> None:
         filtered = filtered[filtered["position_zh"] == selected_position]
     if keyword.strip():
         filtered = filtered[filtered["player_name"].str.contains(keyword.strip(), case=False, na=False)]
+    sort_map = {
+        "身價高到低": ("market_value_eur_m", False),
+        "身價低到高": ("market_value_eur_m", True),
+        "年齡高到低": ("age", False),
+        "年齡低到高": ("age", True),
+        "出賽多到少": ("national_caps", False),
+    }
+    sort_column, ascending = sort_map[sort_mode]
+    filtered = filtered.sort_values(sort_column, ascending=ascending)
 
     cols = st.columns(4)
     with cols[0]:
@@ -1866,7 +1879,7 @@ def player_database_page() -> None:
     with cols[2]:
         display_card("平均年齡", f"{filtered['age'].mean():.1f}" if not filtered.empty else "0.0", "歲")
     with cols[3]:
-        display_card("總身價", f"€{filtered['market_value_eur_m'].sum():.1f}M", "fallback/API")
+        display_card("總身價", f"€{filtered['market_value_eur_m'].sum():.1f}M", "無資料以 0 計")
 
     table = filtered[
         [
@@ -1876,6 +1889,7 @@ def player_database_page() -> None:
             "position_zh",
             "age",
             "height_cm",
+            "preferred_foot",
             "market_value_eur_m",
             "club",
             "national_caps",
@@ -1894,6 +1908,7 @@ def player_database_page() -> None:
                 "position_zh": "位置",
                 "age": "年齡",
                 "height_cm": "身高(cm)",
+                "preferred_foot": "慣用腳",
                 "market_value_eur_m": "身價(百萬歐元)",
                 "club": "所屬俱樂部",
                 "national_caps": "國家隊出賽",
@@ -2232,6 +2247,181 @@ def player_database_page() -> None:
     )
 
 
+def national_team_center_page() -> None:
+    page_header("國家隊資料中心", "V8：完整名單、世界排名、Elo、總身價與各階段晉級率")
+    database = player_database(players_df, team_meta_df)
+    summary = squad_summary(database)
+    simulation_df = v7_simulation()[["team", *v7_stage_columns()]].copy()
+    summary = summary.merge(simulation_df, on="team", how="left")
+
+    teams = summary["national_team"].sort_values().tolist()
+    selected_team = st.selectbox("選擇國家隊", teams)
+    selected_summary = summary[summary["national_team"] == selected_team].iloc[0]
+    roster = database[database["team"] == selected_summary["team"]].copy()
+
+    cols = st.columns(6)
+    with cols[0]:
+        display_card("世界排名", str(int(selected_summary["fifa_ranking"])), "FIFA")
+    with cols[1]:
+        display_card("Elo Rating", str(int(selected_summary["elo"])), "模型評分")
+    with cols[2]:
+        display_card("平均年齡", f"{selected_summary['average_age']:.1f}", "歲")
+    with cols[3]:
+        display_card("總身價", f"€{selected_summary['total_market_value_eur_m']:.1f}M", "無資料以 0 計")
+    with cols[4]:
+        display_card("球員數", str(int(selected_summary["players"])), "名單")
+    with cols[5]:
+        display_card("奪冠率", format_percent(float(selected_summary["champion_probability"])), f"{V7_SIMULATIONS:,} 次")
+
+    stage_labels = v7_stage_labels()
+    stage_df = pd.DataFrame(
+        [(stage_labels[col], selected_summary[col]) for col in v7_stage_columns()],
+        columns=["階段", "機率"],
+    )
+    stage_df["百分比"] = stage_df["機率"].map(format_percent)
+    col_a, col_b = st.columns([1.1, 0.9])
+    with col_a:
+        chart = px.bar(
+            stage_df,
+            x="階段",
+            y="機率",
+            text="百分比",
+            color="機率",
+            color_continuous_scale=["#415a77", GOLD_LIGHT],
+            labels={"機率": "晉級機率"},
+        )
+        chart.update_traces(textposition="outside")
+        chart.update_yaxes(tickformat=".0%", range=[0, 1])
+        chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+        st.plotly_chart(chart, use_container_width=True)
+    with col_b:
+        position_chart = roster.groupby("position_zh", as_index=False)["player_name"].count()
+        pie = px.pie(position_chart, values="player_name", names="position_zh", hole=0.42, color_discrete_sequence=[GOLD, "#8aa0c3", "#28a745", "#dc3545"])
+        pie.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color=INK, legend_title_text="位置")
+        st.plotly_chart(pie, use_container_width=True)
+
+    table = roster[
+        [
+            "player_name",
+            "jersey_number",
+            "position_zh",
+            "age",
+            "height_cm",
+            "preferred_foot",
+            "market_value_eur_m",
+            "club",
+            "national_caps",
+            "national_goals",
+        ]
+    ].copy()
+    st.dataframe(
+        table.rename(
+            columns={
+                "player_name": "球員姓名",
+                "jersey_number": "背號",
+                "position_zh": "位置",
+                "age": "年齡",
+                "height_cm": "身高(cm)",
+                "preferred_foot": "慣用腳",
+                "market_value_eur_m": "身價(百萬歐元)",
+                "club": "所屬俱樂部",
+                "national_caps": "國家隊出賽",
+                "national_goals": "國家隊進球",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+def worldcup_simulator_page() -> None:
+    page_header("世界盃模擬器", "選擇任意國家隊與模擬次數，輸出奪冠率、決賽率、四強率、八強率")
+    simulations = st.radio("模擬次數", [1000, 5000, 10000], index=2, horizontal=True)
+    sim_df = cached_tournament_simulation(fixtures_df, team_meta_df, wc_team_stats_df, matches_df, int(simulations))
+    team_options = sim_df.sort_values("team_zh")["team_display"].tolist()
+    selected = st.selectbox("選擇國家隊", team_options)
+    selected_row = sim_df[sim_df["team_display"] == selected].iloc[0]
+    metrics = pd.DataFrame(
+        [
+            ("八強率", selected_row["round_8_probability"]),
+            ("四強率", selected_row["semi_final_probability"]),
+            ("決賽率", selected_row["final_probability"]),
+            ("奪冠率", selected_row["champion_probability"]),
+        ],
+        columns=["指標", "機率"],
+    )
+    metrics["百分比"] = metrics["機率"].map(format_percent)
+
+    cols = st.columns(4)
+    for col, (_, row) in zip(cols, metrics.iterrows()):
+        with col:
+            display_card(row["指標"], row["百分比"], f"{int(simulations):,} 次模擬")
+
+    bar = px.bar(metrics, x="指標", y="機率", text="百分比", color="機率", color_continuous_scale=["#415a77", GOLD_LIGHT])
+    bar.update_traces(textposition="outside")
+    bar.update_yaxes(tickformat=".0%", range=[0, 1])
+    bar.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+    st.plotly_chart(bar, use_container_width=True)
+
+    heat = sim_df.head(20)[["team_display", "round_8_probability", "semi_final_probability", "final_probability", "champion_probability"]].copy()
+    heat = heat.set_index("team_display").rename(columns={
+        "round_8_probability": "八強率",
+        "semi_final_probability": "四強率",
+        "final_probability": "決賽率",
+        "champion_probability": "奪冠率",
+    })
+    heatmap = px.imshow(heat, aspect="auto", color_continuous_scale=["#071426", GOLD_LIGHT], labels=dict(color="機率"))
+    heatmap.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(heatmap, use_container_width=True)
+
+
+def presentation_mode_page() -> None:
+    page_header("專題展示模式", "3 分鐘快速展示：排名、奪冠率、即時賽況、球員資料與國家隊比較")
+    sim_df = v7_simulation()
+    rankings = build_elo_rankings(team_meta_df).head(20)
+    player_db = player_database(players_df, team_meta_df)
+    live_matches, _, live_source = load_live_data(st.secrets, live_matches_df, live_events_df, target_date=pd.Timestamp.now(tz="Asia/Taipei").date())
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("球員資料", f"{len(player_db):,}", f"{player_db['team'].nunique()} 隊")
+    with cols[1]:
+        display_card("模擬次數", f"{V7_SIMULATIONS:,}", "Monte Carlo")
+    with cols[2]:
+        display_card("即時資料來源", live_source, "API/Fallback")
+    with cols[3]:
+        display_card("最高奪冠率", format_percent(float(sim_df.iloc[0]["champion_probability"])), sim_df.iloc[0]["team_display"])
+
+    left, right = st.columns(2)
+    with left:
+        st.subheader("世界排名 TOP20")
+        rank_chart = px.bar(rankings.sort_values("elo", ascending=True), x="elo", y="team_display", orientation="h", color="elo", color_continuous_scale=["#415a77", GOLD_LIGHT])
+        rank_chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+        st.plotly_chart(rank_chart, use_container_width=True)
+    with right:
+        st.subheader("奪冠機率 TOP20")
+        champ = sim_df.head(20).sort_values("champion_probability", ascending=True)
+        champ_chart = px.bar(champ, x="champion_probability", y="team_display", orientation="h", color="champion_probability", color_continuous_scale=["#415a77", GOLD_LIGHT])
+        champ_chart.update_xaxes(tickformat=".0%")
+        champ_chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+        st.plotly_chart(champ_chart, use_container_width=True)
+
+    st.subheader("即時賽況")
+    if live_matches.empty:
+        st.info("目前沒有即時賽況。")
+    else:
+        live_table = live_matches[["scheduled_time", "home_team", "home_score", "away_score", "away_team", "status"]].copy().head(6)
+        live_table["scheduled_time"] = live_table["scheduled_time"].map(live_time_text)
+        st.dataframe(live_table.rename(columns={"scheduled_time": "時間", "home_team": "主隊", "home_score": "主分", "away_score": "客分", "away_team": "客隊", "status": "狀態"}), use_container_width=True, hide_index=True)
+
+    st.subheader("國家隊比較")
+    compare = sim_df.head(12)[["team_display", "elo", "group_qualified_probability", "round_8_probability", "champion_probability"]].copy()
+    compare_heat = compare.set_index("team_display").rename(columns={"elo": "Elo", "group_qualified_probability": "小組出線率", "round_8_probability": "八強率", "champion_probability": "奪冠率"})
+    heatmap = px.imshow(compare_heat, aspect="auto", color_continuous_scale=["#071426", GOLD_LIGHT])
+    heatmap.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(heatmap, use_container_width=True)
+
+
 if page == "首頁儀表板":
     dashboard_page()
 elif page == "賽程頁":
@@ -2248,6 +2438,8 @@ elif page == "小組出線機率分析":
     group_qualification_page()
 elif page == "晉級機率分析":
     advancement_probability_page()
+elif page == "世界盃模擬器":
+    worldcup_simulator_page()
 elif page == "Elo 世界排名":
     elo_ranking_page()
 elif page == "即時賽況":
@@ -2256,6 +2448,8 @@ elif page == "球員資料庫":
     player_database_page()
 elif page == "國家隊資料中心":
     national_team_center_page()
+elif page == "專題展示模式":
+    presentation_mode_page()
 elif page == "歷史世界盃數據分析":
     worldcup_history_page()
 elif page == "國家隊世界盃戰績":

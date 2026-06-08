@@ -163,8 +163,13 @@ def api_football_fixture_statistics(api_key: str, fixture_id: str) -> dict[str, 
     }
 
 
-def api_football_matches(api_key: str, target_date: date | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
-    params = {}
+def api_football_matches(
+    api_key: str,
+    target_date: date | None = None,
+    league_id: str = "1",
+    season: str = "2026",
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    params = {"league": league_id, "season": season}
     if target_date is not None:
         params["date"] = target_date.isoformat()
     payload = request_json(
@@ -230,11 +235,18 @@ def load_live_data(
     target_date: date | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, str]:
     api_football_key = secret_value(secrets, "API_FOOTBALL_KEY")
+    api_football_league = secret_value(secrets, "API_FOOTBALL_LEAGUE_ID") or "1"
+    api_football_season = secret_value(secrets, "API_FOOTBALL_SEASON") or "2026"
     football_data_key = secret_value(secrets, "FOOTBALL_DATA_API_KEY")
 
     if api_football_key:
         try:
-            matches, events = api_football_matches(api_football_key, target_date)
+            matches, events = api_football_matches(
+                api_football_key,
+                target_date,
+                league_id=api_football_league,
+                season=api_football_season,
+            )
             if not matches.empty:
                 if events.empty:
                     events = pd.DataFrame(columns=fallback_events.columns)
