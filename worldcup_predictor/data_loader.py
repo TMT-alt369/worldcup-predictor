@@ -83,7 +83,10 @@ def load_worldcup_team_history() -> pd.DataFrame:
 
 
 def load_players() -> pd.DataFrame:
-    players = pd.read_csv(DATA_DIR / "players.csv")
+    source = DATA_DIR / "players_2026.csv"
+    if not source.exists():
+        source = DATA_DIR / "players.csv"
+    players = pd.read_csv(source)
     rename_map = {
         "team_en": "team",
         "caps": "national_caps",
@@ -93,6 +96,10 @@ def load_players() -> pd.DataFrame:
     players = players.rename(columns={k: v for k, v in rename_map.items() if k in players.columns})
     if "team_zh" not in players.columns:
         players["team_zh"] = players["team"]
+    if "data_source" not in players.columns:
+        players["data_source"] = "local_fallback_players"
+    if "squad_status" not in players.columns:
+        players["squad_status"] = "fallback_demo_partial"
     players["goal_rate"] = (
         players["national_goals"] / players["national_caps"].replace(0, pd.NA)
     ).fillna(0)

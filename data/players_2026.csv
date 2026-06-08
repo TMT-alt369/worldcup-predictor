@@ -1,0 +1,145 @@
+team,team_zh,country_code,nationality,player_name,jersey_number,position,age,height_cm,market_value_eur_m,club,national_caps,national_goals,goal_rate,recent_form_rating,data_source,squad_status
+Mexico,墨西哥,MEX,墨西哥,Raul Jimenez,7,Forward,24,181,68.4,???????,105,33,0.314,7.4,local_fallback_players_2026,fallback_demo_partial
+Mexico,墨西哥,MEX,墨西哥,Hirving Lozano,8,Forward,25,182,64.6,???????,70,18,0.257,7.7,local_fallback_players_2026,fallback_demo_partial
+Mexico,墨西哥,MEX,墨西哥,Edson Alvarez,9,Midfielder,26,180,60.6,???????,79,5,0.063,7.8,local_fallback_players_2026,fallback_demo_partial
+South Africa,南非,RSA,南非,Percy Tau,7,Forward,24,181,62.2,???????,48,15,0.312,7.5,local_fallback_players_2026,fallback_demo_partial
+South Africa,南非,RSA,南非,Teboho Mokoena,8,Midfielder,25,179,58.2,???????,38,5,0.132,7.4,local_fallback_players_2026,fallback_demo_partial
+South Africa,南非,RSA,南非,Ronwen Williams,1,Goalkeeper,26,192,57.4,???????,46,0,0.0,7.6,local_fallback_players_2026,fallback_demo_partial
+South Korea,南韓,KOR,南韓,Son Heung-min,7,Forward,24,181,77.7,???????,127,44,0.346,8.5,local_fallback_players_2026,fallback_demo_partial
+South Korea,南韓,KOR,南韓,Hwang Hee-chan,8,Forward,25,182,63.7,???????,66,14,0.212,7.8,local_fallback_players_2026,fallback_demo_partial
+South Korea,南韓,KOR,南韓,Lee Kang-in,9,Midfielder,26,180,62.8,???????,35,10,0.286,7.9,local_fallback_players_2026,fallback_demo_partial
+Czechia,捷克,CZE,捷克,Patrik Schick,7,Forward,24,181,66.6,???????,42,20,0.476,8.0,local_fallback_players_2026,fallback_demo_partial
+Czechia,捷克,CZE,捷克,Tomas Soucek,8,Midfielder,25,179,63.0,???????,75,14,0.187,7.7,local_fallback_players_2026,fallback_demo_partial
+Czechia,捷克,CZE,捷克,Adam Hlozek,9,Forward,26,183,56.3,???????,35,2,0.057,7.2,local_fallback_players_2026,fallback_demo_partial
+Canada,加拿大,CAN,加拿大,Jonathan David,7,Forward,24,181,69.8,???????,53,28,0.528,8.1,local_fallback_players_2026,fallback_demo_partial
+Canada,加拿大,CAN,加拿大,Alphonso Davies,8,Defender,25,185,64.8,???????,53,15,0.283,8.0,local_fallback_players_2026,fallback_demo_partial
+Canada,加拿大,CAN,加拿大,Cyle Larin,9,Forward,26,183,67.5,???????,70,30,0.429,7.5,local_fallback_players_2026,fallback_demo_partial
+Bosnia and Herzegovina,波士尼亞與赫塞哥維納,BIH,波士尼亞與赫塞哥維納,Edin Dzeko,7,Forward,24,181,81.0,???????,135,66,0.489,7.7,local_fallback_players_2026,fallback_demo_partial
+Bosnia and Herzegovina,波士尼亞與赫塞哥維納,BIH,波士尼亞與赫塞哥維納,Miralem Pjanic,8,Midfielder,25,179,62.7,???????,115,18,0.157,7.4,local_fallback_players_2026,fallback_demo_partial
+Bosnia and Herzegovina,波士尼亞與赫塞哥維納,BIH,波士尼亞與赫塞哥維納,Ermedin Demirovic,9,Forward,26,183,58.8,???????,30,4,0.133,7.6,local_fallback_players_2026,fallback_demo_partial
+United States,美國,USA,美國,Christian Pulisic,7,Forward,24,181,71.5,???????,68,29,0.426,8.3,local_fallback_players_2026,fallback_demo_partial
+United States,美國,USA,美國,Folarin Balogun,8,Forward,25,182,59.6,???????,15,5,0.333,7.6,local_fallback_players_2026,fallback_demo_partial
+United States,美國,USA,美國,Weston McKennie,9,Midfielder,26,180,62.7,???????,56,11,0.196,7.8,local_fallback_players_2026,fallback_demo_partial
+Paraguay,巴拉圭,PAR,巴拉圭,Miguel Almiron,7,Midfielder,24,178,59.9,???????,60,8,0.133,7.5,local_fallback_players_2026,fallback_demo_partial
+Paraguay,巴拉圭,PAR,巴拉圭,Julio Enciso,8,Forward,25,182,57.6,???????,20,3,0.15,7.4,local_fallback_players_2026,fallback_demo_partial
+Paraguay,巴拉圭,PAR,巴拉圭,Gustavo Gomez,9,Defender,26,186,59.0,???????,78,4,0.051,7.6,local_fallback_players_2026,fallback_demo_partial
+Qatar,卡達,QAT,卡達,Akram Afif,7,Forward,24,181,72.2,???????,110,35,0.318,8.1,local_fallback_players_2026,fallback_demo_partial
+Qatar,卡達,QAT,卡達,Almoez Ali,8,Forward,25,182,74.6,???????,100,46,0.46,7.8,local_fallback_players_2026,fallback_demo_partial
+Qatar,卡達,QAT,卡達,Hassan Al-Haydos,9,Midfielder,26,180,70.8,???????,180,41,0.228,7.4,local_fallback_players_2026,fallback_demo_partial
+Switzerland,瑞士,SUI,瑞士,Granit Xhaka,7,Midfielder,24,178,64.7,???????,125,14,0.112,8.0,local_fallback_players_2026,fallback_demo_partial
+Switzerland,瑞士,SUI,瑞士,Breel Embolo,8,Forward,25,182,63.6,???????,70,15,0.214,7.7,local_fallback_players_2026,fallback_demo_partial
+Switzerland,瑞士,SUI,瑞士,Xherdan Shaqiri,9,Midfielder,26,180,68.5,???????,125,32,0.256,7.5,local_fallback_players_2026,fallback_demo_partial
+Brazil,巴西,BRA,巴西,Neymar,7,Forward,24,181,89.1,???????,128,79,0.617,8.3,local_fallback_players_2026,fallback_demo_partial
+Brazil,巴西,BRA,巴西,Vinicius Junior,8,Forward,25,182,63.7,???????,34,5,0.147,8.4,local_fallback_players_2026,fallback_demo_partial
+Brazil,巴西,BRA,巴西,Rodrygo,9,Forward,26,183,61.6,???????,29,6,0.207,7.9,local_fallback_players_2026,fallback_demo_partial
+Morocco,摩洛哥,MAR,摩洛哥,Youssef En-Nesyri,7,Forward,24,181,65.9,???????,73,20,0.274,7.8,local_fallback_players_2026,fallback_demo_partial
+Morocco,摩洛哥,MAR,摩洛哥,Hakim Ziyech,8,Midfielder,25,179,67.1,???????,64,22,0.344,7.9,local_fallback_players_2026,fallback_demo_partial
+Morocco,摩洛哥,MAR,摩洛哥,Achraf Hakimi,9,Defender,26,186,64.0,???????,77,9,0.117,8.2,local_fallback_players_2026,fallback_demo_partial
+Haiti,海地,HAI,海地,Duckens Nazon,7,Forward,24,181,69.7,???????,68,36,0.529,7.6,local_fallback_players_2026,fallback_demo_partial
+Haiti,海地,HAI,海地,Frantzdy Pierrot,8,Forward,25,182,62.4,???????,32,18,0.562,7.4,local_fallback_players_2026,fallback_demo_partial
+Haiti,海地,HAI,海地,Bryan Alceus,9,Midfielder,26,180,54.8,???????,28,2,0.071,7.0,local_fallback_players_2026,fallback_demo_partial
+Scotland,蘇格蘭,SCO,蘇格蘭,Scott McTominay,7,Midfielder,24,178,63.5,???????,55,11,0.2,8.0,local_fallback_players_2026,fallback_demo_partial
+Scotland,蘇格蘭,SCO,蘇格蘭,John McGinn,8,Midfielder,25,179,64.4,???????,70,18,0.257,7.7,local_fallback_players_2026,fallback_demo_partial
+Scotland,蘇格蘭,SCO,蘇格蘭,Andy Robertson,9,Defender,26,186,59.7,???????,75,3,0.04,7.8,local_fallback_players_2026,fallback_demo_partial
+Australia,澳洲,AUS,澳洲,Mathew Leckie,7,Forward,24,181,61.2,???????,80,14,0.175,7.3,local_fallback_players_2026,fallback_demo_partial
+Australia,澳洲,AUS,澳洲,Jackson Irvine,8,Midfielder,25,179,61.1,???????,70,11,0.157,7.5,local_fallback_players_2026,fallback_demo_partial
+Australia,澳洲,AUS,澳洲,Mitchell Duke,9,Forward,26,183,59.6,???????,40,11,0.275,7.2,local_fallback_players_2026,fallback_demo_partial
+Turkiye,土耳其,TUR,土耳其,Hakan Calhanoglu,7,Midfielder,24,178,66.5,???????,90,18,0.2,8.1,local_fallback_players_2026,fallback_demo_partial
+Turkiye,土耳其,TUR,土耳其,Cenk Tosun,8,Forward,25,182,63.6,???????,50,21,0.42,7.3,local_fallback_players_2026,fallback_demo_partial
+Turkiye,土耳其,TUR,土耳其,Arda Guler,9,Midfielder,26,180,60.6,???????,18,4,0.222,7.9,local_fallback_players_2026,fallback_demo_partial
+Ivory Coast,象牙海岸,CIV,象牙海岸,Sebastien Haller,7,Forward,24,181,61.0,???????,35,10,0.286,7.6,local_fallback_players_2026,fallback_demo_partial
+Ivory Coast,象牙海岸,CIV,象牙海岸,Franck Kessie,8,Midfielder,25,179,62.4,???????,75,11,0.147,7.8,local_fallback_players_2026,fallback_demo_partial
+Ivory Coast,象牙海岸,CIV,象牙海岸,Simon Adingra,9,Forward,26,183,58.4,???????,20,4,0.2,7.5,local_fallback_players_2026,fallback_demo_partial
+Ecuador,厄瓜多,ECU,厄瓜多,Enner Valencia,7,Forward,24,181,72.5,???????,85,41,0.482,7.7,local_fallback_players_2026,fallback_demo_partial
+Ecuador,厄瓜多,ECU,厄瓜多,Moisés Caicedo,8,Midfielder,25,179,60.7,???????,45,3,0.067,8.0,local_fallback_players_2026,fallback_demo_partial
+Ecuador,厄瓜多,ECU,厄瓜多,Pervis Estupinan,9,Defender,26,186,59.1,???????,40,4,0.1,7.6,local_fallback_players_2026,fallback_demo_partial
+Germany,德國,GER,德國,Thomas Muller,7,Forward,24,181,72.6,???????,131,45,0.344,7.4,local_fallback_players_2026,fallback_demo_partial
+Germany,德國,GER,德國,Ilkay Gundogan,8,Midfielder,25,179,65.6,???????,77,19,0.247,7.8,local_fallback_players_2026,fallback_demo_partial
+Germany,德國,GER,德國,Jamal Musiala,9,Midfielder,26,180,62.1,???????,27,2,0.074,8.3,local_fallback_players_2026,fallback_demo_partial
+Curacao,庫拉索,CUW,庫拉索,Leandro Bacuna,7,Midfielder,24,178,60.4,???????,45,15,0.333,7.2,local_fallback_players_2026,fallback_demo_partial
+Curacao,庫拉索,CUW,庫拉索,Juninho Bacuna,8,Midfielder,25,179,56.4,???????,38,5,0.132,7.1,local_fallback_players_2026,fallback_demo_partial
+Curacao,庫拉索,CUW,庫拉索,Brandley Kuwas,9,Forward,26,183,56.2,???????,35,6,0.171,7.0,local_fallback_players_2026,fallback_demo_partial
+Netherlands,荷蘭,NED,荷蘭,Memphis Depay,7,Forward,24,181,74.7,???????,95,45,0.474,7.8,local_fallback_players_2026,fallback_demo_partial
+Netherlands,荷蘭,NED,荷蘭,Cody Gakpo,8,Forward,25,182,64.1,???????,32,12,0.375,8.0,local_fallback_players_2026,fallback_demo_partial
+Netherlands,荷蘭,NED,荷蘭,Frenkie de Jong,9,Midfielder,26,180,61.6,???????,60,2,0.033,8.2,local_fallback_players_2026,fallback_demo_partial
+Japan,日本,JPN,日本,Takumi Minamino,7,Midfielder,24,178,65.7,???????,59,21,0.356,7.7,local_fallback_players_2026,fallback_demo_partial
+Japan,日本,JPN,日本,Kaoru Mitoma,8,Forward,25,182,63.6,???????,22,8,0.364,8.2,local_fallback_players_2026,fallback_demo_partial
+Japan,日本,JPN,日本,Takefusa Kubo,9,Midfielder,26,180,61.1,???????,33,5,0.152,7.9,local_fallback_players_2026,fallback_demo_partial
+Sweden,瑞典,SWE,瑞典,Alexander Isak,7,Forward,24,181,64.9,???????,45,12,0.267,8.2,local_fallback_players_2026,fallback_demo_partial
+Sweden,瑞典,SWE,瑞典,Dejan Kulusevski,8,Forward,25,182,60.1,???????,42,4,0.095,7.8,local_fallback_players_2026,fallback_demo_partial
+Sweden,瑞典,SWE,瑞典,Viktor Gyokeres,9,Forward,26,183,63.0,???????,25,8,0.32,8.1,local_fallback_players_2026,fallback_demo_partial
+Tunisia,突尼西亞,TUN,突尼西亞,Wahbi Khazri,7,Forward,24,181,64.8,???????,74,25,0.338,7.3,local_fallback_players_2026,fallback_demo_partial
+Tunisia,突尼西亞,TUN,突尼西亞,Youssef Msakni,8,Forward,25,182,64.6,???????,95,23,0.242,7.4,local_fallback_players_2026,fallback_demo_partial
+Tunisia,突尼西亞,TUN,突尼西亞,Ellyes Skhiri,9,Midfielder,26,180,58.1,???????,60,3,0.05,7.5,local_fallback_players_2026,fallback_demo_partial
+Iran,伊朗,IRN,伊朗,Mehdi Taremi,7,Forward,24,181,75.6,???????,80,45,0.562,8.0,local_fallback_players_2026,fallback_demo_partial
+Iran,伊朗,IRN,伊朗,Sardar Azmoun,8,Forward,25,182,77.5,???????,85,52,0.612,7.9,local_fallback_players_2026,fallback_demo_partial
+Iran,伊朗,IRN,伊朗,Alireza Jahanbakhsh,9,Forward,26,183,62.8,???????,80,17,0.212,7.4,local_fallback_players_2026,fallback_demo_partial
+New Zealand,紐西蘭,NZL,紐西蘭,Chris Wood,7,Forward,24,181,70.4,???????,75,35,0.467,7.8,local_fallback_players_2026,fallback_demo_partial
+New Zealand,紐西蘭,NZL,紐西蘭,Sarpreet Singh,8,Midfielder,25,179,57.6,???????,35,7,0.2,7.2,local_fallback_players_2026,fallback_demo_partial
+New Zealand,紐西蘭,NZL,紐西蘭,Joe Bell,9,Midfielder,26,180,55.0,???????,28,1,0.036,7.1,local_fallback_players_2026,fallback_demo_partial
+Belgium,比利時,BEL,比利時,Romelu Lukaku,7,Forward,24,181,89.0,???????,115,83,0.722,8.0,local_fallback_players_2026,fallback_demo_partial
+Belgium,比利時,BEL,比利時,Kevin De Bruyne,8,Midfielder,25,179,72.7,???????,105,28,0.267,8.6,local_fallback_players_2026,fallback_demo_partial
+Belgium,比利時,BEL,比利時,Jeremy Doku,9,Forward,26,183,59.6,???????,25,2,0.08,7.8,local_fallback_players_2026,fallback_demo_partial
+Egypt,埃及,EGY,埃及,Mohamed Salah,7,Forward,24,181,81.8,???????,100,56,0.56,8.5,local_fallback_players_2026,fallback_demo_partial
+Egypt,埃及,EGY,埃及,Trezeguet,8,Forward,25,182,62.6,???????,70,17,0.243,7.4,local_fallback_players_2026,fallback_demo_partial
+Egypt,埃及,EGY,埃及,Mostafa Mohamed,9,Forward,26,183,61.4,???????,40,12,0.3,7.5,local_fallback_players_2026,fallback_demo_partial
+Saudi Arabia,沙烏地阿拉伯,KSA,沙烏地阿拉伯,Salem Al-Dawsari,7,Forward,24,181,65.6,???????,85,22,0.259,7.7,local_fallback_players_2026,fallback_demo_partial
+Saudi Arabia,沙烏地阿拉伯,KSA,沙烏地阿拉伯,Firas Al-Buraikan,8,Forward,25,182,61.7,???????,45,15,0.333,7.4,local_fallback_players_2026,fallback_demo_partial
+Saudi Arabia,沙烏地阿拉伯,KSA,沙烏地阿拉伯,Mohamed Kanno,9,Midfielder,26,180,57.2,???????,60,5,0.083,7.2,local_fallback_players_2026,fallback_demo_partial
+Uruguay,烏拉圭,URU,烏拉圭,Darwin Nunez,7,Forward,24,181,64.4,???????,30,13,0.433,8.0,local_fallback_players_2026,fallback_demo_partial
+Uruguay,烏拉圭,URU,烏拉圭,Federico Valverde,8,Midfielder,25,179,64.3,???????,60,7,0.117,8.4,local_fallback_players_2026,fallback_demo_partial
+Uruguay,烏拉圭,URU,烏拉圭,Luis Suarez,9,Forward,26,183,81.2,???????,140,68,0.486,7.5,local_fallback_players_2026,fallback_demo_partial
+Spain,西班牙,ESP,西班牙,Alvaro Morata,7,Forward,24,181,71.5,???????,73,36,0.493,7.8,local_fallback_players_2026,fallback_demo_partial
+Spain,西班牙,ESP,西班牙,Ferran Torres,8,Forward,25,182,65.4,???????,44,20,0.455,7.7,local_fallback_players_2026,fallback_demo_partial
+Spain,西班牙,ESP,西班牙,Pedri,9,Midfielder,26,180,61.1,???????,24,2,0.083,8.1,local_fallback_players_2026,fallback_demo_partial
+Cape Verde,維德角,CPV,維德角,Ryan Mendes,7,Forward,24,181,61.4,???????,70,16,0.229,7.3,local_fallback_players_2026,fallback_demo_partial
+Cape Verde,維德角,CPV,維德角,Bebe,8,Forward,25,182,57.8,???????,35,7,0.2,7.2,local_fallback_players_2026,fallback_demo_partial
+Cape Verde,維德角,CPV,維德角,Garry Rodrigues,9,Forward,26,183,57.6,???????,45,8,0.178,7.1,local_fallback_players_2026,fallback_demo_partial
+France,法國,FRA,法國,Kylian Mbappe,7,Forward,24,181,82.1,???????,77,46,0.597,9.2,local_fallback_players_2026,fallback_demo_partial
+France,法國,FRA,法國,Antoine Griezmann,8,Midfielder,25,179,75.9,???????,132,44,0.333,8.1,local_fallback_players_2026,fallback_demo_partial
+France,法國,FRA,法國,Olivier Giroud,9,Forward,26,183,77.9,???????,137,57,0.416,7.6,local_fallback_players_2026,fallback_demo_partial
+Senegal,塞內加爾,SEN,塞內加爾,Sadio Mane,7,Forward,24,181,75.4,???????,105,43,0.41,8.1,local_fallback_players_2026,fallback_demo_partial
+Senegal,塞內加爾,SEN,塞內加爾,Ismaila Sarr,8,Forward,25,182,61.9,???????,65,13,0.2,7.5,local_fallback_players_2026,fallback_demo_partial
+Senegal,塞內加爾,SEN,塞內加爾,Kalidou Koulibaly,9,Defender,26,186,58.7,???????,80,1,0.012,7.7,local_fallback_players_2026,fallback_demo_partial
+Iraq,伊拉克,IRQ,伊拉克,Aymen Hussein,7,Forward,24,181,66.9,???????,75,27,0.36,7.6,local_fallback_players_2026,fallback_demo_partial
+Iraq,伊拉克,IRQ,伊拉克,Ali Jasim,8,Forward,25,182,58.6,???????,25,6,0.24,7.4,local_fallback_players_2026,fallback_demo_partial
+Iraq,伊拉克,IRQ,伊拉克,Ibrahim Bayesh,9,Midfielder,26,180,57.9,???????,55,7,0.127,7.2,local_fallback_players_2026,fallback_demo_partial
+Norway,挪威,NOR,挪威,Erling Haaland,7,Forward,24,181,76.7,???????,35,33,0.943,9.1,local_fallback_players_2026,fallback_demo_partial
+Norway,挪威,NOR,挪威,Martin Odegaard,8,Midfielder,25,179,62.7,???????,60,3,0.05,8.4,local_fallback_players_2026,fallback_demo_partial
+Norway,挪威,NOR,挪威,Alexander Sorloth,9,Forward,26,183,64.5,???????,55,18,0.327,7.7,local_fallback_players_2026,fallback_demo_partial
+Argentina,阿根廷,ARG,阿根廷,Lionel Messi,7,Forward,24,181,104.8,???????,182,108,0.593,9.4,local_fallback_players_2026,fallback_demo_partial
+Argentina,阿根廷,ARG,阿根廷,Lautaro Martinez,8,Forward,25,182,69.4,???????,58,24,0.414,8.2,local_fallback_players_2026,fallback_demo_partial
+Argentina,阿根廷,ARG,阿根廷,Enzo Fernandez,9,Midfielder,26,180,60.4,???????,32,4,0.125,7.8,local_fallback_players_2026,fallback_demo_partial
+Algeria,阿爾及利亞,ALG,阿爾及利亞,Riyad Mahrez,7,Forward,24,181,70.5,???????,95,31,0.326,8.0,local_fallback_players_2026,fallback_demo_partial
+Algeria,阿爾及利亞,ALG,阿爾及利亞,Amine Gouiri,8,Forward,25,182,59.2,???????,20,6,0.3,7.5,local_fallback_players_2026,fallback_demo_partial
+Algeria,阿爾及利亞,ALG,阿爾及利亞,Ismael Bennacer,9,Midfielder,26,180,58.8,???????,50,2,0.04,7.7,local_fallback_players_2026,fallback_demo_partial
+Austria,奧地利,AUT,奧地利,Marko Arnautovic,7,Forward,24,181,69.9,???????,115,36,0.313,7.5,local_fallback_players_2026,fallback_demo_partial
+Austria,奧地利,AUT,奧地利,Christoph Baumgartner,8,Midfielder,25,179,64.0,???????,45,15,0.333,7.8,local_fallback_players_2026,fallback_demo_partial
+Austria,奧地利,AUT,奧地利,Marcel Sabitzer,9,Midfielder,26,180,65.2,???????,80,17,0.212,7.9,local_fallback_players_2026,fallback_demo_partial
+Jordan,約旦,JOR,約旦,Mousa Al-Taamari,7,Forward,24,181,63.3,???????,70,17,0.243,7.6,local_fallback_players_2026,fallback_demo_partial
+Jordan,約旦,JOR,約旦,Yazan Al-Naimat,8,Forward,25,182,62.4,???????,50,16,0.32,7.5,local_fallback_players_2026,fallback_demo_partial
+Jordan,約旦,JOR,約旦,Nizar Al-Rashdan,9,Midfielder,26,180,55.5,???????,35,2,0.057,7.1,local_fallback_players_2026,fallback_demo_partial
+Portugal,葡萄牙,POR,葡萄牙,Cristiano Ronaldo,7,Forward,24,181,105.8,???????,200,128,0.64,8.2,local_fallback_players_2026,fallback_demo_partial
+Portugal,葡萄牙,POR,葡萄牙,Bruno Fernandes,8,Midfielder,25,179,70.7,???????,75,25,0.333,8.4,local_fallback_players_2026,fallback_demo_partial
+Portugal,葡萄牙,POR,葡萄牙,Bernardo Silva,9,Midfielder,26,180,64.7,???????,90,12,0.133,8.1,local_fallback_players_2026,fallback_demo_partial
+DR Congo,剛果民主共和國,COD,剛果民主共和國,Cedric Bakambu,7,Forward,24,181,62.5,???????,55,16,0.291,7.5,local_fallback_players_2026,fallback_demo_partial
+DR Congo,剛果民主共和國,COD,剛果民主共和國,Yoane Wissa,8,Forward,25,182,59.5,???????,35,6,0.171,7.6,local_fallback_players_2026,fallback_demo_partial
+DR Congo,剛果民主共和國,COD,剛果民主共和國,Chancel Mbemba,9,Defender,26,186,58.5,???????,75,6,0.08,7.4,local_fallback_players_2026,fallback_demo_partial
+Uzbekistan,烏茲別克,UZB,烏茲別克,Eldor Shomurodov,7,Forward,24,181,72.5,???????,75,40,0.533,7.8,local_fallback_players_2026,fallback_demo_partial
+Uzbekistan,烏茲別克,UZB,烏茲別克,Abboshbek Fayzullaev,8,Midfielder,25,179,59.6,???????,25,6,0.24,7.6,local_fallback_players_2026,fallback_demo_partial
+Uzbekistan,烏茲別克,UZB,烏茲別克,Otabek Shukurov,9,Midfielder,26,180,58.0,???????,60,7,0.117,7.2,local_fallback_players_2026,fallback_demo_partial
+Colombia,哥倫比亞,COL,哥倫比亞,Luis Diaz,7,Forward,24,181,65.9,???????,55,13,0.236,8.3,local_fallback_players_2026,fallback_demo_partial
+Colombia,哥倫比亞,COL,哥倫比亞,James Rodriguez,8,Midfielder,25,179,68.7,???????,100,28,0.28,7.8,local_fallback_players_2026,fallback_demo_partial
+Colombia,哥倫比亞,COL,哥倫比亞,Jhon Duran,9,Forward,26,183,59.8,???????,20,4,0.2,7.7,local_fallback_players_2026,fallback_demo_partial
+Ghana,迦納,GHA,迦納,Mohammed Kudus,7,Midfielder,24,178,63.7,???????,35,11,0.314,8.1,local_fallback_players_2026,fallback_demo_partial
+Ghana,迦納,GHA,迦納,Inaki Williams,8,Forward,25,182,57.0,???????,25,2,0.08,7.4,local_fallback_players_2026,fallback_demo_partial
+Ghana,迦納,GHA,迦納,Thomas Partey,9,Midfielder,26,180,62.4,???????,50,13,0.26,7.7,local_fallback_players_2026,fallback_demo_partial
+Panama,巴拿馬,PAN,巴拿馬,Jose Fajardo,7,Forward,24,181,60.3,???????,45,12,0.267,7.3,local_fallback_players_2026,fallback_demo_partial
+Panama,巴拿馬,PAN,巴拿馬,Edgar Barcenas,8,Forward,25,182,58.4,???????,85,8,0.094,7.2,local_fallback_players_2026,fallback_demo_partial
+Panama,巴拿馬,PAN,巴拿馬,Anibal Godoy,9,Midfielder,26,180,56.5,???????,120,4,0.033,7.1,local_fallback_players_2026,fallback_demo_partial
+England,英格蘭,ENG,英格蘭,Harry Kane,7,Forward,24,181,85.5,???????,91,63,0.692,8.7,local_fallback_players_2026,fallback_demo_partial
+England,英格蘭,ENG,英格蘭,Jude Bellingham,8,Midfielder,25,179,63.5,???????,29,3,0.103,8.5,local_fallback_players_2026,fallback_demo_partial
+England,英格蘭,ENG,英格蘭,Bukayo Saka,9,Forward,26,183,64.8,???????,32,11,0.344,8.2,local_fallback_players_2026,fallback_demo_partial
+Croatia,克羅埃西亞,CRO,克羅埃西亞,Luka Modric,7,Midfielder,24,178,68.3,???????,170,24,0.141,8.0,local_fallback_players_2026,fallback_demo_partial
+Croatia,克羅埃西亞,CRO,克羅埃西亞,Andrej Kramaric,8,Forward,25,182,68.2,???????,95,28,0.295,7.7,local_fallback_players_2026,fallback_demo_partial
+Croatia,克羅埃西亞,CRO,克羅埃西亞,Josko Gvardiol,9,Defender,26,186,60.1,???????,35,2,0.057,7.9,local_fallback_players_2026,fallback_demo_partial

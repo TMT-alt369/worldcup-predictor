@@ -141,4 +141,17 @@ FOOTBALL_DATA_API_KEY = "你的 football-data.org API key"
 API_FOOTBALL_KEY = "你的 API-Football API key"
 ```
 
-若兩個 key 都存在，系統會優先嘗試 `football-data.org`，失敗或無資料時再嘗試 `API-Football`，最後才使用本地 fallback CSV。
+若兩個 key 都存在，V7 會優先嘗試 `API-Football` 以取得事件與技術統計，失敗或無資料時再嘗試 `football-data.org`，最後才使用本地 fallback CSV。
+
+## V7 世界盃智慧預測中心
+
+V7 延伸既有 V1~V5，不重做模型主流程，新增：
+
+- 真實即時資訊：`API_FOOTBALL_KEY` 存在時優先使用 API-Football 讀取今日比賽、比分、比賽狀態、事件與技術統計；無 key、API 無資料或額度不足時使用本地 fallback。
+- 球員資料庫：新增 `data/players_2026.csv`，欄位包含姓名、國籍、位置、年齡、身高、身價、國家隊出賽與進球、資料來源。若未匯入官方完整名單，頁面會標示 fallback 資料來源。
+- 冠軍機率 TOP20：使用 Elo Rating、Poisson 進球模型與 10000 次 Monte Carlo Simulation，顯示排名、國旗、Elo 與奪冠率。
+- 小組出線機率分析：以 Plotly 長條圖與排名表顯示各隊小組出線率。
+- 淘汰賽晉級機率分析：顯示 16 強、8 強、4 強、決賽與奪冠機率。
+- 國家隊資料中心：顯示單隊完整名單、平均年齡、總身價、世界排名與小組出線率。
+
+所有新增圖表皆使用 Plotly，可滑鼠查看數值。V7 仍不提供下注、金流、會員或保證命中率功能。
