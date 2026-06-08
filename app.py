@@ -28,6 +28,7 @@ from worldcup_predictor.model import predict_match, prediction_to_frame, team_st
 from worldcup_predictor.players import player_database, squad_summary
 from worldcup_predictor.tournament import run_tournament_simulation
 from worldcup_predictor.ui import disclaimer_box, format_percent, signal_dataframe
+from utils.simulation import run_worldcup_monte_carlo
 
 
 st.set_page_config(page_title="世足智慧預測中心", page_icon="⚽", layout="wide")
@@ -2478,44 +2479,165 @@ def national_team_center_page() -> None:
 
 
 def worldcup_simulator_page() -> None:
-    page_header("世界盃模擬器", "選擇任意國家隊與模擬次數，輸出奪冠率、決賽率、四強率、八強率")
-    simulations = st.radio("模擬次數", [1000, 5000, 10000], index=2, horizontal=True)
-    sim_df = cached_tournament_simulation(fixtures_df, team_meta_df, wc_team_stats_df, matches_df, int(simulations))
-    team_options = sim_df.sort_values("team_zh")["team_display"].tolist()
-    selected = st.selectbox("選擇國家隊", team_options)
-    selected_row = sim_df[sim_df["team_display"] == selected].iloc[0]
-    metrics = pd.DataFrame(
-        [
-            ("八強率", selected_row["round_8_probability"]),
-            ("四強率", selected_row["semi_final_probability"]),
-            ("決賽率", selected_row["final_probability"]),
-            ("奪冠率", selected_row["champion_probability"]),
-        ],
-        columns=["指標", "機率"],
+    page_header("世界盃模擬器", "獨立 Monte Carlo 模擬頁：選擇次數、開始模擬、查看各隊晉級與奪冠率")
+    disclaimer_box()
+    st.info(
+        "本頁僅使用 Elo、近期狀態、世界盃歷史表現與 Poisson 進球分布進行展示型 Monte Carlo 模擬。"
+        "結果屬於展示資料／模擬資料，不保證準確，也不包含即時比分、控球率或射門數。"
     )
-    metrics["百分比"] = metrics["機率"].map(format_percent)
 
+    simulations = st.radio("模擬次數", [1000, 5000, 10000], index=0, horizontal=True)
+    start = st.button("開始模擬", type="primary", use_container_width=True)
+
+    if start:
+        with st.spinner(f"正在執行 {int(simulations):,} 次 Monte Carlo 模擬..."):
+            sim_df = run_worldcup_monte_carlo(
+                fixtures_df,
+                team_meta_df,
+                wc_team_stats_df,
+                matches_df,
+                simulations=int(simulations),
+            )
+        data_label = f"即時計算模擬結果｜{int(simulations):,} 次"
+    else:
+        try:
+            sim_df = pd.read_csv("data/monte_carlo_results.csv")
+            simulations = int(sim_df.get("simulation_count", pd.Series([simulations])).iloc[0])
+            data_label = f"展示資料／模擬資料｜本地 CSV｜{int(simulations):,} 次"
+        except Exception:
+            sim_df = cached_tournament_simulation(
+                fixtures_df,
+                team_meta_df,
+                wc_team_stats_df,
+                matches_df,
+                int(simulations),
+            )
+            data_label = f"展示資料／模擬資料｜fallback 計算｜{int(simulations):,} 次"
+
+    required = [
+        "team_display",
+        "elo",
+        "group_qualified_probability",
+        "round_16_probability",
+        "round_8_probability",
+        "semi_final_probability",
+        "final_probability",
+        "champion_probability",
+    ]
+    missing = [column for column in required if column not in sim_df.columns]
+    if missing:
+        st.warning(f"模擬結果缺少欄位：{', '.join(missing)}。已停止顯示，避免頁面報錯。")
+        return
+
+    sim_df = sim_df.sort_values("champion_probability", ascending=False).reset_index(drop=True)
+    champion = sim_df.iloc[0]
     cols = st.columns(4)
-    for col, (_, row) in zip(cols, metrics.iterrows()):
-        with col:
-            display_card(row["指標"], row["百分比"], f"{int(simulations):,} 次模擬")
+    with cols[0]:
+        display_card("模擬次數", f"{int(simulations):,}", "Monte Carlo")
+    with cols[1]:
+        display_card("參賽隊伍", str(len(sim_df)), "本地賽程資料")
+    with cols[2]:
+        display_card("最高冠軍率", format_percent(float(champion["champion_probability"])), champion["team_display"])
+    with cols[3]:
+        display_card("資料狀態", "展示資料／模擬資料", data_label)
 
-    bar = px.bar(metrics, x="指標", y="機率", text="百分比", color="機率", color_continuous_scale=["#415a77", GOLD_LIGHT])
+    st.subheader("冠軍率排行榜")
+    ranking = sim_df.head(20).copy()
+    ranking["排名"] = ranking.index + 1
+    ranking["冠軍率"] = ranking["champion_probability"].map(format_percent)
+    ranking["決賽率"] = ranking["final_probability"].map(format_percent)
+    st.dataframe(
+        ranking[["排名", "team_display", "elo", "決賽率", "冠軍率"]].rename(
+            columns={"team_display": "國家隊", "elo": "Elo"}
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.subheader("Top 10 冠軍機率長條圖")
+    top10 = sim_df.head(10).sort_values("champion_probability", ascending=True).copy()
+    top10["label"] = top10["champion_probability"].map(format_percent)
+    bar = px.bar(
+        top10,
+        x="champion_probability",
+        y="team_display",
+        orientation="h",
+        text="label",
+        color="champion_probability",
+        color_continuous_scale=["#415a77", GOLD_LIGHT],
+        labels={"champion_probability": "冠軍率", "team_display": "國家隊"},
+    )
     bar.update_traces(textposition="outside")
-    bar.update_yaxes(tickformat=".0%", range=[0, 1])
-    bar.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+    bar.update_xaxes(tickformat=".0%")
+    bar.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color=INK,
+        coloraxis_showscale=False,
+        margin=dict(l=10, r=50, t=10, b=10),
+    )
     st.plotly_chart(bar, use_container_width=True)
 
-    heat = sim_df.head(20)[["team_display", "round_8_probability", "semi_final_probability", "final_probability", "champion_probability"]].copy()
-    heat = heat.set_index("team_display").rename(columns={
-        "round_8_probability": "八強率",
-        "semi_final_probability": "四強率",
+    st.subheader("晉級率總表")
+    table = sim_df[
+        [
+            "team_display",
+            "group_qualified_probability",
+            "round_16_probability",
+            "round_8_probability",
+            "semi_final_probability",
+            "final_probability",
+            "champion_probability",
+        ]
+    ].copy()
+    rename_map = {
+        "team_display": "國家隊",
+        "group_qualified_probability": "小組出線率",
+        "round_16_probability": "16強率",
+        "round_8_probability": "8強率",
+        "semi_final_probability": "4強率",
         "final_probability": "決賽率",
-        "champion_probability": "奪冠率",
+        "champion_probability": "冠軍率",
+    }
+    for column in table.columns:
+        if column != "team_display":
+            table[column] = table[column].map(format_percent)
+    st.dataframe(table.rename(columns=rename_map), use_container_width=True, hide_index=True)
+
+    st.subheader("階段機率熱度圖")
+    heat = sim_df.head(16)[
+        [
+            "team_display",
+            "group_qualified_probability",
+            "round_16_probability",
+            "round_8_probability",
+            "semi_final_probability",
+            "final_probability",
+            "champion_probability",
+        ]
+    ].copy()
+    heat = heat.set_index("team_display").rename(columns={
+        "group_qualified_probability": "小組出線率",
+        "round_16_probability": "16強率",
+        "round_8_probability": "8強率",
+        "semi_final_probability": "4強率",
+        "final_probability": "決賽率",
+        "champion_probability": "冠軍率",
     })
     heatmap = px.imshow(heat, aspect="auto", color_continuous_scale=["#071426", GOLD_LIGHT], labels=dict(color="機率"))
     heatmap.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color=INK)
     st.plotly_chart(heatmap, use_container_width=True)
+
+    st.subheader("模型說明")
+    st.markdown(
+        """
+        - 以本地 2026 世界盃展示賽程作為模擬骨架。
+        - 球隊強度由 Elo Rating、近期狀態與 2002～2022 世界盃歷史表現組成。
+        - 單場比分使用 Poisson 進球模型抽樣。
+        - 淘汰賽平手時以強度差轉換勝率決定晉級隊伍。
+        - 結果僅供分析展示，不保證準確，不構成投注建議。
+        """
+    )
 
 
 def presentation_mode_page() -> None:
