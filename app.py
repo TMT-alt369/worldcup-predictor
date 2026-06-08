@@ -24,7 +24,7 @@ from worldcup_predictor.data_loader import (
 )
 from worldcup_predictor.elo import build_elo_rankings
 from worldcup_predictor.history import head_to_head_record, team_summary, top_team_stats
-from worldcup_predictor.model import predict_match, prediction_to_frame
+from worldcup_predictor.model import predict_match, prediction_to_frame, team_strength
 from worldcup_predictor.players import player_database, squad_summary
 from worldcup_predictor.tournament import run_tournament_simulation
 from worldcup_predictor.ui import disclaimer_box, format_percent, signal_dataframe
@@ -967,12 +967,63 @@ def render_team_history_comparison(home_team: str, away_team: str) -> None:
     )
 
 
+def rule_based_match_analysis(row: pd.Series, prediction) -> list[str]:
+    home = row["home_team"]
+    away = row["away_team"]
+    home_strength = team_strength(matches_df, home)
+    away_strength = team_strength(matches_df, away)
+    elo_gap = home_strength["elo"] - away_strength["elo"]
+    form_gap = home_strength["form"] - away_strength["form"]
+    h2h = head_to_head_record(wc_head_to_head_df, home, away)
+    home_players = players_df[players_df["team"] == home]
+    away_players = players_df[players_df["team"] == away]
+    home_goal_rate = home_players["goal_rate"].mean() if not home_players.empty else 0
+    away_goal_rate = away_players["goal_rate"].mean() if not away_players.empty else 0
+
+    lines = []
+    if abs(elo_gap) >= 90:
+        leader = team_name(home if elo_gap > 0 else away)
+        lines.append(f"Elo 差距達 {abs(elo_gap):.0f} 分，{leader} 在整體實力評分上優勢較明顯。")
+    else:
+        lines.append("雙方 Elo 差距不大，模型判斷比賽可能更接近，平手或小比分機率需要特別注意。")
+
+    if abs(form_gap) < 0.12:
+        lines.append("近期狀態接近，節奏可能偏膠著，單一進球或定位球會放大比賽影響。")
+    else:
+        form_team = team_name(home if form_gap > 0 else away)
+        lines.append(f"{form_team} 近期狀態略佳，模型會給予較高的臨場表現權重。")
+
+    h2h_row = h2h.iloc[0] if isinstance(h2h, pd.DataFrame) and not h2h.empty else None
+    if h2h_row is not None and int(h2h_row.get("matches", 0)) > 0:
+        lines.append(
+            f"歷史交手共有 {int(h2h_row.get('matches', 0))} 場，雙方勝場分別為 {int(h2h_row.get('team_a_wins', 0))} 與 {int(h2h_row.get('team_b_wins', 0))}，平手 {int(h2h_row.get('draws', 0))} 場。"
+        )
+    else:
+        lines.append("目前 2002～2022 世界盃資料中缺少足夠直接交手紀錄，因此歷史交手不作為主要判斷。")
+
+    if max(home_goal_rate, away_goal_rate) > 0:
+        player_edge = team_name(home if home_goal_rate >= away_goal_rate else away)
+        lines.append(f"關鍵球員平均進球率方面，{player_edge} 略佔優勢，但此特徵僅作展示輔助，不直接重寫主模型。")
+
+    top_probability = max(prediction.home_win_probability, prediction.draw_probability, prediction.away_win_probability)
+    if top_probability < 0.42:
+        lines.append("勝平負機率分布較分散，模型信心偏保守，適合視為高不確定性場次。")
+    else:
+        lines.append(f"模型最高方向機率約 {format_percent(top_probability)}，可搭配信心分數與風險等級一起解讀。")
+    return lines
+
+
 def match_analysis_page() -> None:
     page_header("單場分析頁", "大型比分卡、勝平負機率、信心分數進度條與世界盃歷史表現")
     disclaimer_box()
     row = selected_fixture()
     prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
     prediction_cards(row)
+
+    st.subheader("AI 賽事分析文字")
+    for line in rule_based_match_analysis(row, prediction):
+        st.markdown(f"- {line}")
+    st.caption("規則式繁體中文分析，未串接 OpenAI API；資料不足時使用本地展示資料與保守描述。")
 
     probabilities = prediction_to_frame(prediction)
     st.dataframe(
