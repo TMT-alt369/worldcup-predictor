@@ -49,15 +49,39 @@ def _normal_status(status: str) -> str:
     return mapping.get(str(status).upper(), str(status or "未定"))
 
 
-def _request_json(url: str, api_key: str, params: dict[str, Any]) -> dict[str, Any]:
+def _payload_summary(payload: dict[str, Any]) -> str:
+    response = payload.get("response", [])
+    errors = payload.get("errors", {})
+    results = payload.get("results")
+    if isinstance(response, list):
+        response_count = len(response)
+    elif response:
+        response_count = 1
+    else:
+        response_count = 0
+    return f"results={results}, response_count={response_count}, errors={errors or 'none'}"
+
+
+def _request_json(
+    url: str,
+    api_key: str,
+    params: dict[str, Any],
+    diagnostics: dict[str, Any] | None = None,
+    label: str = "request",
+) -> dict[str, Any]:
     response = requests.get(
         url,
         headers={"x-apisports-key": api_key},
         params=params,
         timeout=12,
     )
+    if diagnostics is not None:
+        diagnostics[f"{label}_http_status"] = response.status_code
     response.raise_for_status()
-    return response.json()
+    payload = response.json()
+    if diagnostics is not None:
+        diagnostics[f"{label}_summary"] = _payload_summary(payload)
+    return payload
 
 
 def _stat_value(statistics: list[dict[str, Any]], stat_name: str, default: int) -> int:
@@ -76,8 +100,18 @@ def _stat_value(statistics: list[dict[str, Any]], stat_name: str, default: int) 
     return default
 
 
-def _fixture_statistics(api_key: str, fixture_id: str) -> dict[str, int]:
-    payload = _request_json(API_FOOTBALL_STATISTICS_URL, api_key, {"fixture": fixture_id})
+def _fixture_statistics(
+    api_key: str,
+    fixture_id: str,
+    diagnostics: dict[str, Any] | None = None,
+) -> dict[str, int]:
+    payload = _request_json(
+        API_FOOTBALL_STATISTICS_URL,
+        api_key,
+        {"fixture": fixture_id},
+        diagnostics=diagnostics,
+        label="statistics",
+    )
     teams = payload.get("response", [])
     if len(teams) < 2:
         return {}
@@ -108,8 +142,18 @@ def _event_type(api_event_type: str, detail: str) -> str:
     return api_event_type or detail or "Event"
 
 
-def _fixture_events(api_key: str, fixture_id: str) -> pd.DataFrame:
-    payload = _request_json(API_FOOTBALL_EVENTS_URL, api_key, {"fixture": fixture_id})
+def _fixture_events(
+    api_key: str,
+    fixture_id: str,
+    diagnostics: dict[str, Any] | None = None,
+) -> pd.DataFrame:
+    payload = _request_json(
+        API_FOOTBALL_EVENTS_URL,
+        api_key,
+        {"fixture": fixture_id},
+        diagnostics=diagnostics,
+        label="events",
+    )
     rows = []
     for item in payload.get("response", []):
         time = item.get("time", {}) or {}
@@ -134,6 +178,7 @@ def _fixture_events(api_key: str, fixture_id: str) -> pd.DataFrame:
 def _api_football_live_matches(
     api_key: str,
     target_date: date | None = None,
+    diagnostics: dict[str, Any] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     params: dict[str, Any] = {
         "league": DEFAULT_WORLD_CUP_LEAGUE_ID,
@@ -142,7 +187,15 @@ def _api_football_live_matches(
     if target_date is not None:
         params["date"] = target_date.isoformat()
 
-    payload = _request_json(API_FOOTBALL_FIXTURES_URL, api_key, params)
+    if diagnostics is not None:
+        diagnostics["api_params"] = {"league": params.get("league"), "season": params.get("season"), "date": params.get("date")}
+    payload = _request_json(
+        API_FOOTBALL_FIXTURES_URL,
+        api_key,
+        params,
+        diagnostics=diagnostics,
+        label="fixtures",
+    )
     rows = []
     event_frames = []
     for item in payload.get("response", []):
@@ -165,12 +218,12 @@ def _api_football_live_matches(
         }
 
         try:
-            stats.update(_fixture_statistics(api_key, fixture_id))
+            stats.update(_fixture_statistics(api_key, fixture_id, diagnostics))
         except requests.RequestException:
             pass
 
         try:
-            events = _fixture_events(api_key, fixture_id)
+            events = _fixture_events(api_key, fixture_id, diagnostics)
             if not events.empty:
                 event_frames.append(events)
         except requests.RequestException:
@@ -216,18 +269,55 @@ def load_live_matches_from_secrets(
     fallback_events: pd.DataFrame,
     target_date: date | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, str]:
+    matches, events, source, _ = load_live_matches_with_debug(
+        secrets,
+        fallback_matches,
+        fallback_events,
+        target_date,
+    )
+    return matches, events, source
+
+
+def load_live_matches_with_debug(
+    secrets: Any,
+    fallback_matches: pd.DataFrame,
+    fallback_events: pd.DataFrame,
+    target_date: date | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame, str, dict[str, Any]]:
+    diagnostics: dict[str, Any] = {
+        "secret_name": "FOOTBALL_API_KEY",
+        "secret_exists": False,
+        "api_test_success": False,
+        "http_status": None,
+        "api_summary": "尚未呼叫 API",
+        "fallback_reason": "",
+        "error": "",
+    }
     api_key = _secret_value(secrets, "FOOTBALL_API_KEY")
+    diagnostics["secret_exists"] = bool(api_key)
     if not api_key:
-        return _fallback_live_data(fallback_matches, fallback_events)
+        diagnostics["fallback_reason"] = "Streamlit Secrets 未提供 FOOTBALL_API_KEY"
+        matches, events, source = _fallback_live_data(fallback_matches, fallback_events)
+        return matches, events, source, diagnostics
 
     try:
-        matches, events = _api_football_live_matches(api_key, target_date)
-    except requests.RequestException:
-        return _fallback_live_data(fallback_matches, fallback_events)
+        matches, events = _api_football_live_matches(api_key, target_date, diagnostics)
+        diagnostics["http_status"] = diagnostics.get("fixtures_http_status")
+        diagnostics["api_summary"] = diagnostics.get("fixtures_summary", "API 已回應，但無摘要")
+        diagnostics["api_test_success"] = diagnostics.get("fixtures_http_status") == 200
+    except requests.RequestException as exc:
+        diagnostics["http_status"] = diagnostics.get("fixtures_http_status")
+        diagnostics["api_summary"] = diagnostics.get("fixtures_summary", "API 呼叫失敗，無回傳摘要")
+        diagnostics["fallback_reason"] = "API-Football 請求失敗"
+        diagnostics["error"] = f"{exc.__class__.__name__}: {exc}"
+        matches, events, source = _fallback_live_data(fallback_matches, fallback_events)
+        return matches, events, source, diagnostics
 
     if matches.empty:
-        return _fallback_live_data(fallback_matches, fallback_events)
+        diagnostics["fallback_reason"] = "API-Football 回傳 0 場比賽，改用展示資料"
+        matches, events, source = _fallback_live_data(fallback_matches, fallback_events)
+        return matches, events, source, diagnostics
 
     if events.empty:
         events = pd.DataFrame(columns=fallback_events.columns)
-    return matches, events, API_SOURCE
+    return matches, events, API_SOURCE, diagnostics
