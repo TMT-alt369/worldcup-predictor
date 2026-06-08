@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from worldcup_predictor.api_client import load_live_data
 from worldcup_predictor.backtest import backtest
 from worldcup_predictor.betting import analyze_1x2
 from worldcup_predictor.data_loader import (
@@ -24,6 +25,7 @@ from worldcup_predictor.data_loader import (
 from worldcup_predictor.elo import build_elo_rankings
 from worldcup_predictor.history import head_to_head_record, team_summary, top_team_stats
 from worldcup_predictor.model import predict_match, prediction_to_frame
+from worldcup_predictor.players import player_database
 from worldcup_predictor.tournament import run_tournament_simulation
 from worldcup_predictor.ui import disclaimer_box, format_percent, signal_dataframe
 
@@ -580,6 +582,7 @@ PAGE_OPTIONS = [
     "晉級機率分析",
     "Elo 世界排名",
     "即時賽況",
+    "球員資料庫",
     "歷史世界盃數據分析",
     "國家隊世界盃戰績",
     "歷史交手分析",
@@ -1624,6 +1627,187 @@ def disclaimer_page() -> None:
     )
 
 
+def live_time_text(value) -> str:
+    if value is None or pd.isna(value):
+        return "時間待定"
+    timestamp = pd.to_datetime(value, errors="coerce", utc=True)
+    if pd.isna(timestamp):
+        return str(value)
+    return timestamp.tz_convert("Asia/Taipei").strftime("%Y/%m/%d %H:%M")
+
+
+def live_matches_page() -> None:
+    page_header("即時賽況", "API 優先載入真實賽況；無 API key、無資料或額度不足時自動使用 fallback 展示資料")
+    refresh_seconds = st.selectbox("刷新頻率", [30, 45, 60], index=1)
+    st.markdown(
+        f"<meta http-equiv='refresh' content='{refresh_seconds}'>",
+        unsafe_allow_html=True,
+    )
+
+    target_date = pd.Timestamp.now(tz="Asia/Taipei").date()
+    live_matches, live_events, data_source = load_live_data(
+        st.secrets,
+        live_matches_df,
+        live_events_df,
+        target_date=target_date,
+    )
+
+    st.caption(f"時區：台灣時間（UTC+8）｜刷新頻率：{refresh_seconds} 秒｜資料來源：{data_source}")
+    if "fallback" in data_source.lower():
+        st.warning("展示資料／模擬即時賽況：目前未取得真實 API 資料，畫面使用本地 fallback CSV，避免部署時空白或壞掉。")
+    else:
+        st.success("目前即時賽況由 API 載入；若 API 未提供事件或技術統計，該區塊會顯示待補資料。")
+
+    if live_matches.empty:
+        st.info("今日沒有可顯示的比賽資料。")
+        return
+
+    def option_label(row: pd.Series) -> str:
+        return (
+            f"{live_time_text(row.get('scheduled_time'))} | "
+            f"{team_name(row.get('home_team', 'TBD'))} "
+            f"{row.get('home_score', 0)}-{row.get('away_score', 0)} "
+            f"{team_name(row.get('away_team', 'TBD'))}"
+        )
+
+    labels = {
+        option_label(row): row["live_match_id"]
+        for _, row in live_matches.iterrows()
+    }
+    selected = st.selectbox("選擇即時比賽", list(labels.keys()))
+    live_match_id = labels[selected]
+    row = live_matches[live_matches["live_match_id"] == live_match_id].iloc[0]
+    scheduled_time = live_time_text(row.get("scheduled_time"))
+    venue = row.get("venue", "待官方公布")
+
+    st.markdown(
+        f"""
+        <div class="display-card score-card">
+          <div class="score-teams">{html.escape(team_name(row.get('home_team', 'TBD')))} vs {html.escape(team_name(row.get('away_team', 'TBD')))}</div>
+          <div class="score-value">{row.get('home_score', 0)} : {row.get('away_score', 0)}</div>
+          <div class="score-note">比賽時間：{html.escape(scheduled_time)} ｜ 狀態：{html.escape(str(row.get('status', '待官方公布')))} ｜ 分鐘：{int(row.get('minute', 0) or 0)}' ｜ 場地：{html.escape(str(venue))}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    cols = st.columns(3)
+    with cols[0]:
+        display_card("射門", f"{int(row.get('home_shots', 0))} : {int(row.get('away_shots', 0))}")
+    with cols[1]:
+        display_card("控球率", f"{int(row.get('home_possession', 50))}% : {int(row.get('away_possession', 50))}%")
+    with cols[2]:
+        display_card("角球", f"{int(row.get('home_corners', 0))} : {int(row.get('away_corners', 0))}")
+
+    st.subheader("比賽事件")
+    events = live_events[live_events["live_match_id"] == live_match_id].copy()
+    if events.empty:
+        st.info("目前 API 或 fallback 資料沒有提供此場事件。")
+    else:
+        events["事件"] = events["event_type"].map(live_event_label)
+        events["球隊"] = events["team"].map(lambda team: f"{flag(team)} {team_name(team, with_flag=False)}")
+        st.dataframe(
+            events[["minute", "事件", "球隊", "player", "detail"]].rename(
+                columns={
+                    "minute": "時間",
+                    "player": "球員",
+                    "detail": "說明",
+                }
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    st.subheader("技術統計")
+    stats = pd.DataFrame(
+        [
+            {"項目": "射門", row["home_team"]: row.get("home_shots", 0), row["away_team"]: row.get("away_shots", 0)},
+            {"項目": "控球率", row["home_team"]: row.get("home_possession", 50), row["away_team"]: row.get("away_possession", 50)},
+            {"項目": "角球", row["home_team"]: row.get("home_corners", 0), row["away_team"]: row.get("away_corners", 0)},
+        ]
+    )
+    stats_long = stats.melt(id_vars="項目", var_name="球隊", value_name="數值")
+    chart = px.bar(
+        stats_long,
+        x="項目",
+        y="數值",
+        color="球隊",
+        barmode="group",
+        color_discrete_sequence=[GOLD, "#8aa0c3"],
+    )
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(chart, use_container_width=True)
+
+
+def player_database_page() -> None:
+    page_header("球員資料庫", "國家隊球員篩選、姓名搜尋與位置查詢")
+    st.info("2026 世界盃最終名單若尚未完整公布，本頁先使用本地 fallback 球員資料。後續可接 API-Football 或 football-data.org 名單資料，API key 由 Streamlit secrets 管理。")
+
+    database = player_database(players_df, team_meta_df)
+    if database.empty:
+        st.warning("目前沒有球員資料可顯示。")
+        return
+
+    teams = ["全部"] + database["national_team"].dropna().sort_values().unique().tolist()
+    positions = ["全部"] + database["position_zh"].dropna().sort_values().unique().tolist()
+
+    cols = st.columns([1.1, 1.0, 1.4])
+    selected_team = cols[0].selectbox("國家隊", teams)
+    selected_position = cols[1].selectbox("位置", positions)
+    keyword = cols[2].text_input("搜尋球員姓名", "")
+
+    filtered = database.copy()
+    if selected_team != "全部":
+        filtered = filtered[filtered["national_team"] == selected_team]
+    if selected_position != "全部":
+        filtered = filtered[filtered["position_zh"] == selected_position]
+    if keyword.strip():
+        filtered = filtered[filtered["player_name"].str.contains(keyword.strip(), case=False, na=False)]
+
+    kpi_cols = st.columns(3)
+    with kpi_cols[0]:
+        display_card("球員筆數", str(len(filtered)), "目前顯示資料")
+    with kpi_cols[1]:
+        display_card("國家隊數", str(filtered["team"].nunique()), "篩選後")
+    with kpi_cols[2]:
+        avg_form = filtered["recent_form_rating"].mean() if not filtered.empty else 0
+        display_card("平均近況", f"{avg_form:.1f}", "fallback 評分")
+
+    table = filtered[
+        [
+            "national_team",
+            "player_name",
+            "jersey_number",
+            "position_zh",
+            "age",
+            "club",
+            "national_caps",
+            "national_goals",
+            "goal_rate",
+            "recent_form_rating",
+        ]
+    ].copy()
+    table["goal_rate"] = table["goal_rate"].map(format_percent)
+    st.dataframe(
+        table.rename(
+            columns={
+                "national_team": "國家隊",
+                "player_name": "球員姓名",
+                "jersey_number": "背號",
+                "position_zh": "位置",
+                "age": "年齡",
+                "club": "所屬俱樂部",
+                "national_caps": "國家隊出賽",
+                "national_goals": "國家隊進球",
+                "goal_rate": "進球率",
+                "recent_form_rating": "近況評分",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
 if page == "首頁儀表板":
     dashboard_page()
 elif page == "賽程頁":
@@ -1642,6 +1826,8 @@ elif page == "Elo 世界排名":
     elo_ranking_page()
 elif page == "即時賽況":
     live_matches_page()
+elif page == "球員資料庫":
+    player_database_page()
 elif page == "歷史世界盃數據分析":
     worldcup_history_page()
 elif page == "國家隊世界盃戰績":

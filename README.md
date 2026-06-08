@@ -116,3 +116,29 @@ MVP 保留簡單可解釋模型：
 ## 免責聲明
 
 本網站不提供下注、金流、帳戶、會員或任何投注交易功能。所有預測、賠率分析與投注建議僅供資料分析與作品展示參考，不保證命中率或獲利。請自行承擔風險。
+
+## V5 真實即時資訊與球員資料庫
+
+V5 新增兩個展示重點：
+
+- 即時賽況頁：優先讀取真實足球 API，顯示今日比賽、狀態、比分、時間、主客隊、場地與事件資料；若 API 無資料、額度不足或未設定 key，會自動使用 `data/mock_live_matches.csv` 與 `data/mock_live_events.csv` fallback。
+- 球員資料庫頁：支援國家隊篩選、位置篩選與球員姓名搜尋，顯示球員姓名、背號、位置、年齡、俱樂部、國家隊、出賽數、進球數、進球率與近況評分。
+
+目前 2026 世界盃最終球員名單若尚未完整公布，球員資料庫會先使用 `data/players.csv` 作為本地展示資料，並在頁面上清楚標示 fallback 來源。後續可在 `worldcup_predictor/players.py` 中擴充 API 匯入流程。
+
+### Streamlit Secrets 設定
+
+不要把 API key 寫進程式碼或提交到 GitHub。請在 Streamlit Cloud：
+
+```text
+Manage app -> Settings -> Secrets
+```
+
+加入以下任一組 key：
+
+```toml
+FOOTBALL_DATA_API_KEY = "你的 football-data.org API key"
+API_FOOTBALL_KEY = "你的 API-Football API key"
+```
+
+若兩個 key 都存在，系統會優先嘗試 `football-data.org`，失敗或無資料時再嘗試 `API-Football`，最後才使用本地 fallback CSV。
