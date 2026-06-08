@@ -520,10 +520,22 @@ def inject_theme() -> None:
                 font-size: 0.96rem;
                 line-height: 1.35;
             }}
+            .stSelectbox label,
+            .stTextInput label,
+            .stRadio label {{
+                font-size: 1rem !important;
+            }}
+            .stSelectbox div,
+            .stTextInput input {{
+                font-size: 1rem !important;
+            }}
             .js-plotly-plot,
             .plot-container,
             .svg-container {{
                 max-width: 100% !important;
+            }}
+            div[data-testid="column"] {{
+                min-width: 0 !important;
             }}
             .footer {{
                 padding-bottom: 42px;
@@ -668,6 +680,7 @@ PAGE_OPTIONS = [
     "世界盃模擬器",
     "Elo 世界排名",
     "即時賽況",
+    "球隊資料庫",
     "球員資料庫",
     "國家隊資料中心",
     "專題展示模式",
@@ -677,7 +690,16 @@ PAGE_OPTIONS = [
     "免責聲明頁",
 ]
 
-page = st.sidebar.radio("功能選單", PAGE_OPTIONS)
+PAGE_GROUPS = {
+    "首頁": ["首頁儀表板"],
+    "賽程中心": ["世界盃賽程表", "即時賽況"],
+    "預測中心": ["單場分析頁", "冠軍機率預測", "晉級機率分析", "世界盃模擬器", "投注分析頁"],
+    "資料中心": ["Elo 世界排名", "球隊資料庫", "球員資料庫", "國家隊資料中心", "歷史世界盃數據分析", "國家隊世界盃戰績", "歷史交手分析"],
+    "專題展示": ["模型回測頁", "專題展示模式", "免責聲明頁"],
+}
+
+selected_group = st.sidebar.selectbox("功能分類", list(PAGE_GROUPS.keys()))
+page = st.sidebar.radio("頁面", PAGE_GROUPS[selected_group])
 st.sidebar.divider()
 st.sidebar.caption("MVP 範圍：勝平負 1X2、2002~2022 世界盃歷史資料、可解釋模型")
 
@@ -1074,6 +1096,11 @@ def rule_based_match_analysis(row: pd.Series, prediction) -> list[str]:
     away_goal_rate = away_players["goal_rate"].mean() if not away_players.empty else 0
 
     lines = []
+    lines.append(
+        f"勝率預測：{team_name(home)} {format_percent(prediction.home_win_probability)}、平手 {format_percent(prediction.draw_probability)}、{team_name(away)} {format_percent(prediction.away_win_probability)}。"
+    )
+    lines.append(f"可能比分：模型預測 {prediction.predicted_home_goals} : {prediction.predicted_away_goals}，預期進球約 {prediction.expected_home_goals} : {prediction.expected_away_goals}。")
+
     if abs(elo_gap) >= 90:
         leader = team_name(home if elo_gap > 0 else away)
         lines.append(f"Elo 差距達 {abs(elo_gap):.0f} 分，{leader} 在整體實力評分上優勢較明顯。")
@@ -1100,9 +1127,10 @@ def rule_based_match_analysis(row: pd.Series, prediction) -> list[str]:
 
     top_probability = max(prediction.home_win_probability, prediction.draw_probability, prediction.away_win_probability)
     if top_probability < 0.42:
-        lines.append("勝平負機率分布較分散，模型信心偏保守，適合視為高不確定性場次。")
+        lines.append("比賽風險：勝平負機率分布較分散，模型信心偏保守，適合視為高不確定性場次。")
     else:
-        lines.append(f"模型最高方向機率約 {format_percent(top_probability)}，可搭配信心分數與風險等級一起解讀。")
+        lines.append(f"比賽風險：模型最高方向機率約 {format_percent(top_probability)}，仍需搭配信心分數與風險等級一起解讀。")
+    lines.append("下注風險提醒：本網站不提供下注功能，所有預測與文字分析僅供專題展示與資料分析參考，不保證命中或獲利。")
     return lines
 
 
@@ -2687,6 +2715,234 @@ def presentation_mode_page() -> None:
     st.plotly_chart(heatmap, use_container_width=True)
 
 
+def load_v8_player_database() -> pd.DataFrame:
+    try:
+        return pd.read_csv("data/player_database.csv")
+    except Exception:
+        fallback = player_database(players_df, team_meta_df).copy()
+        fallback["assists"] = 0
+        fallback["appearances"] = fallback["national_caps"]
+        fallback["recent_form"] = fallback.get("recent_form_rating", 7.0)
+        fallback["is_key_player"] = fallback.groupby("team")["recent_form"].rank(method="first", ascending=False).le(3)
+        fallback["data_note"] = "展示資料／模擬資料：fallback from players_2026.csv"
+        return fallback.rename(columns={"national_goals": "national_goals"})
+
+
+def load_v8_team_database() -> pd.DataFrame:
+    try:
+        return pd.read_csv("data/team_database.csv")
+    except Exception:
+        fallback = team_meta_df.copy()
+        fallback["confederation"] = fallback.get("confederation", "展示資料")
+        fallback["recent_form"] = 0.5
+        fallback["best_finish"] = "待資料補齊"
+        fallback["star_players"] = "待資料補齊"
+        fallback["tactical_style"] = "展示資料"
+        fallback["data_note"] = "展示資料／模擬資料：fallback from team_meta.csv"
+        return fallback
+
+
+def dashboard_page() -> None:
+    st.markdown(
+        """
+        <div class="hero">
+          <div>
+            <div class="hero-kicker">WORLD CUP PREDICTION CENTER · V8</div>
+            <div class="hero-title">世界盃智慧預測中心</div>
+            <div class="hero-copy">
+              整合賽程、單場比分、冠軍機率、晉級機率、即時實況摘要與 Monte Carlo 模擬，
+              以深色科技風呈現專題展示重點。
+            </div>
+          </div>
+          <div class="hero-visual"><div class="trophy">🏆</div></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    disclaimer_box()
+
+    sim_df = v7_simulation()
+    champion = sim_df.iloc[0]
+    row = fixture_odds_df.iloc[0]
+    prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    live_matches, _, live_source = load_live_data(st.secrets, live_matches_df, live_events_df, target_date=pd.Timestamp.now(tz="Asia/Taipei").date())
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("今日／近期賽程", f"{len(fixture_odds_df.head(6))} 場", "台灣時間 UTC+8")
+    with cols[1]:
+        display_card("預測比分", f"{prediction.predicted_home_goals} : {prediction.predicted_away_goals}", matchup_text(row))
+    with cols[2]:
+        display_card("冠軍機率最高", format_percent(float(champion["champion_probability"])), champion["team_display"])
+    with cols[3]:
+        display_card("Monte Carlo", f"{V7_SIMULATIONS:,}", "展示資料／模擬資料")
+
+    left, right = st.columns([1.05, 0.95])
+    with left:
+        st.subheader("今日／近期賽程")
+        upcoming = fixture_odds_df.head(5).copy()
+        st.dataframe(fixtures_with_flags(upcoming), use_container_width=True, hide_index=True)
+    with right:
+        st.subheader("冠軍機率 Top 5")
+        top5 = sim_df.head(5).sort_values("champion_probability", ascending=True).copy()
+        top5["label"] = top5["champion_probability"].map(format_percent)
+        chart = px.bar(
+            top5,
+            x="champion_probability",
+            y="team_display",
+            orientation="h",
+            text="label",
+            color="champion_probability",
+            color_continuous_scale=["#415a77", GOLD_LIGHT],
+        )
+        chart.update_xaxes(tickformat=".0%")
+        chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False, margin=dict(l=8, r=35, t=8, b=8))
+        st.plotly_chart(chart, use_container_width=True)
+
+    cols = st.columns(3)
+    with cols[0]:
+        display_card("晉級機率摘要", format_percent(float(champion["group_qualified_probability"])), f"{champion['team_display']} 小組出線率")
+    with cols[1]:
+        display_card("即時實況摘要", live_source, "API-Football 或 Fallback Dataset")
+    with cols[2]:
+        display_card("專題模型說明", "Elo + Poisson", "Monte Carlo 模擬與歷史權重")
+
+
+def player_database_page() -> None:
+    page_header("球員資料庫", "V8：球員搜尋、國家/位置篩選、關鍵球員 Top 10")
+    players = load_v8_player_database()
+    st.caption("資料來源：展示資料／模擬資料會於 data_note 欄位標示；缺資料時不讓頁面報錯。")
+
+    teams = ["全部"] + sorted(players["team_zh"].dropna().unique().tolist())
+    positions = ["全部"] + sorted(players["position"].dropna().unique().tolist())
+    cols = st.columns([1, 1, 1.4])
+    selected_team = cols[0].selectbox("國家隊", teams)
+    selected_position = cols[1].selectbox("位置", positions)
+    keyword = cols[2].text_input("搜尋球員", "")
+
+    filtered = players.copy()
+    if selected_team != "全部":
+        filtered = filtered[filtered["team_zh"] == selected_team]
+    if selected_position != "全部":
+        filtered = filtered[filtered["position"] == selected_position]
+    if keyword.strip():
+        filtered = filtered[filtered["player_name"].str.contains(keyword.strip(), case=False, na=False)]
+
+    key_players = players.sort_values(["is_key_player", "recent_form", "national_goals"], ascending=False).head(10).copy()
+    st.subheader("關鍵球員 Top 10")
+    key_chart = px.bar(
+        key_players.sort_values("recent_form"),
+        x="recent_form",
+        y="player_name",
+        color="recent_form",
+        orientation="h",
+        hover_data=["team_zh", "position", "national_goals", "assists"],
+        color_continuous_scale=["#415a77", GOLD_LIGHT],
+    )
+    key_chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+    st.plotly_chart(key_chart, use_container_width=True)
+
+    table = filtered[["player_name", "team_zh", "position", "age", "national_goals", "assists", "appearances", "recent_form", "is_key_player", "data_note"]].copy()
+    st.dataframe(
+        table.rename(columns={
+            "player_name": "球員姓名",
+            "team_zh": "國家隊",
+            "position": "位置",
+            "age": "年齡",
+            "national_goals": "進球數",
+            "assists": "助攻數",
+            "appearances": "出場數",
+            "recent_form": "近期狀態",
+            "is_key_player": "關鍵球員標記",
+            "data_note": "資料說明",
+        }),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+def team_database_page() -> None:
+    page_header("球隊資料庫", "V8：洲別篩選、國家搜尋、Elo Top 10 與各洲隊伍數")
+    teams = load_v8_team_database()
+    st.caption("資料來源：展示資料／模擬資料會於 data_note 欄位標示；戰術風格與近期狀態為本地推估。")
+
+    confeds = ["全部"] + sorted(teams["confederation"].dropna().unique().tolist())
+    cols = st.columns([1, 1.4])
+    selected_confed = cols[0].selectbox("洲別", confeds)
+    keyword = cols[1].text_input("搜尋國家", "")
+
+    filtered = teams.copy()
+    if selected_confed != "全部":
+        filtered = filtered[filtered["confederation"] == selected_confed]
+    if keyword.strip():
+        filtered = filtered[
+            filtered["team"].str.contains(keyword.strip(), case=False, na=False)
+            | filtered["team_zh"].str.contains(keyword.strip(), case=False, na=False)
+        ]
+
+    left, right = st.columns(2)
+    with left:
+        st.subheader("Elo Top 10")
+        top10 = teams.sort_values("elo", ascending=False).head(10).sort_values("elo")
+        chart = px.bar(top10, x="elo", y="team_zh", orientation="h", color="elo", color_continuous_scale=["#415a77", GOLD_LIGHT])
+        chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+        st.plotly_chart(chart, use_container_width=True)
+    with right:
+        st.subheader("各洲參賽隊伍數")
+        confed_counts = teams.groupby("confederation", as_index=False)["team"].count()
+        pie = px.pie(confed_counts, values="team", names="confederation", hole=0.42, color_discrete_sequence=[GOLD, "#8aa0c3", "#28a745", "#dc3545", "#6f42c1"])
+        pie.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color=INK)
+        st.plotly_chart(pie, use_container_width=True)
+
+    st.dataframe(
+        filtered[["flag_emoji", "team_zh", "confederation", "fifa_ranking", "elo", "recent_form", "best_finish", "star_players", "tactical_style", "data_note"]].rename(
+            columns={
+                "flag_emoji": "國旗",
+                "team_zh": "國家",
+                "confederation": "洲別",
+                "fifa_ranking": "FIFA 排名",
+                "elo": "Elo 分數",
+                "recent_form": "近期狀態",
+                "best_finish": "世界盃最佳成績",
+                "star_players": "主要球星",
+                "tactical_style": "戰術風格",
+                "data_note": "資料說明",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+def presentation_mode_page() -> None:
+    page_header("專題展示模式", "給老師 3 分鐘快速看完系統亮點的卡片式展示頁")
+    cards = [
+        ("專題名稱", "世界盃智慧預測中心", "以資料分析與可解釋模型預測 2026 世界盃。"),
+        ("專題動機", "把賽程、球隊、球員與模型整合", "讓使用者快速理解比賽風險與預測依據。"),
+        ("系統功能架構", "賽程中心／預測中心／資料中心／專題展示", "用分類側邊欄降低操作複雜度。"),
+        ("使用資料", "本地 CSV + API-Football fallback", "所有展示資料／模擬資料皆清楚標示。"),
+        ("預測模型說明", "Elo + Poisson + 歷史權重", "保留可解釋性，不使用黑盒深度學習。"),
+        ("Monte Carlo 模擬", "1000 / 5000 / 10000 次", "輸出小組出線到奪冠機率。"),
+        ("系統限制", "不保證賽果、不提供下注", "API 無資料時使用 fallback，避免頁面壞掉。"),
+        ("未來發展", "串接更多官方/商業資料源", "補足身價、慣用腳、即時事件與球員進階數據。"),
+        ("操作流程", "首頁 → 單場分析 → 模擬器 → 資料庫", "適合課堂快速展示與口頭報告。"),
+    ]
+    for index in range(0, len(cards), 3):
+        cols = st.columns(3)
+        for col, (title, value, note) in zip(cols, cards[index:index + 3]):
+            with col:
+                display_card(title, value, note)
+
+    sim_df = v7_simulation()
+    st.subheader("展示亮點：冠軍機率 Top 5")
+    top5 = sim_df.head(5).sort_values("champion_probability", ascending=True).copy()
+    top5["label"] = top5["champion_probability"].map(format_percent)
+    chart = px.bar(top5, x="champion_probability", y="team_display", orientation="h", text="label", color="champion_probability", color_continuous_scale=["#415a77", GOLD_LIGHT])
+    chart.update_xaxes(tickformat=".0%")
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+    st.plotly_chart(chart, use_container_width=True)
+
+
 if page == "首頁儀表板":
     dashboard_page()
 elif page == "世界盃賽程表":
@@ -2711,6 +2967,8 @@ elif page == "Elo 世界排名":
     elo_ranking_page()
 elif page == "即時賽況":
     live_matches_page()
+elif page == "球隊資料庫":
+    team_database_page()
 elif page == "球員資料庫":
     player_database_page()
 elif page == "國家隊資料中心":
