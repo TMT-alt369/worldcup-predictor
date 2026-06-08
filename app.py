@@ -2951,19 +2951,27 @@ def live_matches_page() -> None:
     refresh_seconds = 45
     st.markdown(f"<meta http-equiv='refresh' content='{refresh_seconds}'>", unsafe_allow_html=True)
 
+    source_mode = st.radio(
+        "資料來源模式",
+        ["世界盃展示資料", "真實足球即時資料"],
+        horizontal=True,
+        index=1,
+    )
+    live_mode = "real" if source_mode == "真實足球即時資料" else "demo"
     target_date = pd.Timestamp.now(tz="Asia/Taipei").date()
     live_matches, live_events, data_source, _live_debug = load_live_matches_with_debug(
         st.secrets,
         live_matches_df,
         live_events_df,
         target_date=target_date,
+        mode=live_mode,
     )
 
     is_mock_source = "mock" in str(data_source).lower() or "展示" in str(data_source)
     if is_mock_source:
-        st.warning("🟡 展示資料（目前 API 無可用賽事）")
+        st.warning("🟡 展示資料")
     else:
-        st.success("🟢 API-Football 即時資料")
+        st.success("🟢 真實 API 即時資料")
     st.caption(f"時區：台灣時間（UTC+8）｜每 {refresh_seconds} 秒自動刷新")
 
     if live_matches.empty:
@@ -2990,13 +2998,19 @@ def live_matches_page() -> None:
     row = live_matches[live_matches["live_match_id"] == live_match_id].iloc[0]
     scheduled_time = live_time_text(row.get("scheduled_time"))
     venue = row.get("venue", "未提供")
+    league_name = row.get("league_name", "未提供")
+
+    def stat_text(value, suffix: str = "") -> str:
+        if value is None or pd.isna(value):
+            return "--"
+        return f"{int(value)}{suffix}"
 
     st.markdown(
         f"""
         <div class="display-card score-card">
           <div class="score-teams">{html.escape(team_name(row.get('home_team', 'TBD')))} vs {html.escape(team_name(row.get('away_team', 'TBD')))}</div>
           <div class="score-value">{row.get('home_score', 0)} : {row.get('away_score', 0)}</div>
-          <div class="score-note">比賽時間：{html.escape(scheduled_time)} ｜ 狀態：{html.escape(str(row.get('status', '未提供')))} ｜ 分鐘：{int(row.get('minute', 0) or 0)}' ｜ 場地：{html.escape(str(venue))}</div>
+          <div class="score-note">聯賽：{html.escape(str(league_name))} ｜ 比賽時間：{html.escape(scheduled_time)} ｜ 狀態：{html.escape(str(row.get('status', '未提供')))} ｜ 分鐘：{int(row.get('minute', 0) or 0)}' ｜ 場地：{html.escape(str(venue))}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -3004,11 +3018,11 @@ def live_matches_page() -> None:
 
     stat_cols = st.columns(3)
     with stat_cols[0]:
-        display_card("射門數", f"{int(row.get('home_shots', 0))} : {int(row.get('away_shots', 0))}")
+        display_card("射門數", f"{stat_text(row.get('home_shots'))} : {stat_text(row.get('away_shots'))}")
     with stat_cols[1]:
-        display_card("控球率", f"{int(row.get('home_possession', 50))}% : {int(row.get('away_possession', 50))}%")
+        display_card("控球率", f"{stat_text(row.get('home_possession'), '%')} : {stat_text(row.get('away_possession'), '%')}")
     with stat_cols[2]:
-        display_card("角球", f"{int(row.get('home_corners', 0))} : {int(row.get('away_corners', 0))}")
+        display_card("角球", f"{stat_text(row.get('home_corners'))} : {stat_text(row.get('away_corners'))}")
 
     st.subheader("比賽事件")
     if live_events.empty or "live_match_id" not in live_events.columns:
