@@ -577,6 +577,7 @@ PAGE_OPTIONS = [
     "投注分析頁",
     "模型回測頁",
     "冠軍機率預測",
+    "晉級機率分析",
     "Elo 世界排名",
     "即時賽況",
     "歷史世界盃數據分析",
@@ -1330,6 +1331,81 @@ def elo_ranking_page() -> None:
     )
 
 
+def advancement_probability_page() -> None:
+    page_header("晉級機率分析", "選擇任一參賽國家，查看小組出線到奪冠的階段機率")
+    st.info(
+        "本頁重用 V2 冠軍機率模擬系統，透過 Elo Rating、Poisson 進球模型、近期狀態、"
+        "世界盃歷史表現與 1000 次 Monte Carlo 模擬，估算各階段晉級機率。"
+        "結果僅供資料分析與專題展示參考，不代表實際賽果。"
+    )
+
+    simulations = 1000
+    simulation_df = cached_tournament_simulation(
+        fixtures_df,
+        team_meta_df,
+        wc_team_stats_df,
+        matches_df,
+        simulations,
+    )
+
+    team_options = simulation_df.sort_values("team_zh")["team_display"].tolist()
+    selected_display = st.selectbox("選擇國家隊", team_options)
+    selected_row = simulation_df[simulation_df["team_display"] == selected_display].iloc[0]
+
+    stage_rows = [
+        ("小組出線機率", selected_row["group_qualified_probability"]),
+        ("16 強機率", selected_row["round_16_probability"]),
+        ("8 強機率", selected_row["round_8_probability"]),
+        ("4 強機率", selected_row["semi_final_probability"]),
+        ("決賽機率", selected_row["final_probability"]),
+        ("奪冠機率", selected_row["champion_probability"]),
+    ]
+    probability_df = pd.DataFrame(stage_rows, columns=["階段", "機率"])
+    probability_df["百分比"] = probability_df["機率"].map(format_percent)
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("選擇球隊", selected_row["team_display"], f"Elo {int(selected_row['elo'])}")
+    with cols[1]:
+        display_card("小組出線", format_percent(float(selected_row["group_qualified_probability"])), "Monte Carlo")
+    with cols[2]:
+        display_card("決賽機率", format_percent(float(selected_row["final_probability"])), "淘汰賽模擬")
+    with cols[3]:
+        display_card("奪冠機率", format_percent(float(selected_row["champion_probability"])), f"{simulations:,} 次模擬")
+
+    st.subheader("階段晉級機率")
+    chart = px.bar(
+        probability_df,
+        x="階段",
+        y="機率",
+        text="百分比",
+        color="機率",
+        color_continuous_scale=["#415a77", GOLD_LIGHT],
+        labels={"機率": "晉級機率"},
+    )
+    chart.update_traces(textposition="outside")
+    chart.update_yaxes(tickformat=".0%", range=[0, 1])
+    chart.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color=INK,
+        coloraxis_showscale=False,
+        margin=dict(l=10, r=30, t=10, b=10),
+    )
+    st.plotly_chart(chart, use_container_width=True)
+
+    st.dataframe(
+        probability_df[["階段", "百分比"]].rename(columns={"百分比": "機率"}),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.caption(
+        "晉級機率來自同一份 1000 次 Monte Carlo 模擬結果；V4 僅新增單隊分析視角，"
+        "沒有修改 V1 單場預測、V2 冠軍模擬或 V3 Elo 排名邏輯。"
+    )
+
+
 def live_event_label(event_type: str) -> str:
     icons = {
         "Goal": "⚽",
@@ -1560,6 +1636,8 @@ elif page == "模型回測頁":
     model_backtest_page()
 elif page == "冠軍機率預測":
     champion_probability_page()
+elif page == "晉級機率分析":
+    advancement_probability_page()
 elif page == "Elo 世界排名":
     elo_ranking_page()
 elif page == "即時賽況":
