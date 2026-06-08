@@ -1,10 +1,10 @@
-live_match_id,minute,event_type,team,player,detail
-LIVE-001,18,Yellow Card,South Africa,Teboho Mokoena,Late challenge
-LIVE-001,37,Goal,Mexico,Hirving Lozano,Right foot shot from the left side
-LIVE-001,61,Substitution,South Africa,Percy Tau,Replaced by fresh attacker
-LIVE-002,22,Yellow Card,Czechia,Tomas Soucek,Tactical foul
-LIVE-002,41,Substitution,South Korea,Hwang Hee-chan,Returned from warm-up issue
-LIVE-003,14,Goal,Canada,Jonathan David,Finished a low cross
-LIVE-003,52,Goal,Bosnia and Herzegovina,Edin Dzeko,Header from set piece
-LIVE-003,70,Yellow Card,Canada,Alphonso Davies,Stopped counter attack
-LIVE-004,0,Red Card,Paraguay,Demo Player,Example red card event for display testing
+live_match_id,minute,event_type,team,player,detail,data_source
+LIVE-001,18,Yellow Card,South Africa,Teboho Mokoena,Late challenge,?????????????????
+LIVE-001,37,Goal,Mexico,Hirving Lozano,Right foot shot from the left side,?????????????????
+LIVE-001,61,Substitution,South Africa,Percy Tau,Replaced by fresh attacker,?????????????????
+LIVE-002,22,Yellow Card,Czechia,Tomas Soucek,Tactical foul,?????????????????
+LIVE-002,41,Substitution,South Korea,Hwang Hee-chan,Returned from warm-up issue,?????????????????
+LIVE-003,14,Goal,Canada,Jonathan David,Finished a low cross,?????????????????
+LIVE-003,52,Goal,Bosnia and Herzegovina,Edin Dzeko,Header from set piece,?????????????????
+LIVE-003,70,Yellow Card,Canada,Alphonso Davies,Stopped counter attack,?????????????????
+LIVE-004,0,Red Card,Paraguay,Demo Player,Example red card event for display testing,?????????????????
