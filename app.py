@@ -749,25 +749,28 @@ PAGE_OPTIONS = [
 
 PAGE_GROUPS = {
     "預測中心": [
-        "世界盃情報中心",
         "單場分析頁",
-        "市場機率分析",
         "冠軍機率預測",
         "晉級機率分析",
         "世界盃模擬器",
-        "xG 模型分析",
-        "模型回測頁",
-        "即時賽況",
+        "市場機率分析",
+        "世足玩法教學",
+        "賠率試算中心",
     ],
     "資料中心": [
         "世界盃賽程表",
+        "即時賽況",
         "Elo 世界排名",
+        "xG 模型分析",
         "球隊資料庫",
         "球員資料庫",
         "國家隊資料中心",
+        "足球數據百科",
+        "足球術語教學",
         "歷史世界盃數據分析",
         "國家隊世界盃戰績",
         "歷史交手分析",
+        "模型回測頁",
         "免責聲明頁",
     ],
 }
@@ -2557,6 +2560,134 @@ def betting_page() -> None:
     st.warning("風險提醒：本頁僅做市場機率與模型機率比較，不提供下注功能，不保證賽果或獲利。")
 
 
+def football_betting_guide_page() -> None:
+    page_header("世足玩法教學", "用資料分析角度理解常見足球玩法與風險")
+    st.warning("風險提醒：以下內容僅為玩法與機率概念說明，不鼓勵下注，不保證任何結果。")
+
+    topics = [
+        {
+            "title": "不讓分（勝平負）",
+            "body": "預測 90 分鐘正規時間的主勝、和局或客勝。這是最直覺的足球結果市場。",
+            "example": "阿根廷 vs 法國：主勝 2.10、和局 3.30、客勝 3.40",
+            "risk": "足球和局機率高，熱門隊不一定能在正規時間勝出。",
+        },
+        {
+            "title": "讓分盤",
+            "body": "強隊先被扣分或弱隊先加分，再判斷投注結果。常用來平衡雙方實力差距。",
+            "example": "巴西 -1：巴西需贏 2 球以上才算過盤。",
+            "risk": "即使強隊贏球，也可能因贏不夠多而未過盤。",
+        },
+        {
+            "title": "大小球",
+            "body": "預測兩隊總進球數高於或低於指定門檻，例如 2.5 球。",
+            "example": "大 2.5：比賽總進球 3 球以上成立。",
+            "risk": "淘汰賽或關鍵戰常偏保守，進球數波動較大。",
+        },
+        {
+            "title": "半全場",
+            "body": "同時預測半場結果與全場結果，例如半場和局、全場主勝。",
+            "example": "半場和 / 全場主：上半場平手，終場主隊勝。",
+            "risk": "需要同時猜中兩個階段，難度明顯高於單一勝平負。",
+        },
+        {
+            "title": "串關",
+            "body": "把多場賽事的賠率相乘，全部命中才成立。",
+            "example": "2.00 × 1.80 × 1.60 = 總賠率 5.76。",
+            "risk": "總賠率提高，但任一場失準就會使整組失敗。",
+        },
+    ]
+
+    for item in topics:
+        st.markdown(
+            f"""
+            <div class="display-card">
+              <div class="card-label">{html.escape(item['title'])}</div>
+              <div class="card-value" style="font-size:1.05rem;line-height:1.65;">{html.escape(item['body'])}</div>
+              <div class="card-note">範例：{html.escape(item['example'])}</div>
+              <div class="risk-tag risk-medium">風險：{html.escape(item['risk'])}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    example_df = pd.DataFrame(
+        [
+            {"玩法": "不讓分", "判斷方式": "主勝 / 和局 / 客勝", "常見用途": "基本賽果判斷"},
+            {"玩法": "讓分盤", "判斷方式": "套用讓分後比較", "常見用途": "強弱差距較大時"},
+            {"玩法": "大小球", "判斷方式": "總進球高於或低於門檻", "常見用途": "預估比賽節奏"},
+            {"玩法": "半全場", "判斷方式": "半場結果 + 全場結果", "常見用途": "高賠率情境"},
+            {"玩法": "串關", "判斷方式": "多場全部命中", "常見用途": "小額高倍率試算"},
+        ]
+    )
+    st.subheader("玩法比較表")
+    st.dataframe(example_df, use_container_width=True, hide_index=True)
+
+    risk_df = pd.DataFrame(
+        [
+            {"玩法": "不讓分", "相對難度": 2},
+            {"玩法": "讓分盤", "相對難度": 3},
+            {"玩法": "大小球", "相對難度": 3},
+            {"玩法": "半全場", "相對難度": 5},
+            {"玩法": "串關", "相對難度": 5},
+        ]
+    )
+    chart = px.bar(risk_df, x="玩法", y="相對難度", color="相對難度", color_continuous_scale=["#415a77", GOLD_LIGHT])
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+    st.plotly_chart(chart, use_container_width=True)
+
+
+def odds_calculator_page() -> None:
+    page_header("賠率試算中心", "單場與串關賠率試算，快速換算可得彩金與實際獲利")
+    st.warning("風險提醒：試算結果只代表數學換算，不代表推薦下注或保證獲利。")
+
+    st.subheader("單場賠率試算")
+    cols = st.columns(2)
+    stake = cols[0].number_input("投注金額", min_value=0.0, value=1000.0, step=100.0, key="single_stake")
+    odds = cols[1].number_input("賠率", min_value=1.01, value=2.00, step=0.01, key="single_odds")
+    payout = stake * odds
+    profit = payout - stake
+    result_cols = st.columns(2)
+    with result_cols[0]:
+        display_card("可得彩金", f"{payout:,.0f}", "投注金額 × 賠率")
+    with result_cols[1]:
+        display_card("實際獲利", f"{profit:,.0f}", "可得彩金 - 投注金額")
+
+    st.subheader("串關試算器")
+    parlay_stake = st.number_input("串關投注金額", min_value=0.0, value=500.0, step=100.0, key="parlay_stake")
+    match_count = st.slider("串關場數", min_value=2, max_value=5, value=3)
+    odds_values = []
+    input_cols = st.columns(match_count)
+    for index in range(match_count):
+        odds_values.append(
+            input_cols[index].number_input(
+                f"賠率 {index + 1}",
+                min_value=1.01,
+                value=1.80,
+                step=0.01,
+                key=f"parlay_odds_{index}",
+            )
+        )
+
+    total_odds = 1.0
+    for value in odds_values:
+        total_odds *= value
+    parlay_payout = parlay_stake * total_odds
+    parlay_profit = parlay_payout - parlay_stake
+
+    cols = st.columns(3)
+    with cols[0]:
+        display_card("總賠率", f"{total_odds:.2f}", "各場賠率相乘")
+    with cols[1]:
+        display_card("可得彩金", f"{parlay_payout:,.0f}", "投注金額 × 總賠率")
+    with cols[2]:
+        display_card("實際獲利", f"{parlay_profit:,.0f}", "可得彩金 - 投注金額")
+
+    table = pd.DataFrame(
+        [{"場次": f"第 {idx + 1} 場", "賠率": f"{value:.2f}"} for idx, value in enumerate(odds_values)]
+    )
+    st.dataframe(table, use_container_width=True, hide_index=True)
+
+
 def xg_model_page() -> None:
     page_header("xG 模型分析", "以射門距離、角度、身體部位與機會品質估算預期進球")
     try:
@@ -2795,6 +2926,106 @@ def disclaimer_page() -> None:
     )
 
 
+def football_data_encyclopedia_page() -> None:
+    page_header("足球數據百科", "用白話理解常見足球預測與分析指標")
+    concepts = [
+        {
+            "name": "Elo Rating",
+            "plain": "用分數表示球隊強度。擊敗強隊加分較多，輸給弱隊扣分較多。",
+            "use": "衡量兩隊基礎實力差距。",
+            "score": 5,
+        },
+        {
+            "name": "xG",
+            "plain": "預期進球，估算每次射門變成進球的機率。",
+            "use": "判斷一隊創造機會的品質。",
+            "score": 5,
+        },
+        {
+            "name": "xGA",
+            "plain": "預期失球，代表對手面對本隊時創造出的射門品質。",
+            "use": "觀察防守是否容易給出高品質機會。",
+            "score": 4,
+        },
+        {
+            "name": "Poisson Model",
+            "plain": "用平均進球數推估比分分布，常用在足球比分預測。",
+            "use": "產生可能比分與勝平負機率。",
+            "score": 4,
+        },
+        {
+            "name": "Monte Carlo",
+            "plain": "重複模擬很多次比賽或賽事，用結果比例估算機率。",
+            "use": "估算小組出線、晉級、決賽與奪冠率。",
+            "score": 5,
+        },
+        {
+            "name": "Market Probability",
+            "plain": "把賠率轉換成隱含機率，再和模型機率比較。",
+            "use": "理解市場對比賽結果的定價。",
+            "score": 4,
+        },
+    ]
+
+    for item in concepts:
+        st.markdown(
+            f"""
+            <div class="display-card">
+              <div class="card-label">{html.escape(item['name'])}</div>
+              <div class="card-value" style="font-size:1.05rem;line-height:1.65;">{html.escape(item['plain'])}</div>
+              <div class="card-note">用途：{html.escape(item['use'])}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    concept_df = pd.DataFrame(concepts).rename(
+        columns={"name": "指標", "plain": "白話說明", "use": "用途", "score": "重要度"}
+    )
+    st.subheader("指標速查表")
+    st.dataframe(concept_df[["指標", "白話說明", "用途", "重要度"]], use_container_width=True, hide_index=True)
+
+    chart = px.bar(concept_df, x="指標", y="重要度", color="重要度", color_continuous_scale=["#415a77", GOLD_LIGHT])
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+    st.plotly_chart(chart, use_container_width=True)
+
+
+def football_terms_page() -> None:
+    page_header("足球術語教學", "快速理解看球與資料分析常見詞彙")
+    terms = [
+        {"術語": "越位", "說明": "進攻球員在傳球瞬間比倒數第二名防守球員更接近球門，並參與進攻。", "類型": "規則"},
+        {"術語": "角球", "說明": "防守方最後觸球並讓球越過本方底線時，進攻方從角旗區開球。", "類型": "定位球"},
+        {"術語": "自由球", "說明": "犯規後由對方在指定位置重新開球，分為直接與間接自由球。", "類型": "定位球"},
+        {"術語": "PK", "說明": "禁區內犯規後的點球，射門距離短，進球機率通常較高。", "類型": "定位球"},
+        {"術語": "傷停補時", "說明": "裁判因換人、受傷、VAR 等停頓補上的比賽時間。", "類型": "時間"},
+        {"術語": "黃牌", "說明": "警告性處分，單場兩張黃牌會變成紅牌離場。", "類型": "判罰"},
+        {"術語": "紅牌", "說明": "球員被罰下，球隊少打一人。", "類型": "判罰"},
+        {"術語": "帽子戲法", "說明": "同一球員在一場比賽中進三球。", "類型": "表現"},
+        {"術語": "Clean Sheet", "說明": "零封，球隊整場沒有失球。", "類型": "防守"},
+        {"術語": "Expected Goals", "說明": "預期進球，也就是 xG，用射門品質估算進球機率。", "類型": "數據"},
+    ]
+    terms_df = pd.DataFrame(terms)
+    for _, row in terms_df.iterrows():
+        st.markdown(
+            f"""
+            <div class="display-card">
+              <div class="card-label">{html.escape(row['類型'])}</div>
+              <div class="card-value" style="font-size:1.15rem;">{html.escape(row['術語'])}</div>
+              <div class="card-note">{html.escape(row['說明'])}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.subheader("術語速查表")
+    st.dataframe(terms_df, use_container_width=True, hide_index=True)
+
+    counts = terms_df.groupby("類型", as_index=False).size().rename(columns={"size": "數量"})
+    pie = px.pie(counts, names="類型", values="數量", hole=0.45, color_discrete_sequence=[GOLD, "#8aa0c3", "#28a745", "#f3d98b", "#415a77"])
+    pie.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(pie, use_container_width=True)
+
+
 def dashboard_page() -> None:
     st.markdown(
         """
@@ -2854,6 +3085,10 @@ elif page == "市場機率分析":
     betting_page()
 elif page == "投注分析頁":
     betting_page()
+elif page == "世足玩法教學":
+    football_betting_guide_page()
+elif page == "賠率試算中心":
+    odds_calculator_page()
 elif page == "模型回測頁":
     model_backtest_page()
 elif page == "冠軍機率預測":
@@ -2876,6 +3111,10 @@ elif page == "球員資料庫":
     player_database_page()
 elif page == "國家隊資料中心":
     national_team_center_page()
+elif page == "足球數據百科":
+    football_data_encyclopedia_page()
+elif page == "足球術語教學":
+    football_terms_page()
 elif page == "歷史世界盃數據分析":
     worldcup_history_page()
 elif page == "國家隊世界盃戰績":
