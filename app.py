@@ -871,9 +871,12 @@ def render_key_players_block(home_team: str, away_team: str) -> None:
         st.info("目前尚未匯入該球隊球員資料")
         return
     if "goal_rate" not in players.columns:
-        players["goal_rate"] = 0.0
+        safe_caps = pd.to_numeric(players.get("national_caps", 0), errors="coerce").replace(0, pd.NA)
+        players["goal_rate"] = (
+            pd.to_numeric(players.get("national_goals", 0), errors="coerce") / safe_caps
+        ).fillna(0.0)
     if "recent_form_rating" not in players.columns:
-        players["recent_form_rating"] = 0.0
+        players["recent_form_rating"] = 0.5
     players["team_display"] = players["team"].map(team_name)
     players["goal_rate_display"] = players["goal_rate"].map(format_percent)
     st.dataframe(
@@ -3097,12 +3100,12 @@ def live_matches_page() -> None:
 def _player_center_data() -> pd.DataFrame:
     data = player_database(players_df, team_meta_df).copy()
     defaults = {
-        "player_name": "未提供",
-        "team_zh": "未提供",
-        "position": "未提供",
+        "player_name": "????",
+        "team_zh": "????",
+        "position": "????",
         "age": 0,
         "height_cm": 0,
-        "club": "未提供",
+        "club": "????",
         "national_caps": 0,
         "national_goals": 0,
         "assists": 0,
@@ -3110,11 +3113,13 @@ def _player_center_data() -> pd.DataFrame:
         "fifa_ranking": 0,
         "flag_emoji": "",
         "goal_rate": 0.0,
-        "recent_form_rating": 0.0,
+        "assist_rate": 0.0,
+        "recent_form_rating": 0.5,
     }
     for column, default in defaults.items():
         if column not in data.columns:
             data[column] = default
+
     numeric_columns = [
         "age",
         "height_cm",
@@ -3124,18 +3129,29 @@ def _player_center_data() -> pd.DataFrame:
         "market_value_eur_m",
         "fifa_ranking",
         "goal_rate",
+        "assist_rate",
         "recent_form_rating",
     ]
     for column in numeric_columns:
-        data[column] = pd.to_numeric(data[column], errors="coerce").fillna(0)
+        data[column] = pd.to_numeric(data[column], errors="coerce").fillna(defaults.get(column, 0))
+
+    safe_caps = pd.to_numeric(data["national_caps"], errors="coerce").replace(0, pd.NA)
+    if (data["goal_rate"].fillna(0) == 0).all():
+        data["goal_rate"] = (
+            pd.to_numeric(data["national_goals"], errors="coerce") / safe_caps
+        ).fillna(0.0)
+    if (data["assist_rate"].fillna(0) == 0).all():
+        data["assist_rate"] = (
+            pd.to_numeric(data["assists"], errors="coerce") / safe_caps
+        ).fillna(0.0)
 
     def clean_display_text(value) -> str:
         text = str(value or "").strip()
         if not text or text.lower() == "nan":
-            return "資料待補"
-        mojibake_markers = ["�", "獺", "穩", "禳", "????"]
+            return "????"
+        mojibake_markers = ["?", "?", "?", "?", "?", "????", "????????", "??"]
         if any(marker in text for marker in mojibake_markers):
-            return "資料待補"
+            return "????"
         return text
 
     for column in ["player_name", "team_zh", "position", "club"]:
@@ -3144,6 +3160,7 @@ def _player_center_data() -> pd.DataFrame:
     data["player_score"] = (
         data["recent_form_rating"] * 2
         + data["goal_rate"] * 10
+        + data["assist_rate"] * 5
         + data["national_goals"] * 0.15
         + data["national_caps"] * 0.03
         + data["market_value_eur_m"] * 0.02

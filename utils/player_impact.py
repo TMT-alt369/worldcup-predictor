@@ -22,7 +22,7 @@ def normalize_player_impact(players: pd.DataFrame) -> pd.DataFrame:
         "appearances": 0,
         "goals": 0,
         "assists": 0,
-        "recent_form_rating": 7.0,
+        "recent_form_rating": 0.5,
         "is_available": True,
     }
     for column, default in defaults.items():

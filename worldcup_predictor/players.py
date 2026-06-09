@@ -4,21 +4,29 @@ import pandas as pd
 
 
 POSITION_ZH = {
-    "Goalkeeper": "門將",
+    "Goalkeeper": "守門員",
     "Defender": "後衛",
     "Midfielder": "中場",
     "Forward": "前鋒",
 }
 
+TEXT_FALLBACK = "資料待補"
+MOJIBAKE_MARKERS = ("嚙", "蝛", "蝳", "鞈", "�", "????", "????????", "??")
 
-def clean_display_text(value, fallback: str = "資料待補") -> str:
+
+def clean_display_text(value, fallback: str = TEXT_FALLBACK) -> str:
     text = str(value or "").strip()
     if not text or text.lower() == "nan":
         return fallback
-    mojibake_markers = ["�", "獺", "穩", "禳", "????", "??"]
-    if any(marker in text for marker in mojibake_markers):
+    if any(marker in text for marker in MOJIBAKE_MARKERS):
         return fallback
     return text
+
+
+def _safe_rate(numerator: pd.Series, denominator: pd.Series) -> pd.Series:
+    safe_denominator = pd.to_numeric(denominator, errors="coerce").replace(0, pd.NA)
+    rate = pd.to_numeric(numerator, errors="coerce") / safe_denominator
+    return pd.to_numeric(rate, errors="coerce").fillna(0.0)
 
 
 def ensure_player_columns(players: pd.DataFrame) -> pd.DataFrame:
@@ -37,18 +45,18 @@ def ensure_player_columns(players: pd.DataFrame) -> pd.DataFrame:
     defaults = {
         "team": "Unknown",
         "team_zh": "",
-        "player_name": "資料待補",
+        "player_name": TEXT_FALLBACK,
         "jersey_number": 0,
-        "position": "資料待補",
+        "position": TEXT_FALLBACK,
         "age": 0,
         "height_cm": 0,
-        "preferred_foot": "資料待補",
+        "preferred_foot": TEXT_FALLBACK,
         "market_value_eur_m": 0.0,
-        "club": "資料待補",
+        "club": TEXT_FALLBACK,
         "nationality": "",
         "data_source": "local_players",
         "squad_status": "local_data",
-        "recent_form_rating": 7.0,
+        "recent_form_rating": 0.5,
         "national_caps": 0,
         "national_goals": 0,
         "assists": 0,
@@ -60,26 +68,41 @@ def ensure_player_columns(players: pd.DataFrame) -> pd.DataFrame:
     if "name" in data.columns:
         data["player_name"] = data["player_name"].where(data["player_name"].notna(), data["name"])
 
-    for column in ["national_caps", "national_goals", "assists", "recent_form_rating", "market_value_eur_m", "height_cm", "age"]:
+    numeric_columns = [
+        "national_caps",
+        "national_goals",
+        "assists",
+        "recent_form_rating",
+        "market_value_eur_m",
+        "height_cm",
+        "age",
+    ]
+    for column in numeric_columns:
         data[column] = pd.to_numeric(data[column], errors="coerce").fillna(defaults.get(column, 0))
 
     if "goal_rate" not in data.columns:
-        data["goal_rate"] = data["national_goals"] / data["national_caps"].replace(0, pd.NA)
-    data["goal_rate"] = pd.to_numeric(data["goal_rate"], errors="coerce").fillna(0.0)
+        data["goal_rate"] = _safe_rate(data["national_goals"], data["national_caps"])
+    else:
+        data["goal_rate"] = pd.to_numeric(data["goal_rate"], errors="coerce").fillna(0.0)
 
     if "assist_rate" not in data.columns:
-        data["assist_rate"] = data["assists"] / data["national_caps"].replace(0, pd.NA)
-    data["assist_rate"] = pd.to_numeric(data["assist_rate"], errors="coerce").fillna(0.0)
+        data["assist_rate"] = _safe_rate(data["assists"], data["national_caps"])
+    else:
+        data["assist_rate"] = pd.to_numeric(data["assist_rate"], errors="coerce").fillna(0.0)
 
     for column in ["player_name", "team_zh", "nationality", "club", "preferred_foot", "position"]:
         data[column] = data[column].map(clean_display_text)
 
-    data["team_zh"] = data["team_zh"].where(data["team_zh"] != "資料待補", data["team"])
+    data["team_zh"] = data["team_zh"].where(data["team_zh"] != TEXT_FALLBACK, data["team"])
     return data
 
 
 def player_database(players: pd.DataFrame, team_meta: pd.DataFrame) -> pd.DataFrame:
-    meta_columns = [column for column in ["team", "team_zh", "flag_emoji", "fifa_ranking", "elo"] if column in team_meta.columns]
+    meta_columns = [
+        column
+        for column in ["team", "team_zh", "flag_emoji", "fifa_ranking", "elo"]
+        if column in team_meta.columns
+    ]
     meta = team_meta[meta_columns].copy()
     data = ensure_player_columns(players)
     data = data.merge(meta, on="team", how="left", suffixes=("", "_meta"))
@@ -129,7 +152,7 @@ def player_database(players: pd.DataFrame, team_meta: pd.DataFrame) -> pd.DataFr
     ]
     for column in columns:
         if column not in data.columns:
-            data[column] = 0 if column in {"fifa_ranking", "elo"} else "資料待補"
+            data[column] = 0 if column in {"fifa_ranking", "elo"} else TEXT_FALLBACK
     return data[columns].sort_values(["team_zh", "position", "player_name"]).reset_index(drop=True)
 
 
