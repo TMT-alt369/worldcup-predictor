@@ -35,22 +35,21 @@ def calculate_shot_xg(row: pd.Series | dict[str, Any]) -> float:
 
 
 def prepare_xg_data(shots: pd.DataFrame | None = None, *args, **kwargs) -> pd.DataFrame:
+    columns = [
+        "match_id",
+        "team",
+        "player",
+        "minute",
+        "shot_distance",
+        "shot_angle",
+        "body_part",
+        "situation",
+        "is_big_chance",
+        "is_goal",
+        "xg_value",
+    ]
     if shots is None:
-        return pd.DataFrame(
-            columns=[
-                "match_id",
-                "team",
-                "player",
-                "minute",
-                "shot_distance",
-                "shot_angle",
-                "body_part",
-                "situation",
-                "is_big_chance",
-                "is_goal",
-                "xg_value",
-            ]
-        )
+        return pd.DataFrame(columns=columns)
 
     data = shots.copy()
     defaults = {
@@ -82,23 +81,15 @@ def prepare_xg_data(shots: pd.DataFrame | None = None, *args, **kwargs) -> pd.Da
 
 
 def train_xg_model(*args, **kwargs):
-    """Fallback placeholder for future trainable xG model support."""
     return None
 
 
 def predict_xg_match(*args, **kwargs) -> dict[str, float]:
-    return {
-        "home_xg": 1.2,
-        "away_xg": 1.0,
-    }
+    return {"home_xg": 1.2, "away_xg": 1.0}
 
 
 def simulate_xg_match(*args, **kwargs) -> dict[str, float]:
-    return {
-        "home_win": 0.45,
-        "draw": 0.25,
-        "away_win": 0.30,
-    }
+    return {"home_win": 0.45, "draw": 0.25, "away_win": 0.30}
 
 
 def xg_match_summary(shots: pd.DataFrame, match_id: str) -> pd.DataFrame:
@@ -111,7 +102,9 @@ def xg_match_summary(shots: pd.DataFrame, match_id: str) -> pd.DataFrame:
         .agg(xg=("xg_value", "sum"), goals=("is_goal", "sum"), shots=("player", "count"))
         .assign(
             xg=lambda frame: frame["xg"].round(2),
+            xga=lambda frame: frame["xg"].sum().round(2) - frame["xg"].round(2),
             difference=lambda frame: (frame["goals"] - frame["xg"]).round(2),
+            attack_efficiency=lambda frame: (frame["goals"] / frame["xg"].replace(0, pd.NA)).fillna(0).round(2),
         )
     )
 
@@ -122,17 +115,12 @@ def xg_analysis_text(summary: pd.DataFrame) -> list[str]:
 
     leader = summary.sort_values("xg", ascending=False).iloc[0]
     efficient = summary.sort_values("difference", ascending=False).iloc[0]
-    wasteful = summary.sort_values("difference", ascending=True).iloc[0]
     lowest = summary.sort_values("xg", ascending=True).iloc[0]
 
     lines = [
         f"{leader['team']} 的機會品質較高，累積 xG 為 {leader['xg']:.2f}。",
         f"{efficient['team']} 的進球效率較高，實際進球比 xG 多 {efficient['difference']:.2f}。",
     ]
-    if wasteful["difference"] < -0.25:
-        lines.append(f"{wasteful['team']} 屬於高 xG 低進球，射門把握度仍有改善空間。")
-    if efficient["difference"] > 0.5:
-        lines.append(f"{efficient['team']} 屬於低 xG 高進球，表現偏向效率型。")
     if leader["xg"] - lowest["xg"] > 0.7:
         lines.append("本場比賽偏向一方壓制，射門品質差距明顯。")
     else:

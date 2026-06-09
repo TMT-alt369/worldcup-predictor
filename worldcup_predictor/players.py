@@ -11,14 +11,14 @@ POSITION_ZH = {
 }
 
 TEXT_FALLBACK = "資料待補"
-MOJIBAKE_MARKERS = ("嚙", "蝛", "蝳", "鞈", "�", "????", "????????", "??")
+MOJIBAKE_MARKERS = ("\u5699", "\u875b", "\u8773", "\u9788", "\ufffd")
 
 
 def clean_display_text(value, fallback: str = TEXT_FALLBACK) -> str:
     text = str(value or "").strip()
     if not text or text.lower() == "nan":
         return fallback
-    if any(marker in text for marker in MOJIBAKE_MARKERS):
+    if any(marker in text for marker in MOJIBAKE_MARKERS) or set(text) == {"?"}:
         return fallback
     return text
 

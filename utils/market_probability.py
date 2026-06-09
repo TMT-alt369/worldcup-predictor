@@ -38,7 +38,7 @@ def market_probability_table(row: pd.Series, prediction) -> pd.DataFrame:
         "away": prediction.away_win_probability,
     }
     fused = fuse_probabilities(model, market)
-    labels = {"home": "??", "draw": "??", "away": "??"}
+    labels = {"home": "主勝", "draw": "和局", "away": "客勝"}
     return pd.DataFrame(
         [
             {

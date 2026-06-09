@@ -1,49 +1,49 @@
 rank,team_en,team_zh,country_code,flag_emoji,fifa_ranking,elo,team,team_display,elo_tier,recent_form_score,description
-1,Argentina,阿根廷,ARG,🇦🇷,1,1895,Argentina,🇦🇷 阿根廷,冠軍熱門,1.0,Elo 1895????? 100%???????????
-2,France,法國,FRA,🇫🇷,2,1885,France,🇫🇷 法國,冠軍熱門,1.0,Elo 1885????? 100%???????????
-3,England,英格蘭,ENG,🏴,3,1870,England,🏴 英格蘭,冠軍熱門,0.6666666666666666,Elo 1870????? 67%???????????
-4,Portugal,葡萄牙,POR,🇵🇹,4,1860,Portugal,🇵🇹 葡萄牙,冠軍熱門,0.5,Elo 1860????? 50%???????????
-5,Brazil,巴西,BRA,🇧🇷,5,1845,Brazil,🇧🇷 巴西,強隊,0.7777777777777778,Elo 1845????? 78%???????????
-6,Belgium,比利時,BEL,🇧🇪,6,1835,Belgium,🇧🇪 比利時,強隊,0.5,Elo 1835????? 50%???????????
-7,Netherlands,荷蘭,NED,🇳🇱,7,1830,Netherlands,🇳🇱 荷蘭,強隊,0.5,Elo 1830????? 50%???????????
-8,Spain,西班牙,ESP,🇪🇸,8,1825,Spain,🇪🇸 西班牙,強隊,0.5,Elo 1825????? 50%???????????
-9,Croatia,克羅埃西亞,CRO,🇭🇷,9,1815,Croatia,🇭🇷 克羅埃西亞,強隊,0.5,Elo 1815????? 50%???????????
-10,Germany,德國,GER,🇩🇪,10,1810,Germany,🇩🇪 德國,強隊,0.4444444444444444,Elo 1810????? 44%???????????
-11,United States,美國,USA,🇺🇸,11,1780,United States,🇺🇸 美國,強隊,0.5,Elo 1780????? 50%???????????
-12,Colombia,哥倫比亞,COL,🇨🇴,13,1775,Colombia,🇨🇴 哥倫比亞,競爭者,0.5,Elo 1775????? 50%???????????
-13,Uruguay,烏拉圭,URU,🇺🇾,14,1768,Uruguay,🇺🇾 烏拉圭,競爭者,0.5,Elo 1768????? 50%???????????
-14,Mexico,墨西哥,MEX,🇲🇽,15,1765,Mexico,🇲🇽 墨西哥,競爭者,0.16666666666666666,Elo 1765????? 17%???????????
-15,Morocco,摩洛哥,MAR,🇲🇦,12,1750,Morocco,🇲🇦 摩洛哥,競爭者,0.0,Elo 1750????? 0%???????????
-16,Senegal,塞內加爾,SEN,🇸🇳,17,1745,Senegal,🇸🇳 塞內加爾,競爭者,0.5,Elo 1745????? 50%???????????
-17,Japan,日本,JPN,🇯🇵,18,1740,Japan,🇯🇵 日本,競爭者,0.1111111111111111,Elo 1740????? 11%???????????
-18,Switzerland,瑞士,SUI,🇨🇭,19,1730,Switzerland,🇨🇭 瑞士,競爭者,0.5,Elo 1730????? 50%???????????
-19,Iran,伊朗,IRN,🇮🇷,20,1725,Iran,🇮🇷 伊朗,競爭者,0.5,Elo 1725????? 50%???????????
-20,South Korea,南韓,KOR,🇰🇷,23,1715,South Korea,🇰🇷 南韓,競爭者,0.16666666666666666,Elo 1715????? 17%???????????
-21,Austria,奧地利,AUT,🇦🇹,22,1710,Austria,🇦🇹 奧地利,競爭者,0.5,Elo 1710????? 50%???????????
-22,Australia,澳洲,AUS,🇦🇺,24,1705,Australia,🇦🇺 澳洲,競爭者,0.5,Elo 1705????? 50%???????????
-23,Turkiye,土耳其,TUR,🇹🇷,26,1695,Turkiye,🇹🇷 土耳其,競爭者,0.5,Elo 1695????? 50%???????????
-24,Sweden,瑞典,SWE,🇸🇪,29,1685,Sweden,🇸🇪 瑞典,競爭者,0.5,Elo 1685????? 50%???????????
-25,Ecuador,厄瓜多,ECU,🇪🇨,31,1680,Ecuador,🇪🇨 厄瓜多,競爭者,0.5,Elo 1680????? 50%???????????
-26,Norway,挪威,NOR,🇳🇴,33,1670,Norway,🇳🇴 挪威,中段班,0.5,Elo 1670????? 50%???????????
-27,Egypt,埃及,EGY,🇪🇬,34,1665,Egypt,🇪🇬 埃及,中段班,0.5,Elo 1665????? 50%???????????
-28,Czechia,捷克,CZE,🇨🇿,36,1660,Czechia,🇨🇿 捷克,中段班,0.5,Elo 1660????? 50%???????????
-29,Algeria,阿爾及利亞,ALG,🇩🇿,38,1655,Algeria,🇩🇿 阿爾及利亞,中段班,0.5,Elo 1655????? 50%???????????
-30,Scotland,蘇格蘭,SCO,🏴,39,1650,Scotland,🏴 蘇格蘭,中段班,0.5,Elo 1650????? 50%???????????
-31,Paraguay,巴拉圭,PAR,🇵🇾,42,1645,Paraguay,🇵🇾 巴拉圭,中段班,0.5,Elo 1645????? 50%???????????
-32,Panama,巴拿馬,PAN,🇵🇦,44,1635,Panama,🇵🇦 巴拿馬,中段班,0.5,Elo 1635????? 50%???????????
-33,Ivory Coast,象牙海岸,CIV,🇨🇮,45,1630,Ivory Coast,🇨🇮 象牙海岸,中段班,0.5,Elo 1630????? 50%???????????
-34,Canada,加拿大,CAN,🇨🇦,48,1625,Canada,🇨🇦 加拿大,中段班,0.1111111111111111,Elo 1625????? 11%???????????
-35,Tunisia,突尼西亞,TUN,🇹🇳,46,1620,Tunisia,🇹🇳 突尼西亞,中段班,0.5,Elo 1620????? 50%???????????
-36,Uzbekistan,烏茲別克,UZB,🇺🇿,49,1615,Uzbekistan,🇺🇿 烏茲別克,中段班,0.5,Elo 1615????? 50%???????????
-37,Qatar,卡達,QAT,🇶🇦,53,1570,Qatar,🇶🇦 卡達,挑戰者,0.5,Elo 1570????? 50%???????????
-38,Iraq,伊拉克,IRQ,🇮🇶,55,1565,Iraq,🇮🇶 伊拉克,挑戰者,0.5,Elo 1565????? 50%???????????
-39,Saudi Arabia,沙烏地阿拉伯,KSA,🇸🇦,56,1560,Saudi Arabia,🇸🇦 沙烏地阿拉伯,挑戰者,0.5,Elo 1560????? 50%???????????
-40,South Africa,南非,RSA,🇿🇦,58,1545,South Africa,🇿🇦 南非,挑戰者,0.5,Elo 1545????? 50%???????????
-41,DR Congo,剛果民主共和國,COD,🇨🇩,61,1520,DR Congo,🇨🇩 剛果民主共和國,挑戰者,0.5,Elo 1520????? 50%???????????
-42,Bosnia and Herzegovina,波士尼亞與赫塞哥維納,BIH,🇧🇦,63,1515,Bosnia and Herzegovina,🇧🇦 波士尼亞與赫塞哥維納,挑戰者,0.5,Elo 1515????? 50%???????????
-43,Ghana,迦納,GHA,🇬🇭,67,1505,Ghana,🇬🇭 迦納,挑戰者,0.5,Elo 1505????? 50%???????????
-44,Jordan,約旦,JOR,🇯🇴,68,1500,Jordan,🇯🇴 約旦,挑戰者,0.5,Elo 1500????? 50%???????????
-45,Cape Verde,維德角,CPV,🇨🇻,70,1495,Cape Verde,🇨🇻 維德角,挑戰者,0.5,Elo 1495????? 50%???????????
-46,New Zealand,紐西蘭,NZL,🇳🇿,85,1440,New Zealand,🇳🇿 紐西蘭,挑戰者,0.5,Elo 1440????? 50%???????????
-47,Haiti,海地,HAI,🇭🇹,86,1435,Haiti,🇭🇹 海地,挑戰者,0.5,Elo 1435????? 50%???????????
-48,Curacao,庫拉索,CUW,🇨🇼,88,1425,Curacao,🇨🇼 庫拉索,挑戰者,0.5,Elo 1425????? 50%???????????
+1,Argentina,阿根廷,ARG,🇦🇷,1,1895,Argentina,🇦🇷 阿根廷,冠軍熱門,1.0,Elo 1895N/A 100%N/A
+2,France,法國,FRA,🇫🇷,2,1885,France,🇫🇷 法國,冠軍熱門,1.0,Elo 1885N/A 100%N/A
+3,England,英格蘭,ENG,🏴,3,1870,England,🏴 英格蘭,冠軍熱門,0.6666666666666666,Elo 1870N/A 67%N/A
+4,Portugal,葡萄牙,POR,🇵🇹,4,1860,Portugal,🇵🇹 葡萄牙,冠軍熱門,0.5,Elo 1860N/A 50%N/A
+5,Brazil,巴西,BRA,🇧🇷,5,1845,Brazil,🇧🇷 巴西,強隊,0.7777777777777778,Elo 1845N/A 78%N/A
+6,Belgium,比利時,BEL,🇧🇪,6,1835,Belgium,🇧🇪 比利時,強隊,0.5,Elo 1835N/A 50%N/A
+7,Netherlands,荷蘭,NED,🇳🇱,7,1830,Netherlands,🇳🇱 荷蘭,強隊,0.5,Elo 1830N/A 50%N/A
+8,Spain,西班牙,ESP,🇪🇸,8,1825,Spain,🇪🇸 西班牙,強隊,0.5,Elo 1825N/A 50%N/A
+9,Croatia,克羅埃西亞,CRO,🇭🇷,9,1815,Croatia,🇭🇷 克羅埃西亞,強隊,0.5,Elo 1815N/A 50%N/A
+10,Germany,德國,GER,🇩🇪,10,1810,Germany,🇩🇪 德國,強隊,0.4444444444444444,Elo 1810N/A 44%N/A
+11,United States,美國,USA,🇺🇸,11,1780,United States,🇺🇸 美國,強隊,0.5,Elo 1780N/A 50%N/A
+12,Colombia,哥倫比亞,COL,🇨🇴,13,1775,Colombia,🇨🇴 哥倫比亞,競爭者,0.5,Elo 1775N/A 50%N/A
+13,Uruguay,烏拉圭,URU,🇺🇾,14,1768,Uruguay,🇺🇾 烏拉圭,競爭者,0.5,Elo 1768N/A 50%N/A
+14,Mexico,墨西哥,MEX,🇲🇽,15,1765,Mexico,🇲🇽 墨西哥,競爭者,0.1666666666666666,Elo 1765N/A 17%N/A
+15,Morocco,摩洛哥,MAR,🇲🇦,12,1750,Morocco,🇲🇦 摩洛哥,競爭者,0.0,Elo 1750N/A 0%N/A
+16,Senegal,塞內加爾,SEN,🇸🇳,17,1745,Senegal,🇸🇳 塞內加爾,競爭者,0.5,Elo 1745N/A 50%N/A
+17,Japan,日本,JPN,🇯🇵,18,1740,Japan,🇯🇵 日本,競爭者,0.1111111111111111,Elo 1740N/A 11%N/A
+18,Switzerland,瑞士,SUI,🇨🇭,19,1730,Switzerland,🇨🇭 瑞士,競爭者,0.5,Elo 1730N/A 50%N/A
+19,Iran,伊朗,IRN,🇮🇷,20,1725,Iran,🇮🇷 伊朗,競爭者,0.5,Elo 1725N/A 50%N/A
+20,South Korea,南韓,KOR,🇰🇷,23,1715,South Korea,🇰🇷 南韓,競爭者,0.1666666666666666,Elo 1715N/A 17%N/A
+21,Austria,奧地利,AUT,🇦🇹,22,1710,Austria,🇦🇹 奧地利,競爭者,0.5,Elo 1710N/A 50%N/A
+22,Australia,澳洲,AUS,🇦🇺,24,1705,Australia,🇦🇺 澳洲,競爭者,0.5,Elo 1705N/A 50%N/A
+23,Turkiye,土耳其,TUR,🇹🇷,26,1695,Turkiye,🇹🇷 土耳其,競爭者,0.5,Elo 1695N/A 50%N/A
+24,Sweden,瑞典,SWE,🇸🇪,29,1685,Sweden,🇸🇪 瑞典,競爭者,0.5,Elo 1685N/A 50%N/A
+25,Ecuador,厄瓜多,ECU,🇪🇨,31,1680,Ecuador,🇪🇨 厄瓜多,競爭者,0.5,Elo 1680N/A 50%N/A
+26,Norway,挪威,NOR,🇳🇴,33,1670,Norway,🇳🇴 挪威,中段班,0.5,Elo 1670N/A 50%N/A
+27,Egypt,埃及,EGY,🇪🇬,34,1665,Egypt,🇪🇬 埃及,中段班,0.5,Elo 1665N/A 50%N/A
+28,Czechia,捷克,CZE,🇨🇿,36,1660,Czechia,🇨🇿 捷克,中段班,0.5,Elo 1660N/A 50%N/A
+29,Algeria,阿爾及利亞,ALG,🇩🇿,38,1655,Algeria,🇩🇿 阿爾及利亞,中段班,0.5,Elo 1655N/A 50%N/A
+30,Scotland,蘇格蘭,SCO,🏴,39,1650,Scotland,🏴 蘇格蘭,中段班,0.5,Elo 1650N/A 50%N/A
+31,Paraguay,巴拉圭,PAR,🇵🇾,42,1645,Paraguay,🇵🇾 巴拉圭,中段班,0.5,Elo 1645N/A 50%N/A
+32,Panama,巴拿馬,PAN,🇵🇦,44,1635,Panama,🇵🇦 巴拿馬,中段班,0.5,Elo 1635N/A 50%N/A
+33,Ivory Coast,象牙海岸,CIV,🇨🇮,45,1630,Ivory Coast,🇨🇮 象牙海岸,中段班,0.5,Elo 1630N/A 50%N/A
+34,Canada,加拿大,CAN,🇨🇦,48,1625,Canada,🇨🇦 加拿大,中段班,0.1111111111111111,Elo 1625N/A 11%N/A
+35,Tunisia,突尼西亞,TUN,🇹🇳,46,1620,Tunisia,🇹🇳 突尼西亞,中段班,0.5,Elo 1620N/A 50%N/A
+36,Uzbekistan,烏茲別克,UZB,🇺🇿,49,1615,Uzbekistan,🇺🇿 烏茲別克,中段班,0.5,Elo 1615N/A 50%N/A
+37,Qatar,卡達,QAT,🇶🇦,53,1570,Qatar,🇶🇦 卡達,挑戰者,0.5,Elo 1570N/A 50%N/A
+38,Iraq,伊拉克,IRQ,🇮🇶,55,1565,Iraq,🇮🇶 伊拉克,挑戰者,0.5,Elo 1565N/A 50%N/A
+39,Saudi Arabia,沙烏地阿拉伯,KSA,🇸🇦,56,1560,Saudi Arabia,🇸🇦 沙烏地阿拉伯,挑戰者,0.5,Elo 1560N/A 50%N/A
+40,South Africa,南非,RSA,🇿🇦,58,1545,South Africa,🇿🇦 南非,挑戰者,0.5,Elo 1545N/A 50%N/A
+41,DR Congo,剛果民主共和國,COD,🇨🇩,61,1520,DR Congo,🇨🇩 剛果民主共和國,挑戰者,0.5,Elo 1520N/A 50%N/A
+42,Bosnia and Herzegovina,波士尼亞與赫塞哥維納,BIH,🇧🇦,63,1515,Bosnia and Herzegovina,🇧🇦 波士尼亞與赫塞哥維納,挑戰者,0.5,Elo 1515N/A 50%N/A
+43,Ghana,迦納,GHA,🇬🇭,67,1505,Ghana,🇬🇭 迦納,挑戰者,0.5,Elo 1505N/A 50%N/A
+44,Jordan,約旦,JOR,🇯🇴,68,1500,Jordan,🇯🇴 約旦,挑戰者,0.5,Elo 1500N/A 50%N/A
+45,Cape Verde,維德角,CPV,🇨🇻,70,1495,Cape Verde,🇨🇻 維德角,挑戰者,0.5,Elo 1495N/A 50%N/A
+46,New Zealand,紐西蘭,NZL,🇳🇿,85,1440,New Zealand,🇳🇿 紐西蘭,挑戰者,0.5,Elo 1440N/A 50%N/A
+47,Haiti,海地,HAI,🇭🇹,86,1435,Haiti,🇭🇹 海地,挑戰者,0.5,Elo 1435N/A 50%N/A
+48,Curacao,庫拉索,CUW,🇨🇼,88,1425,Curacao,🇨🇼 庫拉索,挑戰者,0.5,Elo 1425N/A 50%N/A
