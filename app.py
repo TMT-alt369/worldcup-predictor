@@ -34,7 +34,19 @@ from worldcup_predictor.ui import disclaimer_box, format_percent, signal_datafra
 from utils.simulation import run_worldcup_monte_carlo
 from utils.player_impact import team_impact, win_probability_adjustment
 from utils.market_probability import market_probability_table
-from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
+try:
+    from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
+except ImportError:
+    PREDICTION_WEIGHTS_XG = {"elo": 0.40, "xg": 0.40, "form": 0.20, "recent_form": 0.20, "worldcup_history": 0.15}
+
+    def prepare_xg_data(*args, **kwargs) -> pd.DataFrame:
+        return pd.DataFrame()
+
+    def xg_match_summary(*args, **kwargs) -> pd.DataFrame:
+        return pd.DataFrame()
+
+    def xg_analysis_text(*args, **kwargs) -> list[str]:
+        return ["目前尚未匯入足夠的 xG 射門資料。"]
 
 try:
     from utils.elo_update import PREDICTION_WEIGHTS, elo_ranking_with_updates
