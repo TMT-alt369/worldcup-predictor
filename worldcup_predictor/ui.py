@@ -3,13 +3,13 @@ import streamlit as st
 
 
 def format_percent(value: float) -> str:
-    return f"{value * 100:.1f}%"
+    return f"{float(value) * 100:.1f}%"
 
 
 def disclaimer_box() -> None:
     st.warning(
-        "本網站內容僅供資料分析與學習參考，不構成保證獲利或下注指示。"
-        "投注具有風險，請自行判斷並承擔結果。"
+        "本網站內容僅供足球資料分析參考，不構成下注指示，也不承諾任何獲利。"
+        "請自行判斷風險。"
     )
 
 
@@ -21,9 +21,9 @@ def signal_dataframe(signals) -> pd.DataFrame:
                 "賠率": signal.odds,
                 "模型機率": format_percent(signal.model_probability),
                 "隱含機率": format_percent(signal.implied_probability),
-                "優勢值": format_percent(signal.edge),
-                "建議": signal.recommendation,
-                "風險": signal.risk_level,
+                "差距": format_percent(signal.edge),
+                "分析訊號": signal.recommendation,
+                "風險等級": signal.risk_level,
             }
             for signal in signals
         ]
