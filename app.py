@@ -441,7 +441,12 @@ def inject_theme() -> None:
         div[data-testid="stDataFrame"] {{
             border: 1px solid rgba(214, 178, 94, 0.18);
             border-radius: 8px;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
+            max-width: 100%;
+        }}
+        div[data-testid="stDataFrame"] > div {{
+            min-width: 100%;
         }}
         @media (max-width: 900px) {{
             .hero {{
@@ -515,6 +520,7 @@ def inject_theme() -> None:
             div[data-testid="stDataFrame"] {{
                 max-width: 100%;
                 overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
             }}
             div[data-testid="stDataFrame"] iframe {{
                 max-width: 100%;
