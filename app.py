@@ -3519,6 +3519,7 @@ def worldcup_simulator_page() -> None:
 
 def betting_page() -> None:
     page_header("市場機率分析", "將模型機率與賠率隱含機率融合，提供風險參考")
+    st.caption("融合公式：模型機率 70% + 市場隱含機率 30%。市場隱含機率已正規化以降低 bookmaker margin 影響。")
     disclaimer_box()
     row = selected_fixture()
     prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
