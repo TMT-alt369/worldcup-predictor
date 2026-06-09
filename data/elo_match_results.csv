@@ -1,0 +1,11 @@
+date,home_team,away_team,home_score,away_score,tournament,home_elo_before,away_elo_before,home_elo_after,away_elo_after
+2026-03-20,Argentina,France,2,1,Friendly,1860,1885,1877.8,1867.2
+2026-03-21,Brazil,Spain,1,1,Friendly,1840,1835,1834.8,1840.2
+2026-03-22,England,Germany,2,0,Friendly,1810,1805,1826.7,1788.3
+2026-03-23,Japan,South Korea,1,0,Friendly,1715,1695,1729.5,1680.5
+2026-03-24,USA,Mexico,1,2,CONCACAF,1705,1720,1688.7,1736.3
+2026-04-01,France,Brazil,3,2,Friendly,1867.2,1834.8,1881.7,1820.3
+2026-04-02,Spain,Argentina,0,1,Friendly,1840.2,1877.8,1825.9,1892.1
+2026-04-03,Germany,Japan,2,2,Friendly,1788.3,1729.5,1774.1,1743.7
+2026-04-04,Canada,USA,0,0,Friendly,1665,1688.7,1670.1,1683.6
+2026-04-05,Portugal,Uruguay,2,1,Friendly,1825,1785,1838.2,1771.8

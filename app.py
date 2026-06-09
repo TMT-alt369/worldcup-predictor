@@ -32,6 +32,7 @@ from worldcup_predictor.players import player_database, squad_summary
 from worldcup_predictor.tournament import run_tournament_simulation
 from worldcup_predictor.ui import disclaimer_box, format_percent, signal_dataframe
 from utils.simulation import run_worldcup_monte_carlo
+from utils.elo_update import elo_ranking_with_updates
 
 
 st.set_page_config(page_title="世足智慧預測中心", page_icon="⚽", layout="wide")
@@ -3273,6 +3274,58 @@ def player_database_page() -> None:
         return
     for team in selected_key_teams:
         _render_team_key_players(data, team)
+
+
+def elo_ranking_page() -> None:
+    page_header("Elo 世界排名", "依本地近期賽果自動更新 Elo，呈現原始分數、更新後分數與最近 10 場戰績")
+    try:
+        elo_results = pd.read_csv("data/elo_match_results.csv")
+    except Exception:
+        elo_results = pd.DataFrame()
+    rankings = elo_ranking_with_updates(elo_results, team_meta_df)
+    if rankings.empty:
+        st.info("目前尚未匯入 Elo 更新資料")
+        return
+
+    rankings.insert(0, "排名", range(1, len(rankings) + 1))
+    top10 = rankings.head(10).sort_values("updated_elo", ascending=True)
+    chart = px.bar(
+        top10,
+        x="updated_elo",
+        y="team_zh",
+        orientation="h",
+        color="elo_change",
+        color_continuous_scale=["#8aa0c3", GOLD_LIGHT],
+        labels={"updated_elo": "更新後 Elo", "team_zh": "國家", "elo_change": "Elo 變化"},
+    )
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(chart, use_container_width=True)
+
+    st.dataframe(
+        rankings[
+            [
+                "排名",
+                "flag_emoji",
+                "team_zh",
+                "original_elo",
+                "updated_elo",
+                "elo_change",
+                "recent_10",
+            ]
+        ].rename(
+            columns={
+                "flag_emoji": "國旗",
+                "team_zh": "國家",
+                "original_elo": "原始 Elo",
+                "updated_elo": "更新後 Elo",
+                "elo_change": "Elo 變化",
+                "recent_10": "最近 10 場戰績",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+    st.caption("預測權重：Elo 50%、近期狀態 30%、歷史成績 20%。")
 
 
 if page == "首頁儀表板":
