@@ -3402,6 +3402,75 @@ def match_analysis_page() -> None:
     _render_player_impact(row["home_team"], row["away_team"])
 
 
+def worldcup_simulator_page() -> None:
+    page_header("世界盃模擬器", "Monte Carlo 高次數模擬：小組出線、淘汰賽晉級與冠軍率")
+    simulations = st.selectbox("模擬次數", [1000, 10000, 50000], index=0)
+    run_clicked = st.button("開始模擬", type="primary")
+    if not run_clicked:
+        st.info("請選擇模擬次數後按下「開始模擬」。")
+        return
+
+    with st.spinner("正在執行 Monte Carlo 模擬..."):
+        sim_df = run_worldcup_monte_carlo(
+            fixture_odds_df,
+            team_meta_df,
+            wc_team_stats_df,
+            matches_df,
+            simulations=int(simulations),
+        )
+    if "round_32_probability" not in sim_df.columns:
+        sim_df["round_32_probability"] = sim_df.get("group_qualified_probability", 0)
+
+    display_card("模擬次數", f"{int(simulations):,}", "Monte Carlo")
+    top10 = sim_df.head(10).sort_values("champion_probability", ascending=True).copy()
+    top10["label"] = top10["champion_probability"].map(format_percent)
+    chart = px.bar(
+        top10,
+        x="champion_probability",
+        y="team_display",
+        text="label",
+        orientation="h",
+        color="champion_probability",
+        color_continuous_scale=["#415a77", GOLD_LIGHT],
+        labels={"champion_probability": "冠軍率", "team_display": "球隊"},
+    )
+    chart.update_xaxes(tickformat=".0%")
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+    st.plotly_chart(chart, use_container_width=True)
+
+    table = sim_df[
+        [
+            "team_display",
+            "group_qualified_probability",
+            "round_32_probability",
+            "round_16_probability",
+            "round_8_probability",
+            "semi_final_probability",
+            "final_probability",
+            "champion_probability",
+        ]
+    ].copy()
+    for column in table.columns[1:]:
+        table[column] = table[column].map(format_percent)
+    st.dataframe(
+        table.rename(
+            columns={
+                "team_display": "球隊",
+                "group_qualified_probability": "小組出線率",
+                "round_32_probability": "32 強率",
+                "round_16_probability": "16 強率",
+                "round_8_probability": "8 強率",
+                "semi_final_probability": "4 強率",
+                "final_probability": "決賽率",
+                "champion_probability": "冠軍率",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+    st.caption("模型使用 Elo、近期狀態、歷史世界盃表現與 Poisson 進球分布；結果僅供資料分析參考，不保證準確。")
+
+
 if page == "首頁儀表板":
     dashboard_page()
 elif page == "世界盃賽程表":
