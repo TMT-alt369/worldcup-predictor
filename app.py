@@ -679,7 +679,7 @@ PAGE_OPTIONS = [
     "世界盃賽程表",
     "賽程頁",
     "單場分析頁",
-    "投注分析頁",
+    "市場機率分析",
     "模型回測頁",
     "冠軍機率預測",
     "小組出線機率分析",
@@ -699,7 +699,7 @@ PAGE_OPTIONS = [
 PAGE_GROUPS = {
     "首頁": ["首頁儀表板"],
     "賽程中心": ["世界盃賽程表", "即時賽況"],
-    "預測中心": ["單場分析頁", "冠軍機率預測", "晉級機率分析", "世界盃模擬器", "投注分析頁"],
+    "預測中心": ["單場分析頁", "冠軍機率預測", "晉級機率分析", "世界盃模擬器", "市場機率分析"],
     "資料中心": ["Elo 世界排名", "球隊資料庫", "球員資料庫", "國家隊資料中心", "歷史世界盃數據分析", "國家隊世界盃戰績", "歷史交手分析"],
     "系統資訊": ["模型回測頁", "免責聲明頁"],
 }
@@ -984,7 +984,7 @@ def prediction_cards(row: pd.Series, compact: bool = False) -> None:
         unsafe_allow_html=True,
     )
     if compact:
-        st.caption("快速分析僅供展示與資料參考，詳細內容請至單場分析頁與投注分析頁。")
+        st.caption("快速分析僅供資料參考，詳細內容請至單場分析頁與市場機率分析。")
 
 
 def dashboard_page() -> None:
@@ -1203,7 +1203,7 @@ def match_analysis_page() -> None:
 
 
 def betting_page() -> None:
-    page_header("投注分析頁", "比較模型機率與賠率隱含機率，並以風險色塊呈現建議等級")
+    page_header("市場機率分析", "比較模型機率與市場隱含機率，並以風險色塊呈現分析等級")
     disclaimer_box()
     row = selected_fixture()
     prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
@@ -1823,7 +1823,7 @@ def disclaimer_page() -> None:
         ### 使用者責任
 
         若使用者依據本網站資訊進行任何投注或財務決策，應自行承擔全部風險。
-        建議將本網站視為資料分析練習與模型展示，而不是保證獲利工具。
+        建議將本網站視為資料分析與模型研究工具，不代表任何獲利承諾。
         """
     )
 
@@ -3395,10 +3395,15 @@ def match_analysis_page() -> None:
     prediction_cards(row)
 
     probabilities = prediction_to_frame(prediction)
-    probability_display = probabilities.copy()
-    probability_display.iloc[:, 1] = probability_display.iloc[:, 1].map(format_percent)
+    display_df = probabilities.copy()
+    probability_column = display_df.columns[1]
+    display_df[probability_column] = (
+        pd.to_numeric(display_df[probability_column], errors="coerce")
+        .fillna(0)
+        .map(format_percent)
+    )
     st.dataframe(
-        probability_display,
+        display_df,
         use_container_width=True,
         hide_index=True,
     )
@@ -3488,7 +3493,11 @@ def betting_page() -> None:
     st.subheader(f"{fixture_time_text(row)} ｜ {matchup_text(row)}")
     display = table.copy()
     for column in ["model_probability", "market_probability", "fused_probability"]:
-        display[column] = display[column].map(format_percent)
+        display[column] = (
+            pd.to_numeric(display[column], errors="coerce")
+            .fillna(0)
+            .map(format_percent)
+        )
     st.dataframe(
         display.rename(
             columns={
@@ -3630,6 +3639,8 @@ elif page == "賽程頁":
     fixtures_page()
 elif page == "單場分析頁":
     match_analysis_page()
+elif page == "市場機率分析":
+    betting_page()
 elif page == "投注分析頁":
     betting_page()
 elif page == "模型回測頁":
