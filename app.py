@@ -33,6 +33,7 @@ from worldcup_predictor.tournament import run_tournament_simulation
 from worldcup_predictor.ui import disclaimer_box, format_percent, signal_dataframe
 from utils.simulation import run_worldcup_monte_carlo
 from utils.elo_update import elo_ranking_with_updates
+from utils.player_impact import team_impact, win_probability_adjustment
 
 
 st.set_page_config(page_title="世足智慧預測中心", page_icon="⚽", layout="wide")
@@ -3326,6 +3327,79 @@ def elo_ranking_page() -> None:
         hide_index=True,
     )
     st.caption("預測權重：Elo 50%、近期狀態 30%、歷史成績 20%。")
+
+
+def _player_impact_data() -> pd.DataFrame:
+    try:
+        data = pd.read_csv("data/player_impact.csv")
+    except Exception:
+        base = player_database(players_df, team_meta_df).rename(
+            columns={
+                "player_name": "player",
+                "national_caps": "appearances",
+                "national_goals": "goals",
+            }
+        )
+        data = base
+    return data
+
+
+def _render_player_impact(home_team: str, away_team: str) -> None:
+    st.subheader("球員影響模型")
+    impact_data = _player_impact_data()
+    home_top = team_impact(impact_data, home_team)
+    away_top = team_impact(impact_data, away_team)
+    home_adjust = win_probability_adjustment(impact_data, home_team)
+    away_adjust = win_probability_adjustment(impact_data, away_team)
+
+    cols = st.columns(2)
+    for col, team, rows, adjustment in [
+        (cols[0], home_team, home_top, home_adjust),
+        (cols[1], away_team, away_top, away_adjust),
+    ]:
+        with col:
+            display_card(team_name(team), f"{adjustment:+.1%}", "對勝率的輔助影響")
+            if rows.empty:
+                st.info("目前尚未匯入該隊球員資料")
+            else:
+                table = rows[["player", "position", "appearances", "goals", "assists", "impact_score", "is_available"]].copy()
+                st.dataframe(
+                    table.rename(
+                        columns={
+                            "player": "球員",
+                            "position": "位置",
+                            "appearances": "出場數",
+                            "goals": "進球",
+                            "assists": "助攻",
+                            "impact_score": "球員影響分數",
+                            "is_available": "可出賽",
+                        }
+                    ),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+
+def match_analysis_page() -> None:
+    page_header("單場分析", "比分預測、勝平負機率、歷史資料與球員影響模型")
+    disclaimer_box()
+    row = selected_fixture()
+    prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    prediction_cards(row)
+
+    probabilities = prediction_to_frame(prediction)
+    probability_display = probabilities.copy()
+    probability_display.iloc[:, 1] = probability_display.iloc[:, 1].map(format_percent)
+    st.dataframe(
+        probability_display,
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    render_worldcup_history_block(row["home_team"], row["away_team"])
+    render_h2h_summary_block(row["home_team"], row["away_team"])
+    render_key_players_block(row["home_team"], row["away_team"])
+    _render_player_impact(row["home_team"], row["away_team"])
 
 
 if page == "首頁儀表板":

@@ -1,0 +1,11 @@
+player,team,position,age,club,appearances,goals,assists,recent_form_rating,goal_rate,assist_rate,impact_score,is_available
+Lionel Messi,Argentina,Forward,38,Inter Miami,190,112,58,8.8,0.589,0.305,96.4,true
+Julian Alvarez,Argentina,Forward,26,Atletico Madrid,45,12,8,8.1,0.267,0.178,78.6,true
+Lautaro Martinez,Argentina,Forward,28,Inter Milan,70,32,7,8.0,0.457,0.100,82.1,true
+Enzo Fernandez,Argentina,Midfielder,25,Chelsea,38,4,6,7.7,0.105,0.158,70.5,true
+Alexis Mac Allister,Argentina,Midfielder,27,Liverpool,42,3,5,7.8,0.071,0.119,68.9,true
+Kylian Mbappe,France,Forward,27,Real Madrid,97,56,28,9.1,0.577,0.289,97.9,true
+Ousmane Dembele,France,Forward,29,Paris Saint-Germain,58,7,14,8.4,0.121,0.241,80.2,true
+Antoine Griezmann,France,Midfielder,35,Atletico Madrid,137,44,38,8.0,0.321,0.277,84.8,true
+Aurelien Tchouameni,France,Midfielder,26,Real Madrid,45,3,3,7.6,0.067,0.067,65.4,true
+Eduardo Camavinga,France,Midfielder,23,Real Madrid,28,2,4,7.7,0.071,0.143,66.2,true
