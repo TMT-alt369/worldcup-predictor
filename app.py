@@ -32,7 +32,7 @@ from worldcup_predictor.players import player_database, squad_summary
 from worldcup_predictor.tournament import run_tournament_simulation
 from worldcup_predictor.ui import disclaimer_box, format_percent, signal_dataframe
 from utils.simulation import run_worldcup_monte_carlo
-from utils.elo_update import elo_ranking_with_updates
+from utils.elo_update import PREDICTION_WEIGHTS, elo_ranking_with_updates
 from utils.player_impact import team_impact, win_probability_adjustment
 from utils.market_probability import market_probability_table
 from utils.xg_model import prepare_xg_data, xg_match_summary, xg_analysis_text
@@ -3309,6 +3309,12 @@ def player_database_page() -> None:
 
 def elo_ranking_page() -> None:
     page_header("Elo 世界排名", "依本地近期賽果自動更新 Elo，呈現原始分數、更新後分數與最近 10 場戰績")
+    st.caption(
+        "?????"
+        f"Elo {PREDICTION_WEIGHTS['elo']:.0%}?"
+        f"???? {PREDICTION_WEIGHTS['recent_form']:.0%}?"
+        f"???? {PREDICTION_WEIGHTS['worldcup_history']:.0%}?"
+    )
     try:
         elo_results = pd.read_csv("data/elo_match_results.csv")
     except Exception:

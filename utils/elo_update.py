@@ -4,6 +4,11 @@ import pandas as pd
 
 
 K_FACTOR = 32
+PREDICTION_WEIGHTS = {
+    "elo": 0.50,
+    "recent_form": 0.30,
+    "worldcup_history": 0.20,
+}
 
 
 def expected_score(rating_a: float, rating_b: float) -> float:
