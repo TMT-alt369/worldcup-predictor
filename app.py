@@ -32,10 +32,34 @@ from worldcup_predictor.players import player_database, squad_summary
 from worldcup_predictor.tournament import run_tournament_simulation
 from worldcup_predictor.ui import disclaimer_box, format_percent, signal_dataframe
 from utils.simulation import run_worldcup_monte_carlo
-from utils.elo_update import PREDICTION_WEIGHTS, elo_ranking_with_updates
 from utils.player_impact import team_impact, win_probability_adjustment
 from utils.market_probability import market_probability_table
 from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
+
+try:
+    from utils.elo_update import PREDICTION_WEIGHTS, elo_ranking_with_updates
+except ImportError:
+    PREDICTION_WEIGHTS = {
+        "elo": 0.50,
+        "recent_form": 0.30,
+        "worldcup_history": 0.20,
+        "form": 0.30,
+        "history": 0.20,
+    }
+
+    def elo_ranking_with_updates(results: pd.DataFrame, team_meta: pd.DataFrame) -> pd.DataFrame:
+        data = team_meta.copy()
+        if "team_zh" not in data.columns:
+            data["team_zh"] = data.get("team", "Unknown")
+        if "flag_emoji" not in data.columns:
+            data["flag_emoji"] = ""
+        data["original_elo"] = pd.to_numeric(data.get("elo", 1700), errors="coerce").fillna(1700)
+        data["updated_elo"] = data["original_elo"]
+        data["elo_change"] = 0.0
+        data["recent_10"] = "資料待補"
+        return data[["team", "team_zh", "flag_emoji", "original_elo", "updated_elo", "elo_change", "recent_10"]].sort_values(
+            "updated_elo", ascending=False
+        ).reset_index(drop=True)
 
 
 st.set_page_config(page_title="世足智慧預測中心", page_icon="⚽", layout="wide")

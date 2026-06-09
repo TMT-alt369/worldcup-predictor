@@ -8,6 +8,8 @@ PREDICTION_WEIGHTS = {
     "elo": 0.50,
     "recent_form": 0.30,
     "worldcup_history": 0.20,
+    "form": 0.30,
+    "history": 0.20,
 }
 
 
