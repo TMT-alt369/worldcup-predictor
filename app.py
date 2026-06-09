@@ -681,7 +681,7 @@ TEAM_NAME_MAP = dict(zip(team_meta_df["team"], team_meta_df["team_zh"]))
 inject_theme()
 
 PAGE_OPTIONS = [
-    "首頁儀表板",
+    "世界盃情報中心",
     "世界盃賽程表",
     "賽程頁",
     "單場分析頁",
@@ -703,7 +703,7 @@ PAGE_OPTIONS = [
 ]
 
 PAGE_GROUPS = {
-    "首頁": ["首頁儀表板"],
+    "首頁": ["世界盃情報中心"],
     "賽程中心": ["世界盃賽程表", "即時賽況"],
     "預測中心": ["單場分析頁", "冠軍機率預測", "晉級機率分析", "世界盃模擬器", "市場機率分析"],
     "資料中心": ["Elo 世界排名", "球隊資料庫", "球員資料庫", "國家隊資料中心", "歷史世界盃數據分析", "國家隊世界盃戰績", "歷史交手分析"],
@@ -2961,7 +2961,7 @@ def presentation_mode_page() -> None:
         ("Monte Carlo 模擬", "1000 / 5000 / 10000 次", "輸出小組出線到奪冠機率。"),
         ("系統限制", "不保證賽果、不提供下注", "API 無資料時使用 fallback，避免頁面壞掉。"),
         ("未來發展", "串接更多官方/商業資料源", "補足身價、慣用腳、即時事件與球員進階數據。"),
-        ("操作流程", "首頁 → 單場分析 → 模擬器 → 資料庫", "適合課堂快速展示與口頭報告。"),
+        ("操作流程", "首頁 → 單場分析 → 模擬器 → 資料庫", "適合快速掌握賽程、預測、模擬與資料細節。"),
     ]
     for index in range(0, len(cards), 3):
         cols = st.columns(3)
@@ -3672,7 +3672,7 @@ def dashboard_page() -> None:
         st.plotly_chart(chart, use_container_width=True)
 
 
-if page == "首頁儀表板":
+if page == "世界盃情報中心":
     dashboard_page()
 elif page == "世界盃賽程表":
     fixtures_page()
