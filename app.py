@@ -610,7 +610,7 @@ def footer() -> None:
         <div class="footer">
           <strong>資料來源</strong>：Fjelstul World Cup Database、fixtures_real_2026.csv 真實賽程與展示用賠率資料<br>
           <strong>模型說明</strong>：Poisson + Elo + 近期狀態 + 世界盃歷史表現輔助權重<br>
-          <strong>版本資訊</strong>：World Cup Prediction MVP v1.0 · Streamlit 展示版 · 僅供資料分析與作品展示參考，不保證獲利。
+          <strong>版本資訊</strong>：World Cup Data Platform V8.6 · Streamlit · 僅供資料分析參考，不保證賽果或獲利。
         </div>
         """,
         unsafe_allow_html=True,
@@ -686,7 +686,6 @@ PAGE_OPTIONS = [
     "球隊資料庫",
     "球員資料庫",
     "國家隊資料中心",
-    "專題展示模式",
     "歷史世界盃數據分析",
     "國家隊世界盃戰績",
     "歷史交手分析",
@@ -698,13 +697,13 @@ PAGE_GROUPS = {
     "賽程中心": ["世界盃賽程表", "即時賽況"],
     "預測中心": ["單場分析頁", "冠軍機率預測", "晉級機率分析", "世界盃模擬器", "投注分析頁"],
     "資料中心": ["Elo 世界排名", "球隊資料庫", "球員資料庫", "國家隊資料中心", "歷史世界盃數據分析", "國家隊世界盃戰績", "歷史交手分析"],
-    "專題展示": ["模型回測頁", "專題展示模式", "免責聲明頁"],
+    "系統資訊": ["模型回測頁", "免責聲明頁"],
 }
 
 selected_group = st.sidebar.selectbox("功能分類", list(PAGE_GROUPS.keys()))
 page = st.sidebar.radio("頁面", PAGE_GROUPS[selected_group])
 st.sidebar.divider()
-st.sidebar.caption("MVP 範圍：勝平負 1X2、2002~2022 世界盃歷史資料、可解釋模型")
+st.sidebar.caption("世界盃資料平台：賽程、預測、球隊、球員、即時足球資料")
 
 
 @st.cache_data(show_spinner=False)
@@ -799,10 +798,16 @@ def render_worldcup_history_block(home_team: str, away_team: str) -> None:
 
 
 def key_players_for(team: str) -> pd.DataFrame:
-    return players_df[players_df["team"] == team].copy().sort_values(
-        ["recent_form_rating", "goal_rate"],
-        ascending=False,
-    )
+    data = player_database(players_df, team_meta_df)
+    team_players = data[data["team"] == team].copy()
+    sort_columns = [
+        column
+        for column in ["recent_form_rating", "goal_rate", "national_goals", "national_caps"]
+        if column in team_players.columns
+    ]
+    if sort_columns:
+        return team_players.sort_values(sort_columns, ascending=False).head(5)
+    return team_players.head(5)
 
 
 def h2h_summary(home_team: str, away_team: str) -> dict:
@@ -853,6 +858,13 @@ def render_key_players_block(home_team: str, away_team: str) -> None:
     st.subheader("關鍵球員")
     players = pd.concat([key_players_for(home_team), key_players_for(away_team)], ignore_index=True)
     st.caption(f"主隊關鍵球員：{team_name(home_team)} ｜ 客隊關鍵球員：{team_name(away_team)}")
+    if players.empty:
+        st.info("目前尚未匯入該球隊球員資料")
+        return
+    if "goal_rate" not in players.columns:
+        players["goal_rate"] = 0.0
+    if "recent_form_rating" not in players.columns:
+        players["recent_form_rating"] = 0.0
     players["team_display"] = players["team"].map(team_name)
     players["goal_rate_display"] = players["goal_rate"].map(format_percent)
     st.dataframe(
@@ -980,7 +992,7 @@ def dashboard_page() -> None:
             <div class="hero-title">世足智慧預測中心</div>
             <div class="hero-copy">
               深藍金色世界盃儀表板，整合賽程、比分預測、勝平負機率、信心分數、
-              投注風險與 2002~2022 世界盃歷史資料，打造正式產品展示級 MVP。
+              投注風險與 2002~2022 世界盃歷史資料，打造完整世界盃資料平台。
             </div>
           </div>
           <div class="hero-visual">
@@ -994,7 +1006,7 @@ def dashboard_page() -> None:
 
     cols = st.columns(4)
     with cols[0]:
-        display_card("待分析賽事", str(upcoming_count), "MVP 測試賽程")
+        display_card("待分析賽事", str(upcoming_count), "世界盃賽程")
     with cols[1]:
         display_card("涵蓋隊伍", str(team_count), "展示用國家隊")
     with cols[2]:
@@ -1093,10 +1105,11 @@ def rule_based_match_analysis(row: pd.Series, prediction) -> list[str]:
     elo_gap = home_strength["elo"] - away_strength["elo"]
     form_gap = home_strength["form"] - away_strength["form"]
     h2h = head_to_head_record(wc_head_to_head_df, home, away)
-    home_players = players_df[players_df["team"] == home]
-    away_players = players_df[players_df["team"] == away]
-    home_goal_rate = home_players["goal_rate"].mean() if not home_players.empty else 0
-    away_goal_rate = away_players["goal_rate"].mean() if not away_players.empty else 0
+    player_source = player_database(players_df, team_meta_df)
+    home_players = player_source[player_source["team"] == home]
+    away_players = player_source[player_source["team"] == away]
+    home_goal_rate = home_players["goal_rate"].mean() if (not home_players.empty and "goal_rate" in home_players.columns) else 0
+    away_goal_rate = away_players["goal_rate"].mean() if (not away_players.empty and "goal_rate" in away_players.columns) else 0
 
     lines = []
     lines.append(
@@ -1241,7 +1254,7 @@ def betting_page() -> None:
 
 
 def model_backtest_page() -> None:
-    page_header("模型回測頁", "以信心分層呈現 MVP 模型回測結果，提升預測可信度與可解釋性")
+    page_header("模型回測頁", "以信心分層呈現模型回測結果，提升預測可信度與可解釋性")
     disclaimer_box()
     metrics = backtest(matches_df, wc_team_stats_df, players_df)
 
@@ -1783,12 +1796,12 @@ def head_to_head_page() -> None:
 
 
 def disclaimer_page() -> None:
-    page_header("免責聲明頁", "本 MVP 的分析邊界與投注風險說明")
+    page_header("免責聲明頁", "本平台的分析邊界與投注風險說明")
     st.markdown(
         """
         ### 重要聲明
 
-        本網站是資料分析與學習用途的世足比分預測 MVP，所有預測、機率、
+        本網站是世界盃資料分析平台，所有預測、機率、
         信心分數、風險分級與投注訊號都只供參考。
 
         ### 不保證事項
@@ -2672,7 +2685,8 @@ def worldcup_simulator_page() -> None:
 
 
 def presentation_mode_page() -> None:
-    page_header("專題展示模式", "3 分鐘快速展示：排名、奪冠率、即時賽況、球員資料與國家隊比較")
+    dashboard_page()
+    return
     sim_df = v7_simulation()
     rankings = build_elo_rankings(team_meta_df).head(20)
     player_db = player_database(players_df, team_meta_df)
@@ -2918,7 +2932,8 @@ def team_database_page() -> None:
 
 
 def presentation_mode_page() -> None:
-    page_header("專題展示模式", "給老師 3 分鐘快速看完系統亮點的卡片式展示頁")
+    dashboard_page()
+    return
     cards = [
         ("專題名稱", "世界盃智慧預測中心", "以資料分析與可解釋模型預測 2026 世界盃。"),
         ("專題動機", "把賽程、球隊、球員與模型整合", "讓使用者快速理解比賽風險與預測依據。"),
@@ -3070,6 +3085,196 @@ def live_matches_page() -> None:
     st.plotly_chart(chart, use_container_width=True)
 
 
+def _player_center_data() -> pd.DataFrame:
+    data = player_database(players_df, team_meta_df).copy()
+    defaults = {
+        "player_name": "未提供",
+        "team_zh": "未提供",
+        "position": "未提供",
+        "age": 0,
+        "height_cm": 0,
+        "club": "未提供",
+        "national_caps": 0,
+        "national_goals": 0,
+        "assists": 0,
+        "market_value_eur_m": 0.0,
+        "fifa_ranking": 0,
+        "flag_emoji": "",
+        "goal_rate": 0.0,
+        "recent_form_rating": 0.0,
+    }
+    for column, default in defaults.items():
+        if column not in data.columns:
+            data[column] = default
+    numeric_columns = [
+        "age",
+        "height_cm",
+        "national_caps",
+        "national_goals",
+        "assists",
+        "market_value_eur_m",
+        "fifa_ranking",
+        "goal_rate",
+        "recent_form_rating",
+    ]
+    for column in numeric_columns:
+        data[column] = pd.to_numeric(data[column], errors="coerce").fillna(0)
+
+    def clean_display_text(value) -> str:
+        text = str(value or "").strip()
+        if not text or text.lower() == "nan":
+            return "資料待補"
+        mojibake_markers = ["�", "獺", "穩", "禳", "????"]
+        if any(marker in text for marker in mojibake_markers):
+            return "資料待補"
+        return text
+
+    for column in ["player_name", "team_zh", "position", "club"]:
+        data[column] = data[column].map(clean_display_text)
+    data["team_label"] = data["flag_emoji"].fillna("") + " " + data["team_zh"].fillna(data["team"])
+    data["player_score"] = (
+        data["recent_form_rating"] * 2
+        + data["goal_rate"] * 10
+        + data["national_goals"] * 0.15
+        + data["national_caps"] * 0.03
+        + data["market_value_eur_m"] * 0.02
+    )
+    return data
+
+
+def _render_team_key_players(player_data: pd.DataFrame, team: str) -> None:
+    team_rows = player_data[player_data["team"] == team].copy()
+    if team_rows.empty:
+        st.info("目前尚未匯入該球隊球員資料")
+        return
+    team_rows = team_rows.sort_values("player_score", ascending=False).head(5)
+    first = team_rows.iloc[0]
+    st.markdown(
+        f"""
+        <div class="display-card">
+          <div class="card-label">隊徽 / 國旗</div>
+          <div class="card-value">{html.escape(str(first.get('flag_emoji', '')))} {html.escape(str(first.get('team_zh', team)))}</div>
+          <div class="card-note">核心球員 Top5</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.dataframe(
+        team_rows[
+            [
+                "player_name",
+                "position",
+                "age",
+                "club",
+                "national_caps",
+                "national_goals",
+                "assists",
+                "market_value_eur_m",
+                "fifa_ranking",
+            ]
+        ].rename(
+            columns={
+                "player_name": "姓名",
+                "position": "位置",
+                "age": "年齡",
+                "club": "所屬俱樂部",
+                "national_caps": "出場數",
+                "national_goals": "進球",
+                "assists": "助攻",
+                "market_value_eur_m": "身價（百萬歐元）",
+                "fifa_ranking": "國家隊排名",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+def player_database_page() -> None:
+    page_header("球員資料中心", "世界盃球員資料、搜尋篩選與核心球員 Top5")
+    data = _player_center_data()
+    if data.empty:
+        st.info("目前尚未匯入該球隊球員資料")
+        return
+
+    teams = ["全部"] + sorted(data["team_zh"].dropna().unique().tolist())
+    positions = ["全部"] + sorted(data["position"].dropna().unique().tolist())
+    cols = st.columns([1.1, 1.0, 1.4])
+    selected_team = cols[0].selectbox("國家篩選", teams)
+    selected_position = cols[1].selectbox("位置篩選", positions)
+    keyword = cols[2].text_input("搜尋球員", "")
+
+    filtered = data.copy()
+    if selected_team != "全部":
+        filtered = filtered[filtered["team_zh"] == selected_team]
+    if selected_position != "全部":
+        filtered = filtered[filtered["position"] == selected_position]
+    if keyword.strip():
+        filtered = filtered[filtered["player_name"].str.contains(keyword.strip(), case=False, na=False)]
+
+    metric_cols = st.columns(3)
+    with metric_cols[0]:
+        display_card("球員數", f"{len(filtered):,}", "目前篩選結果")
+    with metric_cols[1]:
+        display_card("國家隊數", f"{filtered['team'].nunique():,}", "涵蓋隊伍")
+    with metric_cols[2]:
+        avg_age = filtered["age"].mean() if not filtered.empty else 0
+        display_card("平均年齡", f"{avg_age:.1f}", "歲")
+
+    st.subheader("球員資料表")
+    if filtered.empty:
+        st.info("目前尚未匯入該球隊球員資料")
+    else:
+        table = filtered[
+            [
+                "player_name",
+                "team_label",
+                "position",
+                "age",
+                "height_cm",
+                "club",
+                "national_caps",
+                "national_goals",
+                "assists",
+                "market_value_eur_m",
+                "fifa_ranking",
+            ]
+        ].copy()
+        st.dataframe(
+            table.rename(
+                columns={
+                    "player_name": "姓名",
+                    "team_label": "國家",
+                    "position": "位置",
+                    "age": "年齡",
+                    "height_cm": "身高",
+                    "club": "所屬俱樂部",
+                    "national_caps": "出場數",
+                    "national_goals": "進球",
+                    "assists": "助攻",
+                    "market_value_eur_m": "身價（百萬歐元）",
+                    "fifa_ranking": "國家隊排名",
+                }
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    st.subheader("關鍵球員")
+    team_options = sorted(data["team"].dropna().unique().tolist())
+    default_teams = [team for team in ["Argentina", "France", "Brazil", "Spain"] if team in team_options]
+    selected_key_teams = st.multiselect(
+        "選擇國家隊",
+        options=team_options,
+        default=default_teams or team_options[:2],
+    )
+    if not selected_key_teams:
+        st.info("目前尚未匯入該球隊球員資料")
+        return
+    for team in selected_key_teams:
+        _render_team_key_players(data, team)
+
+
 if page == "首頁儀表板":
     dashboard_page()
 elif page == "世界盃賽程表":
@@ -3100,8 +3305,6 @@ elif page == "球員資料庫":
     player_database_page()
 elif page == "國家隊資料中心":
     national_team_center_page()
-elif page == "專題展示模式":
-    presentation_mode_page()
 elif page == "歷史世界盃數據分析":
     worldcup_history_page()
 elif page == "國家隊世界盃戰績":

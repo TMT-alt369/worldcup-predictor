@@ -23,6 +23,8 @@ def predicted_result(probabilities: dict[str, float]) -> str:
 def team_player_goal_feature(players: pd.DataFrame | None, team: str) -> float:
     if players is None or players.empty:
         return 0.0
+    if "goal_rate" not in players.columns:
+        return 0.0
     team_players = players[players["team"] == team]
     if team_players.empty:
         return 0.0
