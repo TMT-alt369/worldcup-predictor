@@ -35,7 +35,7 @@ from utils.simulation import run_worldcup_monte_carlo
 from utils.elo_update import PREDICTION_WEIGHTS, elo_ranking_with_updates
 from utils.player_impact import team_impact, win_probability_adjustment
 from utils.market_probability import market_probability_table
-from utils.xg_model import prepare_xg_data, xg_match_summary, xg_analysis_text
+from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 
 
 st.set_page_config(page_title="世足智慧預測中心", page_icon="⚽", layout="wide")
@@ -3616,7 +3616,13 @@ def xg_model_page() -> None:
     st.subheader("xG 分析")
     for line_text in xg_analysis_text(summary):
         st.markdown(f"- {line_text}")
-    st.caption("預測權重參考：Elo 40%、近期狀態 20%、歷史成績 15%、xG 表現 25%。")
+    st.caption(
+        "預測權重參考："
+        f"Elo {PREDICTION_WEIGHTS_XG['elo']:.0%}、"
+        f"近期狀態 {PREDICTION_WEIGHTS_XG['recent_form']:.0%}、"
+        f"歷史成績 {PREDICTION_WEIGHTS_XG['worldcup_history']:.0%}、"
+        f"xG 表現 {PREDICTION_WEIGHTS_XG['xg']:.0%}。"
+    )
 
 
 def dashboard_page() -> None:
