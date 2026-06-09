@@ -35,6 +35,7 @@ from utils.simulation import run_worldcup_monte_carlo
 from utils.elo_update import elo_ranking_with_updates
 from utils.player_impact import team_impact, win_probability_adjustment
 from utils.market_probability import market_probability_table
+from utils.xg_model import prepare_xg_data, xg_match_summary, xg_analysis_text
 
 
 st.set_page_config(page_title="世足智慧預測中心", page_icon="⚽", layout="wide")
@@ -702,6 +703,11 @@ PAGE_GROUPS = {
     "資料中心": ["Elo 世界排名", "球隊資料庫", "球員資料庫", "國家隊資料中心", "歷史世界盃數據分析", "國家隊世界盃戰績", "歷史交手分析"],
     "系統資訊": ["模型回測頁", "免責聲明頁"],
 }
+
+for group_name, pages in PAGE_GROUPS.items():
+    if any("Elo" in item for item in pages) and "xG 模型分析" not in pages:
+        pages.insert(1, "xG 模型分析")
+        break
 
 selected_group = st.sidebar.selectbox("功能分類", list(PAGE_GROUPS.keys()))
 page = st.sidebar.radio("頁面", PAGE_GROUPS[selected_group])
@@ -3511,6 +3517,64 @@ def betting_page() -> None:
     st.warning("風險提醒：本頁僅做市場機率與模型機率比較，不提供下注功能，不保證賽果或獲利。")
 
 
+def xg_model_page() -> None:
+    page_header("xG 模型分析", "以射門距離、角度、身體部位與機會品質估算預期進球")
+    try:
+        shots = prepare_xg_data(pd.read_csv("data/xg_shots.csv"))
+    except Exception:
+        shots = pd.DataFrame()
+    if shots.empty:
+        st.info("目前尚未匯入 xG 射門資料")
+        return
+
+    match_ids = shots["match_id"].dropna().unique().tolist()
+    selected_match = st.selectbox("選擇比賽", match_ids)
+    match_shots = shots[shots["match_id"] == selected_match].copy()
+    summary = xg_match_summary(shots, selected_match)
+    if summary.empty:
+        st.info("目前尚未匯入 xG 射門資料")
+        return
+
+    cols = st.columns(len(summary))
+    for col, (_, row) in zip(cols, summary.iterrows()):
+        with col:
+            display_card(str(row["team"]), f"xG {row['xg']:.2f}", f"實際進球 {int(row['goals'])}")
+
+    st.subheader("xG vs 實際進球")
+    comparison = summary.melt(id_vars="team", value_vars=["xg", "goals"], var_name="指標", value_name="數值")
+    bar = px.bar(comparison, x="team", y="數值", color="指標", barmode="group", color_discrete_sequence=[GOLD, "#8aa0c3"])
+    bar.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(bar, use_container_width=True)
+
+    st.subheader("xG 累積走勢")
+    match_shots["cumulative_xg"] = match_shots.groupby("team")["xg_value"].cumsum()
+    line = px.line(match_shots, x="minute", y="cumulative_xg", color="team", markers=True, labels={"minute": "分鐘", "cumulative_xg": "累積 xG"})
+    line.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(line, use_container_width=True)
+
+    st.subheader("球員射門 xG 排行")
+    st.dataframe(
+        match_shots.sort_values("xg_value", ascending=False)[["minute", "team", "player", "body_part", "situation", "is_goal", "xg_value"]].rename(
+            columns={
+                "minute": "分鐘",
+                "team": "球隊",
+                "player": "球員",
+                "body_part": "身體部位",
+                "situation": "射門情境",
+                "is_goal": "是否進球",
+                "xg_value": "xG",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.subheader("xG 分析")
+    for line_text in xg_analysis_text(summary):
+        st.markdown(f"- {line_text}")
+    st.caption("預測權重參考：Elo 40%、近期狀態 20%、歷史成績 15%、xG 表現 25%。")
+
+
 if page == "首頁儀表板":
     dashboard_page()
 elif page == "世界盃賽程表":
@@ -3533,6 +3597,8 @@ elif page == "世界盃模擬器":
     worldcup_simulator_page()
 elif page == "Elo 世界排名":
     elo_ranking_page()
+elif page == "xG 模型分析":
+    xg_model_page()
 elif page == "即時賽況":
     live_matches_page()
 elif page == "球隊資料庫":

@@ -1,0 +1,13 @@
+match_id,team,player,minute,shot_distance,shot_angle,body_part,situation,is_big_chance,is_goal,xg_value
+M001,Mexico,Hirving Lozano,12,14,42,Right Foot,Open Play,false,false,0.16
+M001,Mexico,Santiago Gimenez,37,8,55,Left Foot,Big Chance,true,true,0.48
+M001,Mexico,Edson Alvarez,62,22,20,Header,Set Piece,false,false,0.05
+M001,South Africa,Percy Tau,18,17,30,Left Foot,Open Play,false,false,0.10
+M001,South Africa,Teboho Mokoena,73,25,18,Right Foot,Outside Box,false,false,0.03
+M002,South Korea,Son Heung-min,21,12,50,Right Foot,Open Play,true,false,0.36
+M002,South Korea,Hwang Hee-chan,58,10,46,Right Foot,Open Play,true,true,0.42
+M002,Czechia,Patrik Schick,33,9,52,Header,Set Piece,true,false,0.28
+M002,Czechia,Tomas Soucek,76,18,25,Right Foot,Open Play,false,false,0.08
+M003,Canada,Jonathan David,14,7,60,Right Foot,Big Chance,true,true,0.54
+M003,Canada,Alphonso Davies,49,20,22,Left Foot,Outside Box,false,false,0.04
+M003,Bosnia and Herzegovina,Edin Dzeko,52,6,58,Header,Set Piece,true,true,0.39
