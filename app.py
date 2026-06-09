@@ -3398,7 +3398,10 @@ def _render_player_impact(home_team: str, away_team: str) -> None:
             if rows.empty:
                 st.info("目前尚未匯入該隊球員資料")
             else:
-                table = rows[["player", "position", "appearances", "goals", "assists", "impact_score", "is_available"]].copy()
+                columns = ["player", "position", "appearances", "goals", "assists", "impact_score", "is_available"]
+                if "availability_note" in rows.columns:
+                    columns.append("availability_note")
+                table = rows[columns].copy()
                 st.dataframe(
                     table.rename(
                         columns={
@@ -3409,6 +3412,7 @@ def _render_player_impact(home_team: str, away_team: str) -> None:
                             "assists": "助攻",
                             "impact_score": "球員影響分數",
                             "is_available": "可出賽",
+                            "availability_note": "影響說明",
                         }
                     ),
                     use_container_width=True,

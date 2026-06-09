@@ -46,7 +46,19 @@ def normalize_player_impact(players: pd.DataFrame) -> pd.DataFrame:
         ) * position_bonus
     data["impact_score"] = pd.to_numeric(data["impact_score"], errors="coerce").fillna(0.0).round(2)
     data["is_available"] = data["is_available"].astype(str).str.lower().isin(["true", "1", "yes", "y", "available"])
+    data["availability_note"] = data.apply(_availability_note, axis=1)
     return data
+
+
+def _availability_note(row: pd.Series) -> str:
+    if bool(row.get("is_available", True)):
+        return "可出賽"
+    position = str(row.get("position", ""))
+    if position == "Forward":
+        return "核心前鋒缺陣，進攻效率下修"
+    if position == "Goalkeeper":
+        return "主力門將缺陣，失球風險上升"
+    return "主力缺陣，整體強度下修"
 
 
 def team_impact(players: pd.DataFrame, team: str, top_n: int = 5) -> pd.DataFrame:
@@ -62,6 +74,9 @@ def win_probability_adjustment(players: pd.DataFrame, team: str) -> float:
     if top.empty:
         return 0.0
     available_score = top.loc[top["is_available"], "impact_score"].sum()
-    unavailable_score = top.loc[~top["is_available"], "impact_score"].sum()
-    adjustment = (available_score - unavailable_score * 1.35) / 10000
+    unavailable = top.loc[~top["is_available"]].copy()
+    unavailable_score = unavailable["impact_score"].sum()
+    forward_penalty = unavailable.loc[unavailable["position"] == "Forward", "impact_score"].sum() * 0.25
+    goalkeeper_penalty = unavailable.loc[unavailable["position"] == "Goalkeeper", "impact_score"].sum() * 0.35
+    adjustment = (available_score - unavailable_score * 1.35 - forward_penalty - goalkeeper_penalty) / 10000
     return round(float(max(min(adjustment, 0.04), -0.06)), 4)
