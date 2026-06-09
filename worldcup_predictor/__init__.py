@@ -1,2 +1,1 @@
-"""World Cup score prediction MVP package."""
-
+"""World Cup data platform package."""

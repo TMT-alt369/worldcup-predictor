@@ -1155,7 +1155,7 @@ def rule_based_match_analysis(row: pd.Series, prediction) -> list[str]:
         lines.append("比賽風險：勝平負機率分布較分散，模型信心偏保守，適合視為高不確定性場次。")
     else:
         lines.append(f"比賽風險：模型最高方向機率約 {format_percent(top_probability)}，仍需搭配信心分數與風險等級一起解讀。")
-    lines.append("下注風險提醒：本網站不提供下注功能，所有預測與文字分析僅供專題展示與資料分析參考，不保證命中或獲利。")
+    lines.append("風險提醒：本網站不提供下注功能，所有預測與文字分析僅供資料分析參考，不保證命中或獲利。")
     return lines
 
 
@@ -1330,7 +1330,7 @@ def champion_probability_page() -> None:
     page_header("冠軍機率預測", "以 Elo、Poisson、近期狀態、歷史世界盃表現與 Monte Carlo 模擬估算 2026 奪冠機率")
     st.info(
         "本頁透過 Elo Rating、Poisson 進球模型與 Monte Carlo 模擬，估算各隊在不同階段的晉級機率。"
-        "結果僅供資料分析與專題展示參考，不代表實際賽果。"
+        "結果僅供資料分析參考，不代表實際賽果。"
     )
     disclaimer_box()
 
@@ -1467,7 +1467,7 @@ def champion_probability_page() -> None:
 def elo_ranking_page() -> None:
     page_header("Elo 世界排名", "以本地 team_meta.csv 的 Elo Rating 建立 2026 世界盃參賽隊伍排名")
     st.info(
-        "Elo Rating 用於衡量球隊相對強度。本頁排名資料為專題展示用本地資料，"
+        "Elo Rating 用於衡量球隊相對強度。本頁排名資料使用本地與更新資料，"
         "可作為單場預測與冠軍機率模擬的輔助參考，不代表官方 FIFA 排名。"
     )
 
@@ -1540,7 +1540,7 @@ def advancement_probability_page() -> None:
     st.info(
         "本頁重用 V2 冠軍機率模擬系統，透過 Elo Rating、Poisson 進球模型、近期狀態、"
         "世界盃歷史表現與 1000 次 Monte Carlo 模擬，估算各階段晉級機率。"
-        "結果僅供資料分析與專題展示參考，不代表實際賽果。"
+        "結果僅供資料分析參考，不代表實際賽果。"
     )
 
     simulations = 1000
@@ -1876,7 +1876,7 @@ def champion_probability_page() -> None:
     page_header("冠軍機率預測", "V7 智慧預測中心：Elo Rating + Poisson + 10000 次 Monte Carlo Simulation")
     st.info(
         "本頁以可解釋模型估算 2026 世界盃奪冠機率，整合 Elo、近期狀態、世界盃歷史表現與 Poisson 進球模擬。"
-        "結果僅供資料分析與專題展示，不代表實際賽果。"
+        "結果僅供資料分析，不代表實際賽果。"
     )
     disclaimer_box()
 
@@ -2777,7 +2777,7 @@ def dashboard_page() -> None:
             <div class="hero-title">世界盃智慧預測中心</div>
             <div class="hero-copy">
               整合賽程、單場比分、冠軍機率、晉級機率、即時實況摘要與 Monte Carlo 模擬，
-              以深色科技風呈現專題展示重點。
+              以深色科技風呈現世界盃資料重點。
             </div>
           </div>
           <div class="hero-visual"><div class="trophy">🏆</div></div>
@@ -2831,7 +2831,7 @@ def dashboard_page() -> None:
     with cols[1]:
         display_card("即時實況摘要", live_source, "API-Football 或 Fallback Dataset")
     with cols[2]:
-        display_card("專題模型說明", "Elo + Poisson", "Monte Carlo 模擬與歷史權重")
+        display_card("模型說明", "Elo + Poisson", "Monte Carlo 模擬與歷史權重")
 
 
 def player_database_page() -> None:
@@ -2944,9 +2944,9 @@ def presentation_mode_page() -> None:
     dashboard_page()
     return
     cards = [
-        ("專題名稱", "世界盃智慧預測中心", "以資料分析與可解釋模型預測 2026 世界盃。"),
-        ("專題動機", "把賽程、球隊、球員與模型整合", "讓使用者快速理解比賽風險與預測依據。"),
-        ("系統功能架構", "賽程中心／預測中心／資料中心／專題展示", "用分類側邊欄降低操作複雜度。"),
+        ("平台名稱", "世界盃情報中心", "以資料分析與可解釋模型預測 2026 世界盃。"),
+        ("產品目標", "把賽程、球隊、球員與模型整合", "讓使用者快速理解比賽風險與預測依據。"),
+        ("系統功能架構", "賽程中心／預測中心／資料中心", "用分類側邊欄降低操作複雜度。"),
         ("使用資料", "本地 CSV + API-Football fallback", "所有展示資料／模擬資料皆清楚標示。"),
         ("預測模型說明", "Elo + Poisson + 歷史權重", "保留可解釋性，不使用黑盒深度學習。"),
         ("Monte Carlo 模擬", "1000 / 5000 / 10000 次", "輸出小組出線到奪冠機率。"),
@@ -3573,6 +3573,53 @@ def xg_model_page() -> None:
     for line_text in xg_analysis_text(summary):
         st.markdown(f"- {line_text}")
     st.caption("預測權重參考：Elo 40%、近期狀態 20%、歷史成績 15%、xG 表現 25%。")
+
+
+def dashboard_page() -> None:
+    st.markdown(
+        """
+        <div class="hero">
+          <div>
+            <div class="hero-kicker">WORLD CUP INTELLIGENCE CENTER</div>
+            <div class="hero-title">世界盃情報中心</div>
+            <div class="hero-copy">
+              整合 2026 世界盃賽程、Elo、球員資料、xG、市場機率與 Monte Carlo 模擬，
+              提供可解釋的足球資料分析。
+            </div>
+          </div>
+          <div class="hero-visual"><div class="trophy">🏆</div></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    disclaimer_box()
+    sim_df = v7_simulation()
+    row = fixture_odds_df.iloc[0]
+    prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    champion = sim_df.iloc[0]
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("近期賽程", str(len(fixture_odds_df.head(6))), "台灣時間 UTC+8")
+    with cols[1]:
+        display_card("預測比分", f"{prediction.predicted_home_goals} : {prediction.predicted_away_goals}", matchup_text(row))
+    with cols[2]:
+        display_card("冠軍率最高", format_percent(float(champion["champion_probability"])), str(champion["team_display"]))
+    with cols[3]:
+        display_card("模型組合", "Elo + Poisson + xG", "可解釋分析")
+
+    left, right = st.columns([1.1, 0.9])
+    with left:
+        st.subheader("近期賽程")
+        st.dataframe(fixtures_with_flags(fixture_odds_df.head(5)), use_container_width=True, hide_index=True)
+    with right:
+        st.subheader("冠軍機率 Top 5")
+        top5 = sim_df.head(5).sort_values("champion_probability", ascending=True).copy()
+        top5["label"] = top5["champion_probability"].map(format_percent)
+        chart = px.bar(top5, x="champion_probability", y="team_display", orientation="h", text="label", color="champion_probability", color_continuous_scale=["#415a77", GOLD_LIGHT])
+        chart.update_xaxes(tickformat=".0%")
+        chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+        st.plotly_chart(chart, use_container_width=True)
 
 
 if page == "首頁儀表板":
