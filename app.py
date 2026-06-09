@@ -219,6 +219,15 @@ def fixture_time_text(row: pd.Series) -> str:
     return taipei_time_text(taipei_datetime(row))
 
 
+def live_time_text(value) -> str:
+    try:
+        if value is None or pd.isna(value):
+            return "N/A"
+        return taipei_time_text(value)
+    except Exception:
+        return "N/A"
+
+
 def inject_theme() -> None:
     st.markdown(
         f"""
@@ -2630,6 +2639,159 @@ def xg_model_page() -> None:
         f"近期狀態 {PREDICTION_WEIGHTS_XG['recent_form']:.0%}、"
         f"歷史成績 {PREDICTION_WEIGHTS_XG['worldcup_history']:.0%}、"
         f"xG 表現 {PREDICTION_WEIGHTS_XG['xg']:.0%}。"
+    )
+
+
+def _clean_table_for_display(df: pd.DataFrame) -> pd.DataFrame:
+    output = df.copy()
+    for column in output.columns:
+        if output[column].dtype == object:
+            output[column] = output[column].fillna("N/A").astype(str).replace(
+                {"nan": "N/A", "None": "N/A", "": "N/A"}
+            )
+    return output.fillna("N/A")
+
+
+def live_event_label(event_type: str) -> str:
+    labels = {
+        "Goal": "進球",
+        "Yellow Card": "黃牌",
+        "Red Card": "紅牌",
+        "Substitution": "換人",
+    }
+    return labels.get(str(event_type), str(event_type) if str(event_type) else "事件")
+
+
+def national_team_center_page() -> None:
+    page_header("國家隊資料中心", "整合世界排名、Elo、球員名單與晉級機率")
+    teams = sorted(team_meta_df["team"].dropna().unique().tolist())
+    selected = st.selectbox("選擇國家隊", teams, format_func=lambda team: team_name(team))
+    meta = team_meta_df[team_meta_df["team"] == selected].iloc[0].to_dict()
+    players = player_database(players_df, team_meta_df)
+    squad = players[players["team"] == selected].copy()
+    sim = v7_simulation()
+    sim_row = sim[sim["team"] == selected]
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("FIFA 排名", str(int(meta.get("fifa_ranking", 0) or 0)), team_name(selected))
+    with cols[1]:
+        display_card("Elo Rating", str(int(meta.get("elo", 0) or 0)), meta.get("confederation", "N/A"))
+    with cols[2]:
+        avg_age = squad["age"].mean() if not squad.empty and "age" in squad.columns else 0
+        display_card("平均年齡", f"{avg_age:.1f}" if avg_age else "N/A", "球員資料")
+    with cols[3]:
+        champion_prob = float(sim_row["champion_probability"].iloc[0]) if not sim_row.empty else 0
+        display_card("奪冠率", format_percent(champion_prob), "Monte Carlo")
+
+    if not sim_row.empty:
+        stage_cols = [
+            "group_qualified_probability",
+            "round_16_probability",
+            "round_8_probability",
+            "semi_final_probability",
+            "final_probability",
+            "champion_probability",
+        ]
+        stage_labels = ["小組出線率", "16強率", "8強率", "4強率", "決賽率", "冠軍率"]
+        stage_df = pd.DataFrame(
+            {"階段": stage_labels, "機率": [float(sim_row[col].iloc[0]) for col in stage_cols]}
+        )
+        stage_df["百分比"] = stage_df["機率"].map(format_percent)
+        chart = px.bar(stage_df, x="階段", y="機率", text="百分比", color="機率", color_continuous_scale=["#415a77", GOLD_LIGHT])
+        chart.update_yaxes(tickformat=".0%", range=[0, 1])
+        chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+        st.plotly_chart(chart, use_container_width=True)
+
+    st.subheader("球員名單")
+    if squad.empty:
+        st.info("目前尚未匯入該隊球員資料")
+    else:
+        table = squad[["player_name", "position_zh", "age", "club", "national_caps", "national_goals"]].rename(
+            columns={
+                "player_name": "姓名",
+                "position_zh": "位置",
+                "age": "年齡",
+                "club": "俱樂部",
+                "national_caps": "出場數",
+                "national_goals": "進球",
+            }
+        )
+        st.dataframe(_clean_table_for_display(table), use_container_width=True, hide_index=True)
+
+
+def worldcup_history_page() -> None:
+    page_header("歷史世界盃數據分析", "2002～2022 世界盃賽果、四強與國家隊表現")
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("比賽場次", f"{len(wc_matches_df):,}", "2002～2022")
+    with cols[1]:
+        display_card("參賽國家", f"{wc_team_stats_df['team'].nunique():,}", "歷史資料")
+    with cols[2]:
+        goals = int(pd.to_numeric(wc_matches_df.get("home_goals", 0), errors="coerce").fillna(0).sum() + pd.to_numeric(wc_matches_df.get("away_goals", 0), errors="coerce").fillna(0).sum())
+        display_card("總進球", f"{goals:,}", "歷屆賽果")
+    with cols[3]:
+        display_card("資料狀態", "本地資料", "UTF-8")
+
+    st.subheader("歷屆四強")
+    if wc_top4_df.empty:
+        st.info("目前尚未匯入歷屆四強資料")
+    else:
+        st.dataframe(_clean_table_for_display(wc_top4_df), use_container_width=True, hide_index=True)
+
+    st.subheader("勝率最高國家 Top 12")
+    top_stats = top_team_stats(wc_team_stats_df)
+    if top_stats.empty:
+        st.info("目前尚未匯入國家隊歷史戰績")
+    else:
+        st.dataframe(_clean_table_for_display(top_stats), use_container_width=True, hide_index=True)
+
+
+def team_record_page() -> None:
+    page_header("國家隊世界盃戰績", "查詢 2002～2022 世界盃國家隊歷史戰績")
+    teams = sorted(wc_team_stats_df["team"].dropna().unique().tolist())
+    selected = st.selectbox("選擇國家隊", teams, format_func=lambda team: team_name(team))
+    summary = team_summary(wc_team_stats_df, selected)
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("參賽屆數", str(int(summary.get("tournaments_played", 0) or 0)))
+    with cols[1]:
+        display_card("勝率", format_percent(float(summary.get("win_rate", 0) or 0)))
+    with cols[2]:
+        display_card("進球", str(int(summary.get("goals_for", 0) or 0)))
+    with cols[3]:
+        display_card("失球", str(int(summary.get("goals_against", 0) or 0)))
+
+    table = pd.DataFrame([summary])
+    st.dataframe(_clean_table_for_display(table), use_container_width=True, hide_index=True)
+
+
+def head_to_head_page() -> None:
+    page_header("歷史交手分析", "查詢兩隊 2002～2022 世界盃交手紀錄")
+    teams = sorted(set(wc_matches_df["home_team"]).union(set(wc_matches_df["away_team"])))
+    col1, col2 = st.columns(2)
+    team_a = col1.selectbox("國家隊 A", teams, index=0, format_func=lambda team: team_name(team))
+    team_b = col2.selectbox("國家隊 B", teams, index=1 if len(teams) > 1 else 0, format_func=lambda team: team_name(team))
+    if team_a == team_b:
+        st.info("請選擇兩支不同國家隊。")
+        return
+    record = head_to_head_record(wc_head_to_head_df, team_a, team_b)
+    if record.empty:
+        st.info("目前尚未匯入這兩隊的歷史交手資料")
+    else:
+        st.dataframe(_clean_table_for_display(record), use_container_width=True, hide_index=True)
+
+
+def disclaimer_page() -> None:
+    page_header("免責聲明頁", "世界盃資料平台使用邊界")
+    st.warning("所有預測、機率、xG、市場機率與模擬結果僅供資料分析參考，不保證賽果或獲利。")
+    st.markdown(
+        """
+        - 本網站不提供下注、金流、會員錢包或交易功能。
+        - 即時資料可能來自 API 或本地 fallback，請以官方賽事資訊為準。
+        - 使用者若依據本網站資訊做任何財務決策，需自行承擔風險。
+        """
     )
 
 
