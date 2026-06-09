@@ -22,4 +22,5 @@ def run_worldcup_monte_carlo(
     )
     if "round_32_probability" not in results.columns and "group_qualified_probability" in results.columns:
         results["round_32_probability"] = results["group_qualified_probability"]
+    results["simulation_count"] = int(simulations)
     return results

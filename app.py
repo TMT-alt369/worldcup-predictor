@@ -3465,6 +3465,7 @@ def worldcup_simulator_page() -> None:
         )
     if "round_32_probability" not in sim_df.columns:
         sim_df["round_32_probability"] = sim_df.get("group_qualified_probability", 0)
+    sim_df = sim_df.sort_values("champion_probability", ascending=False).reset_index(drop=True)
 
     display_card("模擬次數", f"{int(simulations):,}", "Monte Carlo")
     top10 = sim_df.head(10).sort_values("champion_probability", ascending=True).copy()
