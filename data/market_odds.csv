@@ -1,0 +1,5 @@
+match_id,home_team,away_team,home_odds,draw_odds,away_odds,home_implied_prob,draw_implied_prob,away_implied_prob
+M001,Mexico,South Africa,1.95,3.35,4.20,0.487,0.284,0.226
+M002,South Korea,Czechia,2.55,3.10,2.85,0.368,0.303,0.329
+M003,Canada,Bosnia and Herzegovina,2.30,3.25,3.05,0.411,0.291,0.298
+M004,United States,Paraguay,2.05,3.30,3.70,0.462,0.287,0.251

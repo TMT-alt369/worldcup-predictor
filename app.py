@@ -34,6 +34,7 @@ from worldcup_predictor.ui import disclaimer_box, format_percent, signal_datafra
 from utils.simulation import run_worldcup_monte_carlo
 from utils.elo_update import elo_ranking_with_updates
 from utils.player_impact import team_impact, win_probability_adjustment
+from utils.market_probability import market_probability_table
 
 
 st.set_page_config(page_title="世足智慧預測中心", page_icon="⚽", layout="wide")
@@ -3469,6 +3470,45 @@ def worldcup_simulator_page() -> None:
         hide_index=True,
     )
     st.caption("模型使用 Elo、近期狀態、歷史世界盃表現與 Poisson 進球分布；結果僅供資料分析參考，不保證準確。")
+
+
+def betting_page() -> None:
+    page_header("市場機率分析", "將模型機率與賠率隱含機率融合，提供風險參考")
+    disclaimer_box()
+    row = selected_fixture()
+    prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    table = market_probability_table(row, prediction)
+
+    st.subheader(f"{fixture_time_text(row)} ｜ {matchup_text(row)}")
+    display = table.copy()
+    for column in ["model_probability", "market_probability", "fused_probability"]:
+        display[column] = display[column].map(format_percent)
+    st.dataframe(
+        display.rename(
+            columns={
+                "market": "結果",
+                "model_probability": "模型機率",
+                "market_probability": "市場機率",
+                "fused_probability": "融合後機率",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+    chart_data = table.melt(id_vars="market", var_name="type", value_name="probability")
+    chart = px.bar(
+        chart_data,
+        x="market",
+        y="probability",
+        color="type",
+        barmode="group",
+        labels={"market": "結果", "probability": "機率", "type": "來源"},
+        color_discrete_sequence=[GOLD, "#8aa0c3", "#28a745"],
+    )
+    chart.update_yaxes(tickformat=".0%")
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(chart, use_container_width=True)
+    st.warning("風險提醒：本頁僅做市場機率與模型機率比較，不提供下注功能，不保證賽果或獲利。")
 
 
 if page == "首頁儀表板":
