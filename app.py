@@ -39,6 +39,7 @@ from utils.parlay_analyzer import build_match_candidates, build_parlay_combinati
 from utils.champion_path import champion_path_text, likely_knockout_path, stage_probability_table
 from utils.team_compare import comparison_table, comparison_text, radar_values, team_profile
 from utils.mobile_style import mobile_css
+from utils.ai_assistant import answer_question
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -785,6 +786,9 @@ PAGE_GROUPS = {
         "歷史交手分析",
         "足球數據百科",
         "足球術語教學",
+    ],
+    "AI 工具": [
+        "AI 世界盃分析師",
     ],
 }
 
@@ -2721,6 +2725,50 @@ def team_comparison_page() -> None:
     st.markdown(f"<div class='display-card'><div class='card-note'>{html.escape(text)}</div></div>", unsafe_allow_html=True)
 
 
+def ai_worldcup_analyst_page() -> None:
+    page_header("AI 世界盃分析師", "以本地賽程、Elo、xG、球員與模擬資料回答常見世界盃問題")
+    examples = [
+        "法國奪冠機率多少？",
+        "巴西跟阿根廷誰比較強？",
+        "今天有哪些比賽？",
+        "哪隊 Elo 最高？",
+        "哪隊 xG 表現最好？",
+        "哪場比賽最膠著？",
+        "哪支球隊冠軍路徑最難？",
+    ]
+    if "ai_question" not in st.session_state:
+        st.session_state["ai_question"] = examples[0]
+
+    st.caption("規則式問答，未串接外部 AI API；回答僅供資料分析參考。")
+    button_cols = st.columns(2)
+    for idx, example in enumerate(examples):
+        with button_cols[idx % 2]:
+            if st.button(example, key=f"ai_example_{idx}", use_container_width=True):
+                st.session_state["ai_question"] = example
+
+    question = st.text_input("輸入問題", key="ai_question")
+    try:
+        shots_df = prepare_xg_data(pd.read_csv("data/xg_shots.csv"))
+    except Exception:
+        shots_df = pd.DataFrame()
+    try:
+        players_df = pd.read_csv("data/player_database.csv")
+    except Exception:
+        players_df = pd.DataFrame()
+
+    answer = answer_question(
+        question,
+        fixture_odds_df,
+        team_meta_df,
+        v7_simulation(),
+        shots_df,
+        players_df,
+        matches_df,
+    )
+    st.subheader("回答")
+    st.markdown(f"<div class='display-card'><div class='card-note'>{html.escape(answer)}</div></div>", unsafe_allow_html=True)
+
+
 def betting_page() -> None:
     page_header("市場機率分析", "將模型機率與賠率隱含機率融合，提供風險參考")
     st.caption("融合公式：模型機率 70% + 市場隱含機率 30%。市場隱含機率已正規化以降低 bookmaker margin 影響。")
@@ -3596,6 +3644,8 @@ elif page == "冠軍路徑模擬":
     champion_path_page()
 elif page == "對戰比較中心":
     team_comparison_page()
+elif page == "AI 世界盃分析師":
+    ai_worldcup_analyst_page()
 elif page == "Elo 世界排名":
     elo_ranking_page()
 elif page == "xG 模型分析":
