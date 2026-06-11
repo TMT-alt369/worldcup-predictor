@@ -42,6 +42,14 @@ from utils.mobile_style import mobile_css
 from utils.ai_assistant import answer_question
 from utils.confidence_engine import ConfidenceResult, calculate_confidence
 from utils import bet_market_engine
+from utils.dynamic_prediction import (
+    combine_results,
+    group_standings,
+    load_match_results,
+    probability_delta,
+    rerun_dynamic_simulation,
+    update_elo,
+)
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -858,6 +866,7 @@ PAGE_GROUPS = {
     ],
     "賽程中心": [
         "世界盃賽程表",
+        "賽果更新中心",
         "即時賽況",
     ],
     "預測中心": [
@@ -919,10 +928,39 @@ def cached_tournament_simulation(
     )
 
 
+@st.cache_data(show_spinner=False)
+def cached_dynamic_tournament_simulation(
+    fixtures: pd.DataFrame,
+    team_meta: pd.DataFrame,
+    worldcup_team_stats: pd.DataFrame,
+    recent_matches: pd.DataFrame,
+    results: pd.DataFrame,
+    simulations: int,
+) -> pd.DataFrame:
+    return rerun_dynamic_simulation(
+        fixtures,
+        team_meta,
+        worldcup_team_stats,
+        recent_matches,
+        results,
+        simulations=simulations,
+    )
+
+
 V7_SIMULATIONS = 10000
 
 
 def v7_simulation() -> pd.DataFrame:
+    results = load_match_results()
+    if not results.empty:
+        return cached_dynamic_tournament_simulation(
+            fixture_odds_df,
+            team_meta_df,
+            wc_team_stats_df,
+            matches_df,
+            results,
+            V7_SIMULATIONS,
+        )
     return cached_tournament_simulation(
         fixture_odds_df,
         team_meta_df,
@@ -949,16 +987,23 @@ def render_ai_match_report(
     confidence_result: ConfidenceResult | None = None,
 ) -> None:
     st.subheader("AI 賽事分析報告")
-    if confidence_result is None:
-        confidence_result = confidence_for_fixture(row, prediction, market_table)
-    lines = generate_match_report(
-        row,
-        prediction,
-        matches_df,
-        team_meta_df,
-        market_table=market_table,
-        confidence_result=confidence_result,
-    )
+    try:
+        if confidence_result is None:
+            confidence_result = confidence_for_fixture(row, prediction, market_table)
+        lines = generate_match_report(
+            row,
+            prediction,
+            matches_df,
+            team_meta_df,
+            market_table=market_table,
+            confidence_result=confidence_result,
+        )
+    except Exception:
+        lines = [
+            "目前資料不足，僅提供基礎分析。",
+            "本場仍可參考比分預測、勝平負機率與歷史資料，但 AI 文字報告暫以保守描述呈現。",
+            "本報告僅供機率分析，不構成下注建議。",
+        ]
     st.markdown(
         "<div class='display-card'>"
         + "".join(f"<div class='card-note'>{html.escape(line)}</div>" for line in lines)
@@ -1339,6 +1384,155 @@ def fixtures_page() -> None:
     st.subheader("快速分析")
     row = selected_fixture("選擇要分析的比賽")
     prediction_cards(row, compact=True)
+
+
+def match_results_update_page() -> None:
+    page_header("賽果更新中心", "已完成賽事、小組積分、Elo 更新與重新預測")
+    st.caption("本頁可用本地賽果或手動輸入比分測試後續機率變動；資料不足時使用 fallback，不影響既有賽程資料。")
+    base_results = load_match_results()
+    manual_results = st.session_state.get("manual_match_results", pd.DataFrame())
+    results = combine_results(base_results, manual_results)
+
+    if results.empty:
+        st.info("目前尚未匯入已完成賽事。可在下方手動輸入賽果測試重新計算。")
+    else:
+        completed_display = results.copy()
+        completed_display["比分"] = completed_display["home_score"].astype(str) + " : " + completed_display["away_score"].astype(str)
+        st.subheader("已完成賽事")
+        st.dataframe(
+            completed_display[["match_id", "date", "group", "home_team", "away_team", "比分", "status"]].rename(
+                columns={
+                    "match_id": "比賽 ID",
+                    "date": "日期",
+                    "group": "小組",
+                    "home_team": "主隊",
+                    "away_team": "客隊",
+                    "status": "狀態",
+                }
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        st.subheader("小組積分表")
+        standings = group_standings(results)
+        if standings.empty:
+            st.info("目前小組積分資料不足。")
+        else:
+            st.dataframe(
+                standings.rename(
+                    columns={
+                        "group": "小組",
+                        "team": "球隊",
+                        "played": "賽",
+                        "wins": "勝",
+                        "draws": "和",
+                        "losses": "敗",
+                        "gf": "進球",
+                        "ga": "失球",
+                        "gd": "淨勝球",
+                        "points": "積分",
+                    }
+                ),
+                use_container_width=True,
+                hide_index=True,
+            )
+
+    st.subheader("手動輸入賽果測試")
+    labels = {
+        f"{taipei_time_text(row.datetime_taipei)} | {team_name(row.home_team)} vs {team_name(row.away_team)}": row.match_id
+        for row in fixture_odds_df.itertuples()
+    }
+    selected_label = st.selectbox("選擇比賽", list(labels.keys()), key="dynamic_result_match")
+    selected_match_id = labels[selected_label]
+    row = fixture_odds_df[fixture_odds_df["match_id"] == selected_match_id].iloc[0]
+    score_cols = st.columns(2)
+    home_score = score_cols[0].number_input(f"{team_name(row['home_team'])} 比分", min_value=0, max_value=12, value=2, step=1)
+    away_score = score_cols[1].number_input(f"{team_name(row['away_team'])} 比分", min_value=0, max_value=12, value=0, step=1)
+
+    if st.button("重新計算機率", type="primary", use_container_width=True):
+        manual_row = pd.DataFrame(
+            [
+                {
+                    "match_id": str(row["match_id"]),
+                    "date": str(row.get("date", ""))[:10],
+                    "group": str(row.get("stage", "未分組")),
+                    "home_team": row["home_team"],
+                    "away_team": row["away_team"],
+                    "home_score": int(home_score),
+                    "away_score": int(away_score),
+                    "status": "Completed",
+                }
+            ]
+        )
+        st.session_state["manual_match_results"] = combine_results(base_results, manual_results, manual_row)
+        st.success("已套用手動賽果，並重新計算下方機率。")
+
+    current_results = combine_results(base_results, st.session_state.get("manual_match_results", pd.DataFrame()))
+    if current_results.empty:
+        return
+
+    updated_meta = update_elo(team_meta_df, current_results)
+    elo_view = updated_meta.copy()
+    elo_view["team_display"] = elo_view.get("flag_emoji", "").astype(str) + " " + elo_view.get("team_zh", elo_view["team"]).astype(str)
+    changed_elo = elo_view[elo_view["elo_change"].abs() > 0.01].sort_values("elo_change", ascending=False)
+    st.subheader("Elo 更新")
+    if changed_elo.empty:
+        st.info("目前沒有可顯示的 Elo 變化。")
+    else:
+        st.dataframe(
+            changed_elo[["team_display", "original_elo", "updated_elo", "elo_change"]].rename(
+                columns={"team_display": "球隊", "original_elo": "原始 Elo", "updated_elo": "更新後 Elo", "elo_change": "Elo 變化"}
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    with st.spinner("重新執行 Monte Carlo 模擬..."):
+        before = cached_tournament_simulation(fixture_odds_df, team_meta_df, wc_team_stats_df, matches_df, 1000)
+        after = cached_dynamic_tournament_simulation(fixture_odds_df, team_meta_df, wc_team_stats_df, matches_df, current_results, 1000)
+    delta = probability_delta(before, after)
+    st.subheader("更新前 / 更新後機率差異")
+    if delta.empty:
+        st.info("目前機率差異資料不足。")
+        return
+    focus_teams = set(current_results["home_team"]).union(set(current_results["away_team"]))
+    view = delta[delta["team"].isin(focus_teams)].copy()
+    if view.empty:
+        view = delta.head(12).copy()
+    display_cols = [
+        "team_display",
+        "group_qualified_probability_before",
+        "group_qualified_probability_after",
+        "group_qualified_probability_delta",
+        "round_16_probability_after",
+        "round_8_probability_after",
+        "semi_final_probability_after",
+        "final_probability_after",
+        "champion_probability_after",
+    ]
+    display_cols = [column for column in display_cols if column in view.columns]
+    display = view[display_cols].copy()
+    for column in display.columns:
+        if column != "team_display":
+            display[column] = pd.to_numeric(display[column], errors="coerce").fillna(0).map(format_percent)
+    st.dataframe(
+        display.rename(
+            columns={
+                "team_display": "球隊",
+                "group_qualified_probability_before": "原出線率",
+                "group_qualified_probability_after": "更新後出線率",
+                "group_qualified_probability_delta": "出線率變化",
+                "round_16_probability_after": "16 強率",
+                "round_8_probability_after": "8 強率",
+                "semi_final_probability_after": "4 強率",
+                "final_probability_after": "決賽率",
+                "champion_probability_after": "冠軍率",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
 
 
 def render_team_history_comparison(home_team: str, away_team: str) -> None:
@@ -3876,6 +4070,8 @@ if page == "世界盃情報中心":
     dashboard_page()
 elif page == "世界盃賽程表":
     fixtures_page()
+elif page == "賽果更新中心":
+    match_results_update_page()
 elif page == "賽程頁":
     fixtures_page()
 elif page == "單場分析頁":
