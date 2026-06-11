@@ -29,8 +29,11 @@ def mobile_css() -> str:
             font-size: 0.96rem;
         }
         .block-container {
-            padding: 1rem 0.82rem 5.8rem !important;
+            padding: 1rem 0.82rem 7.5rem !important;
             max-width: 100% !important;
+        }
+        [data-testid="stSidebar"] {
+            transform: translateX(0);
         }
         .hero {
             grid-template-columns: 1fr !important;
@@ -60,6 +63,8 @@ def mobile_css() -> str:
         .display-card, .confidence-wrap {
             padding: 16px !important;
             margin-bottom: 12px !important;
+            width: 100% !important;
+            max-width: 100% !important;
         }
         .card-value {
             font-size: 1.7rem !important;
@@ -105,13 +110,26 @@ def mobile_css() -> str:
         .stButton > button {
             width: 100%;
             margin: 0.25rem 0;
+            min-height: 52px !important;
+            font-size: 1rem !important;
+        }
+        .stTabs [role="tablist"] {
+            overflow-x: auto;
+            flex-wrap: nowrap;
+        }
+        .stTabs [role="tab"] {
+            min-width: max-content;
+            padding: 10px 14px;
         }
         .risk-badge {
             margin-left: 0;
             margin-top: 6px;
         }
         footer, .footer {
-            padding-bottom: 5rem !important;
+            padding-bottom: 7rem !important;
+        }
+        [data-testid="stToolbar"], [data-testid="stDecoration"] {
+            max-width: 100vw !important;
         }
     }
     </style>

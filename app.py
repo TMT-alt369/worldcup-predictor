@@ -110,7 +110,7 @@ except ImportError:
         ).reset_index(drop=True)
 
 
-st.set_page_config(page_title="世足智慧預測中心", page_icon="⚽", layout="wide")
+st.set_page_config(page_title="世足智慧預測中心", page_icon="⚽", layout="wide", initial_sidebar_state="collapsed")
 
 GOLD = "#d6b25e"
 GOLD_LIGHT = "#f3d98b"
@@ -4451,11 +4451,10 @@ def dashboard_page() -> None:
         """
         <div class="hero">
           <div>
-            <div class="hero-kicker">WORLD CUP INTELLIGENCE CENTER</div>
-            <div class="hero-title">世界盃情報中心</div>
+            <div class="hero-kicker">WORLD CUP INTELLIGENCE PLATFORM · FINAL</div>
+            <div class="hero-title">世界盃智慧預測平台</div>
             <div class="hero-copy">
-              整合 2026 世界盃賽程、Elo、球員資料、xG、市場機率與 Monte Carlo 模擬，
-              提供可解釋的足球資料分析。
+              即時賽果、Elo、xG、球員影響、市場機率與 Monte Carlo 模擬整合成一個可解釋的世界盃情報儀表板。
             </div>
           </div>
           <div class="hero-visual"><div class="trophy">🏆</div></div>
@@ -4468,29 +4467,99 @@ def dashboard_page() -> None:
     row = fixture_odds_df.iloc[0]
     prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
     champion = sim_df.iloc[0]
+    live_matches, _, live_source = load_live_data(st.secrets, live_matches_df, live_events_df, target_date=pd.Timestamp.now(tz="Asia/Taipei").date())
+    market_table = market_probability_table(row, prediction)
+    xg_summary = pd.DataFrame()
+    try:
+        shots_df = prepare_xg_data(pd.read_csv("data/xg_shots.csv"))
+        xg_summary = xg_match_summary(shots_df)
+    except Exception:
+        shots_df = pd.DataFrame()
 
     cols = st.columns(4)
     with cols[0]:
-        display_card("近期賽程", str(len(fixture_odds_df.head(6))), "台灣時間 UTC+8")
+        display_card("今日焦點賽事", matchup_text(row), fixture_time_text(row))
     with cols[1]:
-        display_card("預測比分", f"{prediction.predicted_home_goals} : {prediction.predicted_away_goals}", matchup_text(row))
+        display_card("預測比分", f"{prediction.predicted_home_goals} : {prediction.predicted_away_goals}", "Poisson + Elo")
     with cols[2]:
-        display_card("冠軍率最高", format_percent(float(champion["champion_probability"])), str(champion["team_display"]))
+        display_card("奪冠熱門", format_percent(float(champion["champion_probability"])), str(champion["team_display"]))
     with cols[3]:
-        display_card("模型組合", "Elo + Poisson + xG", "可解釋分析")
+        display_card("即時資料", str(len(live_matches)) if live_matches is not None else "0", str(live_source))
 
-    left, right = st.columns([1.1, 0.9])
+    left, right = st.columns([1.05, 0.95])
     with left:
-        st.subheader("近期賽程")
+        st.subheader("今日／近期賽程")
         st.dataframe(fixtures_with_flags(fixture_odds_df.head(5)), use_container_width=True, hide_index=True)
     with right:
-        st.subheader("冠軍機率 Top 5")
-        top5 = sim_df.head(5).sort_values("champion_probability", ascending=True).copy()
-        top5["label"] = top5["champion_probability"].map(format_percent)
-        chart = px.bar(top5, x="champion_probability", y="team_display", orientation="h", text="label", color="champion_probability", color_continuous_scale=["#415a77", GOLD_LIGHT])
+        st.subheader("奪冠熱門 Top10")
+        top10 = sim_df.head(10).sort_values("champion_probability", ascending=True).copy()
+        top10["label"] = top10["champion_probability"].map(format_percent)
+        chart = px.bar(top10, x="champion_probability", y="team_display", orientation="h", text="label", color="champion_probability", color_continuous_scale=["#415a77", GOLD_LIGHT])
         chart.update_xaxes(tickformat=".0%")
         chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
         st.plotly_chart(chart, use_container_width=True)
+
+    st.subheader("即時世界盃總覽")
+    overview_cols = st.columns(4)
+    with overview_cols[0]:
+        display_card("完成賽事", str(len(load_match_results())), "match_results.csv")
+    with overview_cols[1]:
+        display_card("小組出線均值", format_percent(float(sim_df["group_qualified_probability"].mean())), "Monte Carlo")
+    with overview_cols[2]:
+        display_card("決賽率最高", format_percent(float(sim_df.iloc[0]["final_probability"])), str(sim_df.iloc[0]["team_display"]))
+    with overview_cols[3]:
+        display_card("模擬版本", "V25", "智慧預測平台")
+
+    st.subheader("晉級機率摘要")
+    advance = sim_df.head(10)[["team_display", "group_qualified_probability", "round_16_probability", "round_8_probability", "semi_final_probability", "final_probability", "champion_probability"]].copy()
+    for column in advance.columns[1:]:
+        advance[column] = advance[column].map(format_percent)
+    st.dataframe(
+        advance.rename(
+            columns={
+                "team_display": "球隊",
+                "group_qualified_probability": "小組出線率",
+                "round_16_probability": "16強率",
+                "round_8_probability": "8強率",
+                "semi_final_probability": "4強率",
+                "final_probability": "決賽率",
+                "champion_probability": "奪冠率",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.subheader("AI 今日分析摘要")
+    report_lines = generate_match_report(row, prediction, matches_df, team_meta_df, market_table=market_table)
+    for line in report_lines[:4]:
+        st.markdown(f"<div class='display-card'><div class='card-note'>{html.escape(line)}</div></div>", unsafe_allow_html=True)
+
+    bottom_left, bottom_right = st.columns(2)
+    with bottom_left:
+        st.subheader("xG 模型摘要")
+        if xg_summary.empty:
+            st.info("目前 xG 資料不足，暫以 Poisson 預期進球作為參考。")
+        else:
+            xg_top = xg_summary.head(8).copy()
+            st.dataframe(xg_top, use_container_width=True, hide_index=True)
+    with bottom_right:
+        st.subheader("市場機率摘要")
+        market_display = market_table.copy()
+        for column in ["model_probability", "market_probability", "fused_probability"]:
+            market_display[column] = pd.to_numeric(market_display[column], errors="coerce").fillna(0).map(format_percent)
+        st.dataframe(
+            market_display.rename(
+                columns={
+                    "market": "結果",
+                    "model_probability": "模型機率",
+                    "market_probability": "市場機率",
+                    "fused_probability": "融合機率",
+                }
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
 
 
 if page == "世界盃情報中心":
