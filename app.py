@@ -50,6 +50,13 @@ from utils.dynamic_prediction import (
     rerun_dynamic_simulation,
     update_elo,
 )
+from utils.dynamic_worldcup_engine import (
+    append_manual_result,
+    build_dynamic_elo,
+    build_group_standings,
+    probability_change_summary,
+    recalculate_probabilities,
+)
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -866,6 +873,7 @@ PAGE_GROUPS = {
     ],
     "賽程中心": [
         "世界盃賽程表",
+        "即時世界盃中心",
         "賽果更新中心",
         "即時賽況",
     ],
@@ -1533,6 +1541,170 @@ def match_results_update_page() -> None:
         use_container_width=True,
         hide_index=True,
     )
+
+
+def realtime_worldcup_center_page() -> None:
+    page_header("即時世界盃中心", "賽果輸入、動態 Elo、小組積分與機率重新計算")
+    st.caption("本頁使用本地賽果與手動輸入資料模擬即時世界盃模式；資料不足時自動使用 fallback。")
+    base_results = load_match_results()
+    manual_results = st.session_state.get("realtime_worldcup_manual_results", pd.DataFrame())
+    results = combine_results(base_results, manual_results)
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("已完成賽事", str(len(results)), "match_results.csv + 手動輸入")
+    with cols[1]:
+        display_card("小組數", str(results["group"].nunique() if not results.empty and "group" in results.columns else 0), "動態積分")
+    with cols[2]:
+        display_card("模擬次數", "1000", "快速重算")
+    with cols[3]:
+        display_card("資料狀態", "Fallback Ready", "不因缺資料中斷")
+
+    st.subheader("賽果輸入器")
+    labels = {
+        f"{taipei_time_text(row.datetime_taipei)} | {team_name(row.home_team)} vs {team_name(row.away_team)}": row.match_id
+        for row in fixture_odds_df.itertuples()
+    }
+    selected_label = st.selectbox("選擇比賽", list(labels.keys()), key="realtime_worldcup_match")
+    selected_match_id = labels[selected_label]
+    row = fixture_odds_df[fixture_odds_df["match_id"] == selected_match_id].iloc[0]
+    score_cols = st.columns(2)
+    home_score = score_cols[0].number_input(f"{team_name(row['home_team'])} 進球", min_value=0, max_value=12, value=1, step=1)
+    away_score = score_cols[1].number_input(f"{team_name(row['away_team'])} 進球", min_value=0, max_value=12, value=1, step=1)
+    if st.button("套用賽果並重新計算", type="primary", use_container_width=True):
+        st.session_state["realtime_worldcup_manual_results"] = append_manual_result(
+            results,
+            row,
+            int(home_score),
+            int(away_score),
+        )
+        st.success("已套用賽果，請查看下方更新後積分與機率變化。")
+        results = st.session_state["realtime_worldcup_manual_results"]
+
+    left, right = st.columns([1.05, 0.95])
+    with left:
+        st.subheader("目前已完成賽事")
+        if results.empty:
+            st.info("目前尚未有完成賽事。")
+        else:
+            result_view = results.copy()
+            result_view["score"] = result_view["home_score"].astype(str) + " : " + result_view["away_score"].astype(str)
+            st.dataframe(
+                result_view[["match_id", "date", "group", "home_team", "away_team", "score", "status"]].rename(
+                    columns={
+                        "match_id": "比賽 ID",
+                        "date": "日期",
+                        "group": "小組",
+                        "home_team": "主隊",
+                        "away_team": "客隊",
+                        "score": "比分",
+                        "status": "狀態",
+                    }
+                ),
+                use_container_width=True,
+                hide_index=True,
+            )
+    with right:
+        st.subheader("小組積分表")
+        standings = build_group_standings(results)
+        if standings.empty:
+            st.info("目前小組積分資料不足。")
+        else:
+            st.dataframe(
+                standings.rename(
+                    columns={
+                        "group": "小組",
+                        "team": "球隊",
+                        "played": "賽",
+                        "wins": "勝",
+                        "draws": "和",
+                        "losses": "敗",
+                        "gf": "進球",
+                        "ga": "失球",
+                        "gd": "淨勝球",
+                        "points": "積分",
+                    }
+                ),
+                use_container_width=True,
+                hide_index=True,
+            )
+
+    st.subheader("動態 Elo 更新")
+    dynamic_elo = build_dynamic_elo(team_meta_df, results)
+    changed = dynamic_elo[dynamic_elo["elo_change"].abs() > 0.01].copy()
+    if changed.empty:
+        st.info("目前沒有可顯示的 Elo 變化。")
+    else:
+        changed["team_display"] = changed.get("flag_emoji", "").astype(str) + " " + changed.get("team_zh", changed["team"]).astype(str)
+        st.dataframe(
+            changed.sort_values("elo_change", ascending=False)[["team_display", "original_elo", "updated_elo", "elo_change"]].rename(
+                columns={
+                    "team_display": "球隊",
+                    "original_elo": "原始 Elo",
+                    "updated_elo": "更新後 Elo",
+                    "elo_change": "Elo 變化",
+                }
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    st.subheader("機率變化追蹤")
+    if results.empty:
+        st.info("請先匯入或輸入賽果。")
+        return
+    with st.spinner("重新計算機率..."):
+        _, after, changes = recalculate_probabilities(
+            fixture_odds_df,
+            team_meta_df,
+            wc_team_stats_df,
+            matches_df,
+            results,
+            simulations=1000,
+        )
+    summary = probability_change_summary(changes)
+    if summary.empty:
+        st.info("目前機率變化資料不足。")
+        return
+    display_cols = [
+        "team_display",
+        "group_qualified_probability_before",
+        "group_qualified_probability_after",
+        "group_qualified_probability_delta",
+        "round_16_probability_after",
+        "round_8_probability_after",
+        "semi_final_probability_after",
+        "final_probability_after",
+        "champion_probability_after",
+    ]
+    display_cols = [column for column in display_cols if column in summary.columns]
+    view = summary[display_cols].copy()
+    for column in view.columns:
+        if column != "team_display":
+            view[column] = pd.to_numeric(view[column], errors="coerce").fillna(0).map(format_percent)
+    st.dataframe(
+        view.rename(
+            columns={
+                "team_display": "球隊",
+                "group_qualified_probability_before": "原出線率",
+                "group_qualified_probability_after": "更新後出線率",
+                "group_qualified_probability_delta": "出線率變化",
+                "round_16_probability_after": "16 強率",
+                "round_8_probability_after": "8 強率",
+                "semi_final_probability_after": "4 強率",
+                "final_probability_after": "決賽率",
+                "champion_probability_after": "冠軍率",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+    top = after.sort_values("champion_probability", ascending=False).head(10).copy()
+    top["label"] = top["champion_probability"].map(format_percent)
+    chart = px.bar(top.sort_values("champion_probability"), x="champion_probability", y="team_display", orientation="h", text="label", color="champion_probability", color_continuous_scale=["#415a77", GOLD_LIGHT])
+    chart.update_xaxes(tickformat=".0%")
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+    st.plotly_chart(chart, use_container_width=True)
 
 
 def render_team_history_comparison(home_team: str, away_team: str) -> None:
@@ -4070,6 +4242,8 @@ if page == "世界盃情報中心":
     dashboard_page()
 elif page == "世界盃賽程表":
     fixtures_page()
+elif page == "即時世界盃中心":
+    realtime_worldcup_center_page()
 elif page == "賽果更新中心":
     match_results_update_page()
 elif page == "賽程頁":

@@ -1,0 +1,6 @@
+date,team,metric,before_probability,after_probability,change,reason
+2026-06-12,Mexico,group_qualified_probability,0.62,0.74,0.12,beat South Africa 2-0
+2026-06-12,South Africa,group_qualified_probability,0.41,0.29,-0.12,lost to Mexico 0-2
+2026-06-12,South Korea,group_qualified_probability,0.48,0.50,0.02,drew Czechia 1-1
+2026-06-12,Czechia,group_qualified_probability,0.52,0.51,-0.01,drew South Korea 1-1
+2026-06-13,Canada,group_qualified_probability,0.57,0.66,0.09,beat Bosnia and Herzegovina 1-0
