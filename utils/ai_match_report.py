@@ -61,6 +61,7 @@ def generate_match_report(
     team_meta: pd.DataFrame | None = None,
     market_table: pd.DataFrame | None = None,
     xg_summary: pd.DataFrame | None = None,
+    confidence_result=None,
 ) -> list[str]:
     home = str(fixture.get("home_team", prediction.home_team))
     away = str(fixture.get("away_team", prediction.away_team))
@@ -98,7 +99,14 @@ def generate_match_report(
         xg_leader = xg_summary.sort_values("xg", ascending=False).iloc[0]
         xg_text = f"xG 參考資料顯示 {xg_leader['team']} 近期機會品質較高。"
 
-    return [
+    confidence_text = ""
+    if confidence_result is not None:
+        confidence_text = (
+            f"智慧信心指數為 {confidence_result.score:.1f}%（{confidence_result.stars} {confidence_result.level}），"
+            f"主要方向為 {confidence_result.favored_market}。"
+        )
+
+    lines = [
         f"本場模型最看好 {likely_result}，機率為 {_pct(likely_probability)}。",
         elo_text,
         _form_text(matches, home, away),
@@ -108,3 +116,6 @@ def generate_match_report(
         f"和局機率為 {_pct(prediction.draw_probability)}，整體結果不確定性{uncertainty}。",
         "本報告僅供機率分析，不構成下注建議。",
     ]
+    if confidence_text:
+        lines.insert(1, confidence_text)
+    return lines

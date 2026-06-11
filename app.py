@@ -40,6 +40,7 @@ from utils.champion_path import champion_path_text, likely_knockout_path, stage_
 from utils.team_compare import comparison_table, comparison_text, radar_values, team_profile
 from utils.mobile_style import mobile_css
 from utils.ai_assistant import answer_question
+from utils.confidence_engine import ConfidenceResult, calculate_confidence
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -446,6 +447,56 @@ def inject_theme() -> None:
         .confidence-wrap .card-value {{
             margin-bottom: 10px;
         }}
+        .smart-confidence .card-value {{
+            font-size: 2.35rem;
+            color: #fff;
+        }}
+        .confidence-stars {{
+            color: {GOLD_LIGHT};
+            font-size: 1.22rem;
+            font-weight: 900;
+            margin: 4px 0;
+        }}
+        .confidence-level {{
+            color: {MUTED};
+            font-size: 0.92rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }}
+        .confidence-bar-bg {{
+            width: 100%;
+            height: 11px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(214,178,94,0.18);
+            overflow: hidden;
+            margin: 8px 0 14px;
+        }}
+        .confidence-bar-fill {{
+            height: 100%;
+            border-radius: 999px;
+            box-shadow: 0 0 18px rgba(255,255,255,0.12);
+        }}
+        .confidence-section-title {{
+            color: {GOLD_LIGHT};
+            font-size: 0.86rem;
+            font-weight: 900;
+            margin-top: 12px;
+        }}
+        .risk-title {{
+            color: #fca5a5;
+        }}
+        .confidence-list {{
+            margin: 7px 0 0 0;
+            padding-left: 0;
+            list-style: none;
+            color: {MUTED};
+            font-size: 0.84rem;
+            line-height: 1.58;
+        }}
+        .risk-list {{
+            color: #f4c7c7;
+        }}
         div[data-testid="stProgress"] > div > div > div {{
             background: linear-gradient(90deg, {GOLD}, {GOLD_LIGHT});
         }}
@@ -654,6 +705,52 @@ def confidence_card(confidence: float) -> None:
     st.progress(int(round(percent)), text="模型信心指數")
 
 
+def confidence_for_fixture(row: pd.Series, prediction, market_table: pd.DataFrame | None = None) -> ConfidenceResult:
+    if market_table is None:
+        market_table = market_probability_table(row, prediction)
+    try:
+        shots_df = prepare_xg_data(pd.read_csv("data/xg_shots.csv"))
+    except Exception:
+        shots_df = pd.DataFrame()
+    return calculate_confidence(
+        row,
+        prediction,
+        market_table,
+        team_meta=team_meta_df,
+        matches=matches_df,
+        shots=shots_df,
+    )
+
+
+def smart_confidence_card(result: ConfidenceResult, compact: bool = False) -> None:
+    percent = max(0, min(100, result.score))
+    source_html = "".join(f"<li>✓ {html.escape(line)}</li>" for line in result.source_lines)
+    risk_html = "".join(f"<li>⚠ {html.escape(line)}</li>" for line in result.risk_lines)
+    details = ""
+    if not compact:
+        details = f"""
+          <div class="confidence-section-title">信心來源</div>
+          <ul class="confidence-list">{source_html}</ul>
+          <div class="confidence-section-title risk-title">風險因素</div>
+          <ul class="confidence-list risk-list">{risk_html}</ul>
+        """
+    st.markdown(
+        f"""
+        <div class="confidence-wrap smart-confidence">
+          <div class="card-label">模型信心指數</div>
+          <div class="card-value">{percent:.1f}%</div>
+          <div class="confidence-stars">{html.escape(result.stars)}</div>
+          <div class="confidence-level">{html.escape(result.level)} · {html.escape(result.favored_market)}</div>
+          <div class="confidence-bar-bg">
+            <div class="confidence-bar-fill" style="width:{percent:.1f}%; background:{result.color};"></div>
+          </div>
+          {details}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def risk_class(risk_level: str) -> str:
     if risk_level == "低":
         return "risk-low"
@@ -843,14 +940,22 @@ def selected_fixture(label: str = "選擇比賽") -> pd.Series:
     return fixture_odds_df[fixture_odds_df["match_id"] == match_id].iloc[0]
 
 
-def render_ai_match_report(row: pd.Series, prediction, market_table: pd.DataFrame | None = None) -> None:
+def render_ai_match_report(
+    row: pd.Series,
+    prediction,
+    market_table: pd.DataFrame | None = None,
+    confidence_result: ConfidenceResult | None = None,
+) -> None:
     st.subheader("AI 賽事分析報告")
+    if confidence_result is None:
+        confidence_result = confidence_for_fixture(row, prediction, market_table)
     lines = generate_match_report(
         row,
         prediction,
         matches_df,
         team_meta_df,
         market_table=market_table,
+        confidence_result=confidence_result,
     )
     st.markdown(
         "<div class='display-card'>"
@@ -1116,6 +1221,8 @@ def prediction_cards(row: pd.Series, compact: bool = False) -> None:
     prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
     signals = analyze_1x2(prediction, row["home_odds"], row["draw_odds"], row["away_odds"])
     best_signal = max(signals, key=lambda signal: signal.edge)
+    market_table = market_probability_table(row, prediction)
+    confidence_result = confidence_for_fixture(row, prediction, market_table)
     teams = matchup_text(row)
 
     st.markdown(
@@ -1137,7 +1244,7 @@ def prediction_cards(row: pd.Series, compact: bool = False) -> None:
     with cols[2]:
         display_card("客勝機率", format_percent(prediction.away_win_probability))
     with cols[3]:
-        confidence_card(prediction.confidence)
+        smart_confidence_card(confidence_result, compact=compact)
 
     st.markdown(
         f"""
@@ -2776,8 +2883,10 @@ def betting_page() -> None:
     row = selected_fixture()
     prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
     table = market_probability_table(row, prediction)
+    confidence_result = confidence_for_fixture(row, prediction, table)
 
     st.subheader(f"{fixture_time_text(row)} ｜ {matchup_text(row)}")
+    smart_confidence_card(confidence_result)
     display = table.copy()
     for column in ["model_probability", "market_probability", "fused_probability"]:
         display[column] = (
@@ -2810,7 +2919,7 @@ def betting_page() -> None:
     chart.update_yaxes(tickformat=".0%")
     chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
     st.plotly_chart(chart, use_container_width=True)
-    render_ai_match_report(row, prediction, table)
+    render_ai_match_report(row, prediction, table, confidence_result)
     render_ai_parlay_analysis(limit=5)
     st.warning("風險提醒：本頁僅做市場機率與模型機率比較，不提供下注功能，不保證賽果或獲利。")
 
@@ -2956,6 +3065,7 @@ def odds_calculator_page() -> None:
     row = selected_fixture("選擇比賽")
     prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
     market_table = market_probability_table(row, prediction)
+    confidence_result = confidence_for_fixture(row, prediction, market_table)
     score_grid = poisson_score_grid(prediction.expected_home_goals, prediction.expected_away_goals)
     total_goal_estimate = prediction.expected_home_goals + prediction.expected_away_goals
 
@@ -2977,7 +3087,8 @@ def odds_calculator_page() -> None:
     with prob_cols[2]:
         display_card("客勝機率", format_percent(prediction.away_win_probability), f"賠率 {float(row['away_odds']):.2f}")
 
-    render_ai_match_report(row, prediction, market_table)
+    smart_confidence_card(confidence_result)
+    render_ai_match_report(row, prediction, market_table, confidence_result)
 
     st.subheader("不讓分勝平負")
     odds_map = {"主勝": row["home_odds"], "和局": row["draw_odds"], "客勝": row["away_odds"]}
