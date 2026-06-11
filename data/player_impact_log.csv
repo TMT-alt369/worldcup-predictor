@@ -1,0 +1,4 @@
+date,team,player_name,scenario,impact_loss,win_probability_delta,xg_delta,champion_probability_delta
+2026-06-12,Mexico,Raul Jimenez,Simulated Out,42.5,-0.050,-0.22,-0.008
+2026-06-12,Czechia,Patrik Schick,Simulated Out,48.2,-0.057,-0.27,-0.010
+2026-06-12,South Korea,Son Heung-min,Available,0.0,0.000,0.00,0.000

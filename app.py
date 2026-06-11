@@ -57,6 +57,12 @@ from utils.dynamic_worldcup_engine import (
     probability_change_summary,
     recalculate_probabilities,
 )
+from utils.player_impact_engine import (
+    load_player_pool,
+    match_player_impact,
+    normalize_players,
+    team_player_impact,
+)
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -879,6 +885,7 @@ PAGE_GROUPS = {
     ],
     "預測中心": [
         "單場分析頁",
+        "球員影響分析",
         "冠軍機率預測",
         "晉級機率分析",
         "世界盃模擬器",
@@ -3004,6 +3011,145 @@ def match_analysis_page() -> None:
     render_ai_match_report(row, prediction, market_table)
 
 
+def player_impact_analysis_page() -> None:
+    page_header("球員影響分析", "球員評分、傷病模擬、缺陣影響與勝率變化")
+    st.caption("本頁使用本地球員資料與 player_status.csv fallback；缺資料時會以保守假設顯示。")
+    players = normalize_players(load_player_pool())
+    if players.empty:
+        st.info("目前尚未匯入球員資料。")
+        return
+
+    row = selected_fixture("選擇比賽")
+    home_team = row["home_team"]
+    away_team = row["away_team"]
+    prediction = predict_match(matches_df, home_team, away_team, wc_team_stats_df)
+    sim_df = v7_simulation()
+
+    st.subheader(f"{fixture_time_text(row)} ｜ {matchup_text(row)}")
+    cols = st.columns(3)
+    with cols[0]:
+        display_card("原主勝率", format_percent(float(prediction.home_win_probability)), team_name(home_team))
+    with cols[1]:
+        display_card("原和局率", format_percent(float(prediction.draw_probability)), "Poisson + Elo")
+    with cols[2]:
+        display_card("原客勝率", format_percent(float(prediction.away_win_probability)), team_name(away_team))
+
+    home_players = team_player_impact(players, home_team, top_n=10)
+    away_players = team_player_impact(players, away_team, top_n=10)
+    left, right = st.columns(2)
+    with left:
+        st.subheader(f"{team_name(home_team)} 核心球員")
+        if home_players.empty:
+            st.info("目前尚未匯入該隊球員資料")
+            home_out = []
+        else:
+            home_out = st.multiselect(
+                "模擬主隊缺陣",
+                home_players["player_name"].tolist(),
+                default=home_players.loc[~home_players["is_available"], "player_name"].tolist()[:2],
+                key="home_player_absence",
+            )
+            st.dataframe(
+                home_players[["player_name", "position", "club", "appearances", "goals", "assists", "recent_form", "impact_score", "status"]].rename(
+                    columns={
+                        "player_name": "球員",
+                        "position": "位置",
+                        "club": "俱樂部",
+                        "appearances": "出場",
+                        "goals": "進球",
+                        "assists": "助攻",
+                        "recent_form": "近期狀態",
+                        "impact_score": "影響分數",
+                        "status": "狀態",
+                    }
+                ),
+                use_container_width=True,
+                hide_index=True,
+            )
+    with right:
+        st.subheader(f"{team_name(away_team)} 核心球員")
+        if away_players.empty:
+            st.info("目前尚未匯入該隊球員資料")
+            away_out = []
+        else:
+            away_out = st.multiselect(
+                "模擬客隊缺陣",
+                away_players["player_name"].tolist(),
+                default=away_players.loc[~away_players["is_available"], "player_name"].tolist()[:2],
+                key="away_player_absence",
+            )
+            st.dataframe(
+                away_players[["player_name", "position", "club", "appearances", "goals", "assists", "recent_form", "impact_score", "status"]].rename(
+                    columns={
+                        "player_name": "球員",
+                        "position": "位置",
+                        "club": "俱樂部",
+                        "appearances": "出場",
+                        "goals": "進球",
+                        "assists": "助攻",
+                        "recent_form": "近期狀態",
+                        "impact_score": "影響分數",
+                        "status": "狀態",
+                    }
+                ),
+                use_container_width=True,
+                hide_index=True,
+            )
+
+    impact = match_player_impact(players, home_team, away_team, home_out, away_out)
+    home_champion = sim_df.loc[sim_df["team"].eq(home_team), "champion_probability"]
+    away_champion = sim_df.loc[sim_df["team"].eq(away_team), "champion_probability"]
+    home_champion_base = float(home_champion.iloc[0]) if not home_champion.empty else 0.0
+    away_champion_base = float(away_champion.iloc[0]) if not away_champion.empty else 0.0
+    adjusted_home_win = max(0, min(1, float(prediction.home_win_probability) + float(impact["home_win_probability_change"])))
+    adjusted_away_win = max(0, min(1, float(prediction.away_win_probability) + float(impact["away_win_probability_change"])))
+    adjusted_home_xg = max(0, float(prediction.expected_home_goals) + float(impact["home_xg_change"]))
+    adjusted_away_xg = max(0, float(prediction.expected_away_goals) + float(impact["away_xg_change"]))
+
+    st.subheader("缺陣影響摘要")
+    metric_cols = st.columns(4)
+    with metric_cols[0]:
+        display_card("主勝率變化", format_percent(float(impact["home_win_probability_change"])), f"調整後 {format_percent(adjusted_home_win)}")
+    with metric_cols[1]:
+        display_card("客勝率變化", format_percent(float(impact["away_win_probability_change"])), f"調整後 {format_percent(adjusted_away_win)}")
+    with metric_cols[2]:
+        display_card("主隊 xG 變化", f"{float(impact['home_xg_change']):+.2f}", f"調整後 {adjusted_home_xg:.2f}")
+    with metric_cols[3]:
+        display_card("客隊 xG 變化", f"{float(impact['away_xg_change']):+.2f}", f"調整後 {adjusted_away_xg:.2f}")
+
+    champion_cols = st.columns(2)
+    with champion_cols[0]:
+        display_card(
+            "主隊冠軍率變化",
+            format_percent(float(impact["home"]["champion_probability_delta"])),
+            f"約 {format_percent(max(0, home_champion_base + float(impact['home']['champion_probability_delta'])))}",
+        )
+    with champion_cols[1]:
+        display_card(
+            "客隊冠軍率變化",
+            format_percent(float(impact["away"]["champion_probability_delta"])),
+            f"約 {format_percent(max(0, away_champion_base + float(impact['away']['champion_probability_delta'])))}",
+        )
+
+    scenario_df = pd.DataFrame(
+        [
+            {"球隊": team_name(home_team), "影響損失": impact["home"]["impact_loss"], "勝率變化": impact["home_win_probability_change"], "xG 變化": impact["home_xg_change"], "冠軍率變化": impact["home"]["champion_probability_delta"]},
+            {"球隊": team_name(away_team), "影響損失": impact["away"]["impact_loss"], "勝率變化": impact["away_win_probability_change"], "xG 變化": impact["away_xg_change"], "冠軍率變化": impact["away"]["champion_probability_delta"]},
+        ]
+    )
+    for column in ["勝率變化", "冠軍率變化"]:
+        scenario_df[column] = pd.to_numeric(scenario_df[column], errors="coerce").fillna(0).map(format_percent)
+    st.dataframe(scenario_df, use_container_width=True, hide_index=True)
+
+    try:
+        log_df = pd.read_csv("data/player_impact_log.csv")
+    except Exception:
+        log_df = pd.DataFrame()
+    if not log_df.empty:
+        st.subheader("球員影響紀錄")
+        st.dataframe(log_df, use_container_width=True, hide_index=True)
+
+
 def worldcup_simulator_page() -> None:
     page_header("世界盃模擬器", "Monte Carlo 高次數模擬：小組出線、淘汰賽晉級與冠軍率")
     simulations = st.selectbox("模擬次數", [1000, 10000, 50000], index=0)
@@ -4250,6 +4396,8 @@ elif page == "賽程頁":
     fixtures_page()
 elif page == "單場分析頁":
     match_analysis_page()
+elif page == "球員影響分析":
+    player_impact_analysis_page()
 elif page == "市場機率分析":
     betting_page()
 elif page == "投注分析頁":
