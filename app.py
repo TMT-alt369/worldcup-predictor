@@ -36,6 +36,7 @@ from utils.player_impact import team_impact, win_probability_adjustment
 from utils.market_probability import market_probability_table
 from utils.ai_match_report import generate_match_report
 from utils.parlay_analyzer import build_match_candidates, build_parlay_combinations, parlay_summary_text
+from utils.champion_path import champion_path_text, likely_knockout_path, stage_probability_table
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -767,6 +768,7 @@ PAGE_GROUPS = {
         "賠率試算中心",
         "AI 賽事分析報告",
         "AI 串關分析",
+        "冠軍路徑模擬",
     ],
     "資料中心": [
         "Elo 世界排名",
@@ -2590,6 +2592,59 @@ def worldcup_simulator_page() -> None:
     st.caption("模型使用 Elo、近期狀態、歷史世界盃表現與 Poisson 進球分布；結果僅供資料分析參考，不保證準確。")
 
 
+def champion_path_page() -> None:
+    page_header("冠軍路徑模擬", "選擇國家隊，查看各階段晉級率、可能淘汰賽路徑與最大阻礙")
+    st.caption("本頁使用既有 Monte Carlo 模擬結果，僅供機率分析與資料參考。")
+    sim_df = v7_simulation().copy()
+    if sim_df.empty:
+        st.info("目前資料不足，暫無冠軍路徑模擬結果。")
+        return
+    if "round_32_probability" not in sim_df.columns:
+        sim_df["round_32_probability"] = sim_df.get("group_qualified_probability", 0)
+    sim_df = sim_df.sort_values("team_display")
+    selected_display = st.selectbox("選擇國家隊", sim_df["team_display"].tolist())
+    team_row = sim_df[sim_df["team_display"] == selected_display].iloc[0]
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("選擇球隊", str(team_row["team_display"]), f"Elo {int(float(team_row.get('elo', 0) or 0))}")
+    with cols[1]:
+        display_card("小組出線率", format_percent(float(team_row.get("group_qualified_probability", 0))), "Monte Carlo")
+    with cols[2]:
+        display_card("決賽率", format_percent(float(team_row.get("final_probability", 0))), "淘汰賽路徑")
+    with cols[3]:
+        display_card("冠軍率", format_percent(float(team_row.get("champion_probability", 0))), "最終模擬")
+
+    stage_df = stage_probability_table(team_row)
+    stage_df["百分比"] = stage_df["機率"].map(format_percent)
+    st.subheader("階段晉級機率")
+    for _, item in stage_df.iterrows():
+        st.progress(float(item["機率"]), text=f"{item['階段']}：{item['百分比']}")
+    chart = px.line(
+        stage_df,
+        x="階段",
+        y="機率",
+        markers=True,
+        text="百分比",
+        labels={"機率": "晉級機率"},
+    )
+    chart.update_yaxes(tickformat=".0%")
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(chart, use_container_width=True)
+
+    st.subheader("可能淘汰賽路徑")
+    path_df = likely_knockout_path(team_row, sim_df)
+    if path_df.empty:
+        st.info("目前資料不足，暫無可能路徑。")
+    else:
+        display_path = path_df.copy()
+        display_path["對手冠軍率"] = pd.to_numeric(display_path["對手冠軍率"], errors="coerce").fillna(0).map(format_percent)
+        st.dataframe(display_path, use_container_width=True, hide_index=True)
+
+    st.subheader("AI 路徑分析")
+    st.markdown(f"<div class='display-card'><div class='card-note'>{html.escape(champion_path_text(team_row, sim_df))}</div></div>", unsafe_allow_html=True)
+
+
 def betting_page() -> None:
     page_header("市場機率分析", "將模型機率與賠率隱含機率融合，提供風險參考")
     st.caption("融合公式：模型機率 70% + 市場隱含機率 30%。市場隱含機率已正規化以降低 bookmaker margin 影響。")
@@ -3461,6 +3516,8 @@ elif page == "晉級機率分析":
     advancement_probability_page()
 elif page == "世界盃模擬器":
     worldcup_simulator_page()
+elif page == "冠軍路徑模擬":
+    champion_path_page()
 elif page == "Elo 世界排名":
     elo_ranking_page()
 elif page == "xG 模型分析":
