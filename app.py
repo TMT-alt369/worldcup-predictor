@@ -38,6 +38,7 @@ from utils.ai_match_report import generate_match_report
 from utils.parlay_analyzer import build_match_candidates, build_parlay_combinations, parlay_summary_text
 from utils.champion_path import champion_path_text, likely_knockout_path, stage_probability_table
 from utils.team_compare import comparison_table, comparison_text, radar_values, team_profile
+from utils.mobile_style import mobile_css
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -608,6 +609,7 @@ def inject_theme() -> None:
         """,
         unsafe_allow_html=True,
     )
+    st.markdown(mobile_css(), unsafe_allow_html=True)
 
 
 def page_header(title: str, caption: str) -> None:
