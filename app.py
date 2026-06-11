@@ -63,6 +63,13 @@ from utils.player_impact_engine import (
     normalize_players,
     team_player_impact,
 )
+from utils.ai_monte_carlo_engine import (
+    common_final_combinations,
+    continent_champion_probabilities,
+    dark_horse_ranking,
+    run_ai_monte_carlo,
+    stage_probability_table as ai_stage_probability_table,
+)
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -889,6 +896,7 @@ PAGE_GROUPS = {
         "冠軍機率預測",
         "晉級機率分析",
         "世界盃模擬器",
+        "AI 世界盃模擬器",
         "市場機率分析",
         "世足玩法教學",
         "賠率試算中心",
@@ -3221,6 +3229,107 @@ def worldcup_simulator_page() -> None:
     st.caption("模型使用 Elo、近期狀態、歷史世界盃表現與 Poisson 進球分布；結果僅供資料分析參考，不保證準確。")
 
 
+def ai_worldcup_simulator_page() -> None:
+    page_header("AI 世界盃模擬器", "Monte Carlo 模擬、決賽組合、黑馬榜與洲別冠軍機率")
+    st.caption("本頁使用可解釋的 Elo + Poisson + Monte Carlo 模擬；結果僅供資料分析。")
+    simulations = st.selectbox("模擬次數", [1000, 5000, 10000], index=0, key="ai_mc_runs")
+    run_clicked = st.button("開始 AI 模擬", type="primary", use_container_width=True)
+    if not run_clicked:
+        st.info("請選擇模擬次數後開始模擬。")
+        return
+
+    with st.spinner("正在執行 AI Monte Carlo 模擬..."):
+        sim_df = run_ai_monte_carlo(
+            fixture_odds_df,
+            team_meta_df,
+            wc_team_stats_df,
+            matches_df,
+            simulations=int(simulations),
+        )
+    if sim_df.empty:
+        st.info("目前模擬資料不足。")
+        return
+
+    champion = sim_df.sort_values("champion_probability", ascending=False).iloc[0]
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("模擬次數", f"{int(simulations):,}", "Monte Carlo")
+    with cols[1]:
+        display_card("冠軍率最高", format_percent(float(champion["champion_probability"])), str(champion["team_display"]))
+    with cols[2]:
+        display_card("平均出線率", format_percent(float(sim_df["group_qualified_probability"].mean())), "48 隊")
+    with cols[3]:
+        display_card("資料模式", "Fallback Ready", "不足時保守計算")
+
+    st.subheader("冠軍率 Top20")
+    top20 = sim_df.sort_values("champion_probability", ascending=False).head(20).copy()
+    top20_chart = top20.sort_values("champion_probability", ascending=True).copy()
+    top20_chart["label"] = top20_chart["champion_probability"].map(format_percent)
+    chart = px.bar(
+        top20_chart,
+        x="champion_probability",
+        y="team_display",
+        orientation="h",
+        text="label",
+        color="champion_probability",
+        color_continuous_scale=["#415a77", GOLD_LIGHT],
+    )
+    chart.update_xaxes(tickformat=".0%")
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
+    st.plotly_chart(chart, use_container_width=True)
+
+    stage_table = ai_stage_probability_table(sim_df).sort_values("champion_probability", ascending=False).copy()
+    for column in stage_table.columns:
+        if column != "team_display":
+            stage_table[column] = pd.to_numeric(stage_table[column], errors="coerce").fillna(0).map(format_percent)
+    st.subheader("晉級機率總表")
+    st.dataframe(
+        stage_table.rename(
+            columns={
+                "team_display": "球隊",
+                "group_qualified_probability": "小組出線率",
+                "round_16_probability": "16強率",
+                "round_8_probability": "8強率",
+                "semi_final_probability": "4強率",
+                "final_probability": "決賽率",
+                "champion_probability": "奪冠率",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    left, right = st.columns(2)
+    with left:
+        st.subheader("最常見決賽組合")
+        finals = common_final_combinations(sim_df)
+        if finals.empty:
+            st.info("決賽組合資料不足。")
+        else:
+            finals["estimated_probability"] = finals["estimated_probability"].map(format_percent)
+            st.dataframe(finals.rename(columns={"final_combo": "決賽組合", "estimated_probability": "估算機率"}), use_container_width=True, hide_index=True)
+    with right:
+        st.subheader("黑馬排行榜")
+        dark = dark_horse_ranking(sim_df)
+        if dark.empty:
+            st.info("黑馬資料不足。")
+        else:
+            dark_view = dark[["team_display", "elo", "champion_probability", "dark_horse_score"]].copy()
+            dark_view["champion_probability"] = dark_view["champion_probability"].map(format_percent)
+            dark_view["dark_horse_score"] = pd.to_numeric(dark_view["dark_horse_score"], errors="coerce").fillna(0).round(4)
+            st.dataframe(dark_view.rename(columns={"team_display": "球隊", "elo": "Elo", "champion_probability": "冠軍率", "dark_horse_score": "黑馬分數"}), use_container_width=True, hide_index=True)
+
+    st.subheader("洲別冠軍機率")
+    confed = continent_champion_probabilities(sim_df, team_meta_df)
+    if confed.empty:
+        st.info("洲別資料不足。")
+    else:
+        pie = px.pie(confed, names="confederation", values="champion_probability", color_discrete_sequence=[GOLD, "#8aa0c3", "#2dd4bf", "#f97316", "#a78bfa", "#ef4444"])
+        pie.update_traces(textinfo="label+percent")
+        pie.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color=INK)
+        st.plotly_chart(pie, use_container_width=True)
+
+
 def champion_path_page() -> None:
     page_header("冠軍路徑模擬", "選擇國家隊，查看各階段晉級率、可能淘汰賽路徑與最大阻礙")
     st.caption("本頁使用既有 Monte Carlo 模擬結果，僅供機率分析與資料參考。")
@@ -4422,6 +4531,8 @@ elif page == "晉級機率分析":
     advancement_probability_page()
 elif page == "世界盃模擬器":
     worldcup_simulator_page()
+elif page == "AI 世界盃模擬器":
+    ai_worldcup_simulator_page()
 elif page == "冠軍路徑模擬":
     champion_path_page()
 elif page == "對戰比較中心":
