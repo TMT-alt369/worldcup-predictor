@@ -41,6 +41,7 @@ from utils.team_compare import comparison_table, comparison_text, radar_values, 
 from utils.mobile_style import mobile_css
 from utils.ai_assistant import answer_question
 from utils.confidence_engine import ConfidenceResult, calculate_confidence
+from utils import bet_market_engine
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -867,6 +868,7 @@ PAGE_GROUPS = {
         "市場機率分析",
         "世足玩法教學",
         "賠率試算中心",
+        "全玩法預測中心",
         "AI 賽事分析報告",
         "AI 串關分析",
         "冠軍路徑模擬",
@@ -3320,6 +3322,155 @@ def odds_calculator_page() -> None:
     render_ai_parlay_analysis(limit=5)
 
 
+def _market_card_grid(df: pd.DataFrame, key_prefix: str, max_items: int | None = None) -> None:
+    if df is None or df.empty:
+        st.info("目前資料不足，暫無此玩法機率。")
+        return
+    data = df.copy()
+    data["probability"] = pd.to_numeric(data.get("probability", 0), errors="coerce").fillna(0)
+    data["fused_probability"] = pd.to_numeric(data.get("fused_probability", data["probability"]), errors="coerce").fillna(data["probability"])
+    data["estimated_odds"] = pd.to_numeric(data.get("estimated_odds", 1.01), errors="coerce").fillna(1.01)
+    if max_items:
+        data = data.head(max_items)
+    for market_name, market_df in data.groupby("market_name", sort=False):
+        with st.expander(str(market_name), expanded=True):
+            rows = market_df.to_dict("records")
+            for start in range(0, len(rows), 3):
+                cols = st.columns(min(3, len(rows) - start))
+                for offset, item in enumerate(rows[start:start + 3]):
+                    with cols[offset]:
+                        market_odds = item.get("market_odds", "")
+                        market_text = f"市場賠率：{float(market_odds):.2f}" if str(market_odds).strip() else "市場賠率：未提供"
+                        st.markdown(
+                            f"""
+                            <div class="display-card">
+                              <div class="card-label">{html.escape(str(item.get("market_name", "")))}</div>
+                              <div class="card-value">{html.escape(str(item.get("option_name", "")))}</div>
+                              <div class="card-note">模型機率：{format_percent(float(item["probability"]))}</div>
+                              <div class="card-note">估算賠率：{float(item["estimated_odds"]):.2f}</div>
+                              <div class="card-note">{html.escape(market_text)}</div>
+                              <div class="card-note">融合機率：{format_percent(float(item["fused_probability"]))}</div>
+                              <div class="card-note">風險：{risk_badge(str(item.get("risk_level", "中")))}</div>
+                              <div class="card-note">{html.escape(str(item.get("explanation", "")))}</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                        button_key = f"{key_prefix}_{item.get('market_id', '')}_{start}_{offset}"
+                        if st.button("套用到試算器", key=button_key, use_container_width=True):
+                            st.session_state["applied_single_odds"] = float(item["estimated_odds"])
+                            st.session_state["applied_play_name"] = str(item.get("option_name", "自選玩法"))
+                            st.session_state["single_odds"] = float(item["estimated_odds"])
+                            st.session_state["parlay_odds_0"] = float(item["estimated_odds"])
+                            st.success(f"已套用：{item.get('option_name', '自選玩法')}，估算賠率 {float(item['estimated_odds']):.2f}")
+
+
+def _parlay_candidate_tabs(*frames: pd.DataFrame) -> None:
+    data = pd.concat([frame for frame in frames if frame is not None and not frame.empty], ignore_index=True)
+    if data.empty:
+        st.info("目前資料不足，暫無串關候選。")
+        return
+    data["fused_probability"] = pd.to_numeric(data.get("fused_probability", data.get("probability", 0)), errors="coerce").fillna(0)
+    for label, levels in [("低風險候選", ["低"]), ("中風險候選", ["中"]), ("高風險候選", ["高"])]:
+        st.subheader(label)
+        subset = data[data["risk_level"].isin(levels)].sort_values("fused_probability", ascending=False).head(9)
+        _market_card_grid(subset, f"parlay_{label}", max_items=9)
+
+
+def all_market_prediction_page() -> None:
+    page_header("全玩法預測中心", "以 Poisson、Elo、xG、市場機率與 Monte Carlo 推導足球常見玩法機率")
+    st.warning("本頁僅供數據分析與機率學習，不提供下注建議。")
+    row = selected_fixture("選擇比賽")
+    prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    market_table = market_probability_table(row, prediction)
+    confidence_result = confidence_for_fixture(row, prediction, market_table)
+    market_frames = bet_market_engine.build_match_markets(prediction, row)
+    sim_df = v7_simulation().copy()
+    if "round_32_probability" not in sim_df.columns and "group_qualified_probability" in sim_df.columns:
+        sim_df["round_32_probability"] = sim_df["group_qualified_probability"]
+    fixtures_for_group = fixture_odds_df.copy()
+    if "group" not in fixtures_for_group.columns:
+        fixtures_for_group["group"] = fixtures_for_group.get("stage", "Group TBD")
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("比賽時間", fixture_time_text(row), "台灣時間 UTC+8")
+    with cols[1]:
+        display_card("主隊", team_name(row["home_team"]), str(row.get("venue", row.get("stadium", ""))))
+    with cols[2]:
+        display_card("客隊", team_name(row["away_team"]), "賽程資料")
+    with cols[3]:
+        display_card("預測比分", f"{prediction.predicted_home_goals} : {prediction.predicted_away_goals}", "Poisson")
+
+    prob_cols = st.columns(3)
+    with prob_cols[0]:
+        display_card("主勝", format_percent(prediction.home_win_probability))
+    with prob_cols[1]:
+        display_card("和局", format_percent(prediction.draw_probability))
+    with prob_cols[2]:
+        display_card("客勝", format_percent(prediction.away_win_probability))
+    smart_confidence_card(confidence_result, compact=True)
+
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["單場核心", "進球玩法", "半場玩法", "冠軍與小組", "串關候選"])
+    with tab1:
+        _market_card_grid(
+            pd.concat(
+                [
+                    market_frames["1x2"],
+                    market_frames["handicap"],
+                    market_frames["over_under"],
+                    market_frames["both_teams_score"],
+                ],
+                ignore_index=True,
+            ),
+            "core",
+        )
+    with tab2:
+        _market_card_grid(
+            pd.concat(
+                [
+                    market_frames["first_goal"],
+                    market_frames["correct_score"],
+                    market_frames["team_goals"],
+                    market_frames["total_goals_range"],
+                    market_frames["odd_even"],
+                ],
+                ignore_index=True,
+            ),
+            "goals",
+        )
+    with tab3:
+        _market_card_grid(
+            pd.concat(
+                [
+                    market_frames["half_time_1x2"],
+                    market_frames["half_full_time"],
+                    market_frames["half_over_under"],
+                    market_frames["half_team_goals"],
+                    market_frames["half_correct_score"],
+                ],
+                ignore_index=True,
+            ),
+            "half",
+        )
+    with tab4:
+        champion_df = bet_market_engine.predict_champion(sim_df).head(20)
+        continent_df = bet_market_engine.predict_continent_winner(sim_df, team_meta_df)
+        group_df = bet_market_engine.predict_group_winner(fixtures_for_group, sim_df)
+        stage_df = bet_market_engine.predict_team_reaches_stage(sim_df).head(80)
+        _market_card_grid(champion_df, "champion", max_items=20)
+        _market_card_grid(continent_df, "continent")
+        _market_card_grid(group_df, "group", max_items=48)
+        _market_card_grid(stage_df, "stage", max_items=80)
+    with tab5:
+        _parlay_candidate_tabs(
+            market_frames["1x2"],
+            market_frames["over_under"],
+            market_frames["both_teams_score"],
+            market_frames["handicap"],
+        )
+
+
 def ai_match_report_page() -> None:
     page_header("AI 賽事分析報告", "規則式整合勝率、Elo、近期狀態、xG、市場機率與比分傾向")
     st.warning("本頁僅供機率分析，不構成下注建議。")
@@ -3737,6 +3888,8 @@ elif page == "世足玩法教學":
     football_betting_guide_page()
 elif page == "賠率試算中心":
     odds_calculator_page()
+elif page == "全玩法預測中心":
+    all_market_prediction_page()
 elif page == "AI 賽事分析報告":
     ai_match_report_page()
 elif page == "AI 串關分析":

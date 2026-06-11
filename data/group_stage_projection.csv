@@ -1,0 +1,49 @@
+group,team,top_group_probability,qualify_probability,points_projection,goal_difference_projection
+Group A,Mexico,0.2831,0.78,4.7,0.26
+Group A,Czechia,0.3058,0.763,4.83,0.45
+Group A,South Korea,0.2427,0.649,4.46,-0.06
+Group A,South Africa,0.1684,0.502,4.01,-0.65
+Group B,Switzerland,0.4463,0.866,5.68,1.57
+Group B,Qatar,0.1877,0.599,4.13,-0.5
+Group B,Canada,0.157,0.6,3.94,-0.74
+Group B,Bosnia and Herzegovina,0.209,0.612,4.25,-0.33
+Group C,Brazil,0.4357,0.932,5.61,1.49
+Group C,Scotland,0.2466,0.711,4.48,-0.03
+Group C,Morocco,0.2008,0.637,4.2,-0.39
+Group C,Haiti,0.1169,0.363,3.7,-1.06
+Group D,United States,0.2833,0.76,4.7,0.27
+Group D,Turkiye,0.285,0.723,4.71,0.28
+Group D,Australia,0.2316,0.67,4.39,-0.15
+Group D,Paraguay,0.2001,0.582,4.2,-0.4
+Group E,Germany,0.4222,0.906,5.53,1.38
+Group E,Ecuador,0.2483,0.703,4.49,-0.01
+Group E,Ivory Coast,0.2087,0.655,4.25,-0.33
+Group E,Curacao,0.1208,0.392,3.73,-1.03
+Group F,Netherlands,0.3845,0.884,5.31,1.08
+Group F,Sweden,0.2379,0.669,4.43,-0.1
+Group F,Japan,0.2088,0.613,4.25,-0.33
+Group F,Tunisia,0.1688,0.539,4.01,-0.65
+Group G,Belgium,0.4496,0.913,5.7,1.6
+Group G,Iran,0.2847,0.75,4.71,0.28
+Group G,Egypt,0.2138,0.646,4.28,-0.29
+Group G,New Zealand,0.0519,0.343,3.31,-1.58
+Group H,Spain,0.3881,0.906,5.33,1.1
+Group H,Uruguay,0.318,0.84,4.91,0.54
+Group H,Cape Verde,0.1636,0.491,3.98,-0.69
+Group H,Saudi Arabia,0.1304,0.437,3.78,-0.96
+Group I,France,0.401,0.91,5.41,1.21
+Group I,Senegal,0.2234,0.638,4.34,-0.21
+Group I,Norway,0.214,0.621,4.28,-0.29
+Group I,Iraq,0.1616,0.467,3.97,-0.71
+Group J,Argentina,0.4367,0.952,5.62,1.49
+Group J,Austria,0.2552,0.716,4.53,0.04
+Group J,Jordan,0.1409,0.422,3.85,-0.87
+Group J,Algeria,0.1672,0.507,4.0,-0.66
+Group K,Portugal,0.3294,0.851,4.98,0.64
+Group K,Colombia,0.3015,0.795,4.81,0.41
+Group K,Uzbekistan,0.2114,0.578,4.27,-0.31
+Group K,DR Congo,0.1577,0.455,3.95,-0.74
+Group L,England,0.3924,0.904,5.35,1.14
+Group L,Croatia,0.334,0.838,5.0,0.67
+Group L,Panama,0.1545,0.487,3.93,-0.76
+Group L,Ghana,0.119,0.423,3.71,-1.05
