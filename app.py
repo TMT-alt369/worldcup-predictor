@@ -37,6 +37,7 @@ from utils.market_probability import market_probability_table
 from utils.ai_match_report import generate_match_report
 from utils.parlay_analyzer import build_match_candidates, build_parlay_combinations, parlay_summary_text
 from utils.champion_path import champion_path_text, likely_knockout_path, stage_probability_table
+from utils.team_compare import comparison_table, comparison_text, radar_values, team_profile
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -769,6 +770,7 @@ PAGE_GROUPS = {
         "AI 賽事分析報告",
         "AI 串關分析",
         "冠軍路徑模擬",
+        "對戰比較中心",
     ],
     "資料中心": [
         "Elo 世界排名",
@@ -2645,6 +2647,78 @@ def champion_path_page() -> None:
     st.markdown(f"<div class='display-card'><div class='card-note'>{html.escape(champion_path_text(team_row, sim_df))}</div></div>", unsafe_allow_html=True)
 
 
+def team_comparison_page() -> None:
+    page_header("對戰比較中心", "選擇兩支球隊，比較 Elo、FIFA 排名、xG、晉級率與冠軍率")
+    teams = sorted(team_meta_df["team"].dropna().astype(str).unique().tolist())
+    if len(teams) < 2:
+        st.info("目前資料不足，暫無法進行對戰比較。")
+        return
+    cols = st.columns(2)
+    with cols[0]:
+        home = st.selectbox("球隊 A", teams, format_func=team_name, index=0)
+    with cols[1]:
+        default_index = 1 if len(teams) > 1 else 0
+        away = st.selectbox("球隊 B", teams, format_func=team_name, index=default_index)
+    if home == away:
+        st.info("請選擇兩支不同球隊。")
+        return
+
+    sim_df = v7_simulation().copy()
+    try:
+        shots_df = prepare_xg_data(pd.read_csv("data/xg_shots.csv"))
+    except Exception:
+        shots_df = pd.DataFrame()
+    try:
+        players_df = pd.read_csv("data/player_database.csv")
+    except Exception:
+        players_df = pd.DataFrame()
+
+    home_profile = team_profile(home, team_meta_df, players_df, sim_df, wc_team_stats_df, shots_df)
+    away_profile = team_profile(away, team_meta_df, players_df, sim_df, wc_team_stats_df, shots_df)
+    home_name = team_name(home)
+    away_name = team_name(away)
+
+    prediction = predict_match(matches_df, home, away, wc_team_stats_df)
+    metric_cols = st.columns(3)
+    with metric_cols[0]:
+        display_card("主隊勝率", format_percent(float(prediction.home_win_probability)), home_name)
+    with metric_cols[1]:
+        display_card("和局機率", format_percent(float(prediction.draw_probability)), "Poisson + Elo")
+    with metric_cols[2]:
+        display_card("客隊勝率", format_percent(float(prediction.away_win_probability)), away_name)
+
+    st.subheader("比較表")
+    table = comparison_table(home_profile, away_profile, home_name, away_name)
+    display = table.copy()
+    for column in [home_name, away_name]:
+        display[column] = display.apply(
+            lambda row: format_percent(float(row[column])) if row["指標"] in ["近期狀態", "冠軍率", "小組出線率"] else row[column],
+            axis=1,
+        )
+    display = display.astype(str)
+    st.dataframe(display, use_container_width=True, hide_index=True)
+
+    st.subheader("雷達圖")
+    home_radar = radar_values(home_profile)
+    away_radar = radar_values(away_profile)
+    categories = list(home_radar.keys())
+    radar_df = pd.DataFrame(
+        {
+            "指標": categories + categories,
+            "分數": [home_radar[item] for item in categories] + [away_radar[item] for item in categories],
+            "球隊": [home_name] * len(categories) + [away_name] * len(categories),
+        }
+    )
+    chart = px.line_polar(radar_df, r="分數", theta="指標", color="球隊", line_close=True, range_r=[0, 1])
+    chart.update_traces(fill="toself")
+    chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color=INK)
+    st.plotly_chart(chart, use_container_width=True)
+
+    st.subheader("AI 對戰分析")
+    text = comparison_text(home_name, home_profile, away_name, away_profile)
+    st.markdown(f"<div class='display-card'><div class='card-note'>{html.escape(text)}</div></div>", unsafe_allow_html=True)
+
+
 def betting_page() -> None:
     page_header("市場機率分析", "將模型機率與賠率隱含機率融合，提供風險參考")
     st.caption("融合公式：模型機率 70% + 市場隱含機率 30%。市場隱含機率已正規化以降低 bookmaker margin 影響。")
@@ -3518,6 +3592,8 @@ elif page == "世界盃模擬器":
     worldcup_simulator_page()
 elif page == "冠軍路徑模擬":
     champion_path_page()
+elif page == "對戰比較中心":
+    team_comparison_page()
 elif page == "Elo 世界排名":
     elo_ranking_page()
 elif page == "xG 模型分析":
