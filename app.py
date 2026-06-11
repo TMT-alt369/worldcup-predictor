@@ -27,7 +27,7 @@ from worldcup_predictor.data_loader import (
 )
 from worldcup_predictor.elo import build_elo_rankings
 from worldcup_predictor.history import head_to_head_record, team_summary, top_team_stats
-from worldcup_predictor.model import predict_match, prediction_to_frame, team_strength
+from worldcup_predictor.model import poisson_probability, predict_match, prediction_to_frame, team_strength
 from worldcup_predictor.players import player_database, squad_summary
 from worldcup_predictor.tournament import run_tournament_simulation
 from worldcup_predictor.ui import disclaimer_box, format_percent, signal_dataframe
@@ -2637,13 +2637,274 @@ def football_betting_guide_page() -> None:
 
 
 def odds_calculator_page() -> None:
-    page_header("賠率試算中心", "單場與串關賠率試算，快速換算可得彩金與實際獲利")
-    st.warning("風險提醒：試算結果只代表數學換算，不代表推薦下注或保證獲利。")
+    page_header("賠率試算中心", "依比賽自動帶入模型機率、市場機率與玩法賠率試算")
+    st.warning(
+        "本頁僅供機率分析與賠率試算，不構成下注建議。賠率越高不代表越值得，"
+        "串關場數越多，中獎機率通常越低，請理性看待所有模型結果。"
+    )
+
+    def clamp_probability(value: float) -> float:
+        return float(max(0.01, min(0.95, value)))
+
+    def estimated_odds(probability: float) -> float:
+        return round(max(1.01, min(15.0, 1.04 / clamp_probability(probability))), 2)
+
+    def risk_level(probability: float) -> str:
+        if probability >= 0.58:
+            return "低"
+        if probability >= 0.40:
+            return "中"
+        return "高"
+
+    def risk_class(level: str) -> str:
+        return {"低": "risk-low", "中": "risk-medium", "高": "risk-high"}.get(level, "risk-medium")
+
+    def poisson_score_grid(home_xg: float, away_xg: float, max_goals: int = 7) -> list[dict]:
+        rows = []
+        for home_goals in range(max_goals + 1):
+            for away_goals in range(max_goals + 1):
+                probability = poisson_probability(home_xg, home_goals) * poisson_probability(away_xg, away_goals)
+                rows.append({"home_goals": home_goals, "away_goals": away_goals, "probability": probability})
+        total = sum(row["probability"] for row in rows) or 1
+        for row in rows:
+            row["probability"] = row["probability"] / total
+        return rows
+
+    def display_play_card(play: dict, key: str) -> None:
+        model_text = format_percent(float(play.get("model_probability", 0)))
+        market_value = play.get("market_probability")
+        market_text = "N/A" if market_value == "N/A" else format_percent(float(market_value))
+        fused_text = format_percent(float(play.get("fused_probability", play.get("model_probability", 0))))
+        odds_text = f"{float(play.get('odds', 1.01)):.2f}"
+        level = str(play.get("risk", "中"))
+        st.markdown(
+            f"""
+            <div class="display-card">
+              <div class="card-label">{html.escape(str(play.get('category', '玩法')))}</div>
+              <div class="card-value" style="font-size:1.2rem;">{html.escape(str(play.get('name', 'N/A')))}</div>
+              <div class="card-note">模型機率：{model_text}｜市場機率：{market_text}｜融合機率：{fused_text}</div>
+              <div class="card-note">賠率：{odds_text}</div>
+              <div class="risk-tag {risk_class(level)}">風險：{html.escape(level)}</div>
+              <div class="card-note">{html.escape(str(play.get('note', '僅供機率分析參考。')))}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("套用此玩法到試算器", key=f"apply_{key}", use_container_width=True):
+            st.session_state["applied_single_odds"] = float(play.get("odds", 1.01))
+            st.session_state["applied_play_name"] = str(play.get("name", "自選玩法"))
+            st.session_state["single_odds"] = float(play.get("odds", 1.01))
+            st.session_state["parlay_odds_0"] = float(play.get("odds", 1.01))
+            st.success(f"已套用：{play.get('name', '自選玩法')}，賠率 {odds_text}")
+
+    st.subheader("選擇比賽")
+    row = selected_fixture("選擇比賽")
+    prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    market_table = market_probability_table(row, prediction)
+    score_grid = poisson_score_grid(prediction.expected_home_goals, prediction.expected_away_goals)
+    total_goal_estimate = prediction.expected_home_goals + prediction.expected_away_goals
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("比賽時間", fixture_time_text(row), "台灣時間 UTC+8")
+    with cols[1]:
+        display_card("主隊", team_name(row["home_team"]), str(row.get("venue", "N/A")))
+    with cols[2]:
+        display_card("客隊", team_name(row["away_team"]), "場地如賽程資料")
+    with cols[3]:
+        display_card("模型預測比分", f"{prediction.predicted_home_goals} : {prediction.predicted_away_goals}", "Poisson")
+
+    prob_cols = st.columns(3)
+    with prob_cols[0]:
+        display_card("主勝機率", format_percent(prediction.home_win_probability), f"賠率 {float(row['home_odds']):.2f}")
+    with prob_cols[1]:
+        display_card("和局機率", format_percent(prediction.draw_probability), f"賠率 {float(row['draw_odds']):.2f}")
+    with prob_cols[2]:
+        display_card("客勝機率", format_percent(prediction.away_win_probability), f"賠率 {float(row['away_odds']):.2f}")
+
+    st.subheader("不讓分勝平負")
+    odds_map = {"主勝": row["home_odds"], "和局": row["draw_odds"], "客勝": row["away_odds"]}
+    one_x_two = []
+    for _, item in market_table.iterrows():
+        play = {
+            "category": "不讓分",
+            "name": str(item["market"]),
+            "model_probability": float(item["model_probability"]),
+            "market_probability": float(item["market_probability"]),
+            "fused_probability": float(item["fused_probability"]),
+            "odds": float(odds_map.get(str(item["market"]), estimated_odds(float(item["fused_probability"])))),
+            "risk": risk_level(float(item["fused_probability"])),
+            "note": "比較模型與市場定價後的勝平負機率。",
+        }
+        one_x_two.append(play)
+    st.dataframe(
+        pd.DataFrame(one_x_two)[["name", "odds", "model_probability", "market_probability", "fused_probability", "risk"]]
+        .rename(
+            columns={
+                "name": "結果",
+                "odds": "對應賠率",
+                "model_probability": "模型機率",
+                "market_probability": "市場機率",
+                "fused_probability": "融合後機率",
+                "risk": "風險等級",
+            }
+        )
+        .assign(
+            模型機率=lambda df: df["模型機率"].map(format_percent),
+            市場機率=lambda df: df["市場機率"].map(format_percent),
+            融合後機率=lambda df: df["融合後機率"].map(format_percent),
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+    for index, play in enumerate(one_x_two):
+        display_play_card(play, f"one_x_two_{index}")
+
+    st.subheader("讓分盤")
+    handicap_specs = [
+        ("主隊 -1", lambda s: s["home_goals"] - 1 > s["away_goals"]),
+        ("主隊 +1", lambda s: s["home_goals"] + 1 > s["away_goals"]),
+        ("客隊 -1", lambda s: s["away_goals"] - 1 > s["home_goals"]),
+        ("客隊 +1", lambda s: s["away_goals"] + 1 > s["home_goals"]),
+    ]
+    handicap_rows = []
+    for name, condition in handicap_specs:
+        probability = sum(score["probability"] for score in score_grid if condition(score))
+        probability = clamp_probability(probability)
+        handicap_rows.append(
+            {
+                "category": "讓分盤",
+                "name": name,
+                "model_probability": probability,
+                "market_probability": "N/A",
+                "fused_probability": probability,
+                "odds": estimated_odds(probability),
+                "risk": risk_level(probability),
+                "note": "以模型比分分布估算讓分後過盤機率。",
+            }
+        )
+    st.dataframe(
+        pd.DataFrame(handicap_rows)[["name", "model_probability", "odds", "risk"]]
+        .rename(columns={"name": "盤口", "model_probability": "過盤機率", "odds": "對應賠率", "risk": "風險等級"})
+        .assign(過盤機率=lambda df: df["過盤機率"].map(format_percent)),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.subheader("大小球")
+    total_rows = []
+    for line in [1.5, 2.5, 3.5]:
+        over_probability = clamp_probability(sum(score["probability"] for score in score_grid if score["home_goals"] + score["away_goals"] > line))
+        under_probability = clamp_probability(1 - over_probability)
+        total_rows.append(
+            {
+                "盤口": line,
+                "大球機率": over_probability,
+                "小球機率": under_probability,
+                "大球賠率": estimated_odds(over_probability),
+                "小球賠率": estimated_odds(under_probability),
+                "模型預估總進球": round(total_goal_estimate, 2),
+            }
+        )
+    total_df = pd.DataFrame(total_rows)
+    st.dataframe(
+        total_df.assign(
+            大球機率=lambda df: df["大球機率"].map(format_percent),
+            小球機率=lambda df: df["小球機率"].map(format_percent),
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.subheader("半全場")
+    half_home_xg = max(0.1, prediction.expected_home_goals * 0.45)
+    half_away_xg = max(0.1, prediction.expected_away_goals * 0.45)
+    half_grid = poisson_score_grid(half_home_xg, half_away_xg, 5)
+    half_probs = {
+        "1": sum(item["probability"] for item in half_grid if item["home_goals"] > item["away_goals"]),
+        "X": sum(item["probability"] for item in half_grid if item["home_goals"] == item["away_goals"]),
+        "2": sum(item["probability"] for item in half_grid if item["home_goals"] < item["away_goals"]),
+    }
+    full_probs = {"1": prediction.home_win_probability, "X": prediction.draw_probability, "2": prediction.away_win_probability}
+    half_full_rows = []
+    for half in ["1", "X", "2"]:
+        for full in ["1", "X", "2"]:
+            probability = clamp_probability(float(half_probs[half]) * float(full_probs[full]))
+            half_full_rows.append(
+                {
+                    "組合": f"{half}/{full}",
+                    "機率": probability,
+                    "估算賠率": estimated_odds(probability),
+                    "風險等級": risk_level(probability),
+                }
+            )
+    st.dataframe(
+        pd.DataFrame(half_full_rows).assign(機率=lambda df: df["機率"].map(format_percent)),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.subheader("玩法卡片")
+    card_candidates = []
+    card_candidates.extend(one_x_two)
+    card_candidates.extend(sorted(handicap_rows, key=lambda item: item["fused_probability"], reverse=True)[:2])
+    for _, total_item in total_df.head(3).iterrows():
+        probability = float(total_item["大球機率"])
+        card_candidates.append(
+            {
+                "category": "大小球",
+                "name": f"大 {total_item['盤口']}",
+                "model_probability": probability,
+                "market_probability": "N/A",
+                "fused_probability": probability,
+                "odds": float(total_item["大球賠率"]),
+                "risk": risk_level(probability),
+                "note": f"模型預估總進球 {total_goal_estimate:.2f}。",
+            }
+        )
+    for index, play in enumerate(card_candidates):
+        display_play_card(play, f"play_card_{index}")
+
+    st.subheader("串關候選")
+    candidate_rows = []
+    for _, fixture in fixture_odds_df.head(24).iterrows():
+        candidate_prediction = predict_match(matches_df, fixture["home_team"], fixture["away_team"], wc_team_stats_df)
+        candidate_market = market_probability_table(fixture, candidate_prediction)
+        best = candidate_market.sort_values("fused_probability", ascending=False).iloc[0]
+        name = str(best["market"])
+        odds_value = {"主勝": fixture["home_odds"], "和局": fixture["draw_odds"], "客勝": fixture["away_odds"]}.get(name, estimated_odds(float(best["fused_probability"])))
+        level = risk_level(float(best["fused_probability"]))
+        candidate_rows.append(
+            {
+                "比賽": f"{team_name(fixture['home_team'])} vs {team_name(fixture['away_team'])}",
+                "候選方向": name,
+                "融合機率": float(best["fused_probability"]),
+                "賠率": round(float(odds_value), 2),
+                "風險": level,
+            }
+        )
+    candidate_df = pd.DataFrame(candidate_rows)
+    for level in ["低", "中", "高"]:
+        st.markdown(f"**{level}風險候選**")
+        section = candidate_df[candidate_df["風險"] == level].head(5).copy()
+        if section.empty:
+            st.info("目前沒有符合此風險級別的候選資料。")
+        else:
+            st.dataframe(
+                section.assign(融合機率=lambda df: df["融合機率"].map(format_percent)),
+                use_container_width=True,
+                hide_index=True,
+            )
 
     st.subheader("單場賠率試算")
+    applied_odds = float(st.session_state.get("applied_single_odds", 2.00))
+    applied_name = st.session_state.get("applied_play_name", "手動輸入")
+    st.caption(f"目前套用：{applied_name}｜可自行調整金額與賠率。")
     cols = st.columns(2)
     stake = cols[0].number_input("投注金額", min_value=0.0, value=1000.0, step=100.0, key="single_stake")
-    odds = cols[1].number_input("賠率", min_value=1.01, value=2.00, step=0.01, key="single_odds")
+    if "single_odds" not in st.session_state:
+        st.session_state["single_odds"] = applied_odds
+    odds = cols[1].number_input("賠率", min_value=1.01, step=0.01, key="single_odds")
     payout = stake * odds
     profit = payout - stake
     result_cols = st.columns(2)
@@ -2658,11 +2919,13 @@ def odds_calculator_page() -> None:
     odds_values = []
     input_cols = st.columns(match_count)
     for index in range(match_count):
+        default_value = applied_odds if index == 0 else 1.80
+        if f"parlay_odds_{index}" not in st.session_state:
+            st.session_state[f"parlay_odds_{index}"] = default_value
         odds_values.append(
             input_cols[index].number_input(
                 f"賠率 {index + 1}",
                 min_value=1.01,
-                value=1.80,
                 step=0.01,
                 key=f"parlay_odds_{index}",
             )
