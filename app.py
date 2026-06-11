@@ -35,6 +35,7 @@ from utils.simulation import run_worldcup_monte_carlo
 from utils.player_impact import team_impact, win_probability_adjustment
 from utils.market_probability import market_probability_table
 from utils.ai_match_report import generate_match_report
+from utils.parlay_analyzer import build_match_candidates, build_parlay_combinations, parlay_summary_text
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -765,6 +766,7 @@ PAGE_GROUPS = {
         "世足玩法教學",
         "賠率試算中心",
         "AI 賽事分析報告",
+        "AI 串關分析",
     ],
     "資料中心": [
         "Elo 世界排名",
@@ -846,6 +848,53 @@ def render_ai_match_report(row: pd.Series, prediction, market_table: pd.DataFram
         + "</div>",
         unsafe_allow_html=True,
     )
+
+
+def _parlay_candidates() -> pd.DataFrame:
+    def predict_for(home: str, away: str):
+        return predict_match(matches_df, home, away, wc_team_stats_df)
+
+    return build_match_candidates(
+        fixture_odds_df,
+        market_probability_table,
+        predict_for,
+        team_name_func=team_name,
+    )
+
+
+def _format_parlay_table(table: pd.DataFrame) -> pd.DataFrame:
+    if table is None or table.empty:
+        return pd.DataFrame()
+    display = table.copy()
+    if "單場機率" in display.columns:
+        display["單場機率"] = pd.to_numeric(display["單場機率"], errors="coerce").fillna(0).map(format_percent)
+    if "預估命中率" in display.columns:
+        display["預估命中率"] = pd.to_numeric(display["預估命中率"], errors="coerce").fillna(0).map(format_percent)
+    for column in ["單場賠率", "總賠率"]:
+        if column in display.columns:
+            display[column] = pd.to_numeric(display[column], errors="coerce").fillna(1.01).map(lambda value: f"{value:.2f}")
+    return display
+
+
+def render_ai_parlay_analysis(limit: int = 6) -> None:
+    st.subheader("AI 串關分析")
+    st.caption("以下為機率候選組合，僅供機率分析，不構成下注建議。串關場數越多，整體命中率通常越低。")
+    candidates = _parlay_candidates()
+    if candidates.empty:
+        st.info("目前資料不足，暫無可整理的串關候選組合。")
+        return
+
+    st.markdown("**單場候選池**")
+    st.dataframe(_format_parlay_table(candidates.head(limit)), use_container_width=True, hide_index=True)
+
+    for size in [2, 3]:
+        table = build_parlay_combinations(candidates, size=size, max_rows=limit)
+        st.markdown(f"**{size} 串 1 候選組合**")
+        if table.empty:
+            st.info(f"目前資料不足，暫無 {size} 串 1 候選組合。")
+            continue
+        st.dataframe(_format_parlay_table(table), use_container_width=True, hide_index=True)
+        st.caption(parlay_summary_text(table))
 
 
 def fixtures_with_flags(df: pd.DataFrame) -> pd.DataFrame:
@@ -2583,6 +2632,7 @@ def betting_page() -> None:
     chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
     st.plotly_chart(chart, use_container_width=True)
     render_ai_match_report(row, prediction, table)
+    render_ai_parlay_analysis(limit=5)
     st.warning("風險提醒：本頁僅做市場機率與模型機率比較，不提供下注功能，不保證賽果或獲利。")
 
 
@@ -2977,6 +3027,7 @@ def odds_calculator_page() -> None:
         [{"場次": f"第 {idx + 1} 場", "賠率": f"{value:.2f}"} for idx, value in enumerate(odds_values)]
     )
     st.dataframe(table, use_container_width=True, hide_index=True)
+    render_ai_parlay_analysis(limit=5)
 
 
 def ai_match_report_page() -> None:
@@ -2987,6 +3038,12 @@ def ai_match_report_page() -> None:
     market_table = market_probability_table(row, prediction)
     prediction_cards(row)
     render_ai_match_report(row, prediction, market_table)
+
+
+def ai_parlay_analysis_page() -> None:
+    page_header("AI 串關分析", "以模型機率與市場機率整理 2 串 1、3 串 1 候選組合")
+    st.warning("本頁僅供機率分析，不構成下注建議；賠率越高不代表越值得。")
+    render_ai_parlay_analysis(limit=10)
 
 
 def xg_model_page() -> None:
@@ -3390,6 +3447,10 @@ elif page == "世足玩法教學":
     football_betting_guide_page()
 elif page == "賠率試算中心":
     odds_calculator_page()
+elif page == "AI 賽事分析報告":
+    ai_match_report_page()
+elif page == "AI 串關分析":
+    ai_parlay_analysis_page()
 elif page == "模型回測頁":
     model_backtest_page()
 elif page == "冠軍機率預測":
