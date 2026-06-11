@@ -34,6 +34,7 @@ from worldcup_predictor.ui import disclaimer_box, format_percent, signal_datafra
 from utils.simulation import run_worldcup_monte_carlo
 from utils.player_impact import team_impact, win_probability_adjustment
 from utils.market_probability import market_probability_table
+from utils.ai_match_report import generate_match_report
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -748,6 +749,13 @@ PAGE_OPTIONS = [
 ]
 
 PAGE_GROUPS = {
+    "首頁": [
+        "世界盃情報中心",
+    ],
+    "賽程中心": [
+        "世界盃賽程表",
+        "即時賽況",
+    ],
     "預測中心": [
         "單場分析頁",
         "冠軍機率預測",
@@ -756,22 +764,19 @@ PAGE_GROUPS = {
         "市場機率分析",
         "世足玩法教學",
         "賠率試算中心",
+        "AI 賽事分析報告",
     ],
     "資料中心": [
-        "世界盃賽程表",
-        "即時賽況",
         "Elo 世界排名",
         "xG 模型分析",
         "球隊資料庫",
         "球員資料庫",
         "國家隊資料中心",
-        "足球數據百科",
-        "足球術語教學",
         "歷史世界盃數據分析",
         "國家隊世界盃戰績",
         "歷史交手分析",
-        "模型回測頁",
-        "免責聲明頁",
+        "足球數據百科",
+        "足球術語教學",
     ],
 }
 
@@ -824,6 +829,23 @@ def selected_fixture(label: str = "選擇比賽") -> pd.Series:
     selected_label = st.selectbox(label, list(labels.keys()))
     match_id = labels[selected_label]
     return fixture_odds_df[fixture_odds_df["match_id"] == match_id].iloc[0]
+
+
+def render_ai_match_report(row: pd.Series, prediction, market_table: pd.DataFrame | None = None) -> None:
+    st.subheader("AI 賽事分析報告")
+    lines = generate_match_report(
+        row,
+        prediction,
+        matches_df,
+        team_meta_df,
+        market_table=market_table,
+    )
+    st.markdown(
+        "<div class='display-card'>"
+        + "".join(f"<div class='card-note'>{html.escape(line)}</div>" for line in lines)
+        + "</div>",
+        unsafe_allow_html=True,
+    )
 
 
 def fixtures_with_flags(df: pd.DataFrame) -> pd.DataFrame:
@@ -1251,6 +1273,7 @@ def match_analysis_page() -> None:
     disclaimer_box()
     row = selected_fixture()
     prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    market_table = market_probability_table(row, prediction)
     prediction_cards(row)
 
     st.subheader("AI 賽事分析文字")
@@ -2423,6 +2446,7 @@ def match_analysis_page() -> None:
     disclaimer_box()
     row = selected_fixture()
     prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    market_table = market_probability_table(row, prediction)
     prediction_cards(row)
 
     probabilities = prediction_to_frame(prediction)
@@ -2443,6 +2467,7 @@ def match_analysis_page() -> None:
     render_h2h_summary_block(row["home_team"], row["away_team"])
     render_key_players_block(row["home_team"], row["away_team"])
     _render_player_impact(row["home_team"], row["away_team"])
+    render_ai_match_report(row, prediction, market_table)
 
 
 def worldcup_simulator_page() -> None:
@@ -2557,6 +2582,7 @@ def betting_page() -> None:
     chart.update_yaxes(tickformat=".0%")
     chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
     st.plotly_chart(chart, use_container_width=True)
+    render_ai_match_report(row, prediction, table)
     st.warning("風險提醒：本頁僅做市場機率與模型機率比較，不提供下注功能，不保證賽果或獲利。")
 
 
@@ -2721,6 +2747,8 @@ def odds_calculator_page() -> None:
         display_card("和局機率", format_percent(prediction.draw_probability), f"賠率 {float(row['draw_odds']):.2f}")
     with prob_cols[2]:
         display_card("客勝機率", format_percent(prediction.away_win_probability), f"賠率 {float(row['away_odds']):.2f}")
+
+    render_ai_match_report(row, prediction, market_table)
 
     st.subheader("不讓分勝平負")
     odds_map = {"主勝": row["home_odds"], "和局": row["draw_odds"], "客勝": row["away_odds"]}
@@ -2949,6 +2977,16 @@ def odds_calculator_page() -> None:
         [{"場次": f"第 {idx + 1} 場", "賠率": f"{value:.2f}"} for idx, value in enumerate(odds_values)]
     )
     st.dataframe(table, use_container_width=True, hide_index=True)
+
+
+def ai_match_report_page() -> None:
+    page_header("AI 賽事分析報告", "規則式整合勝率、Elo、近期狀態、xG、市場機率與比分傾向")
+    st.warning("本頁僅供機率分析，不構成下注建議。")
+    row = selected_fixture()
+    prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
+    market_table = market_probability_table(row, prediction)
+    prediction_cards(row)
+    render_ai_match_report(row, prediction, market_table)
 
 
 def xg_model_page() -> None:
