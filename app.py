@@ -73,6 +73,12 @@ from utils.ai_monte_carlo_engine import (
     run_ai_monte_carlo,
     stage_probability_table as ai_stage_probability_table,
 )
+from utils.realtime_worldcup_center import (
+    calculate_group_standings,
+    load_realtime_match_results,
+    qualification_scenarios,
+    scoreboard_table,
+)
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
 except ImportError:
@@ -2100,6 +2106,88 @@ def realtime_worldcup_center_page() -> None:
     chart.update_xaxes(tickformat=".0%")
     chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK, coloraxis_showscale=False)
     st.plotly_chart(chart, use_container_width=True)
+
+
+def realtime_worldcup_center_page() -> None:
+    page_header("即時世界盃中心", "賽程比分、小組積分榜與晉級情境分析")
+    st.caption("資料來源：data/match_results.csv。scheduled / live 不計入正式積分，只有 finished 且有比分的賽事會進入積分榜。")
+
+    results = load_realtime_match_results()
+    scoreboard = scoreboard_table(results)
+    standings = calculate_group_standings(results)
+    scenarios = qualification_scenarios(standings)
+
+    finished_count = int((results["status"] == "finished").sum()) if not results.empty else 0
+    live_count = int((results["status"] == "live").sum()) if not results.empty else 0
+    scheduled_count = int((results["status"] == "scheduled").sum()) if not results.empty else 0
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("賽事總數", str(len(results)), "match_results.csv")
+    with cols[1]:
+        display_card("已結束", str(finished_count), "計入正式積分")
+    with cols[2]:
+        display_card("進行中", str(live_count), "暫不計入積分")
+    with cols[3]:
+        display_card("未開始", str(scheduled_count), "顯示待開賽")
+
+    st.subheader("今日 / 近期賽程")
+    if scoreboard.empty:
+        st.info("目前沒有可顯示的賽程比分資料。")
+    else:
+        schedule_view = scoreboard.rename(
+            columns={
+                "match_id": "比賽 ID",
+                "date_display": "比賽日期",
+                "group": "小組",
+                "home_team": "主隊",
+                "away_team": "客隊",
+                "score": "比分",
+                "status_label": "比賽狀態",
+            }
+        )
+        st.dataframe(schedule_view, use_container_width=True, hide_index=True)
+
+    st.subheader("小組積分榜")
+    if standings.empty:
+        st.info("目前沒有足夠資料計算小組積分榜。")
+    else:
+        for group_name, group_table in standings.groupby("group", sort=True):
+            st.markdown(f"**{group_name}**")
+            view = group_table.rename(
+                columns={
+                    "group": "小組",
+                    "rank": "排名",
+                    "team": "球隊",
+                    "played": "場次",
+                    "wins": "勝",
+                    "draws": "平",
+                    "losses": "敗",
+                    "goals_for": "進球",
+                    "goals_against": "失球",
+                    "goal_difference": "淨勝球",
+                    "points": "積分",
+                }
+            )
+            st.dataframe(view, use_container_width=True, hide_index=True)
+
+    st.subheader("晉級情境分析")
+    if scenarios.empty:
+        st.info("目前沒有足夠資料分析晉級情境。")
+    else:
+        for group_name, group_table in scenarios.groupby("group", sort=True):
+            st.markdown(f"**{group_name}**")
+            view = group_table.rename(
+                columns={
+                    "group": "小組",
+                    "rank": "目前排名",
+                    "team": "球隊",
+                    "status": "出線狀態",
+                }
+            )
+            st.dataframe(view, use_container_width=True, hide_index=True)
+
+    st.info("排序規則：積分高者優先，其次為淨勝球、進球數，最後依隊名字母順序。")
 
 
 def render_team_history_comparison(home_team: str, away_team: str) -> None:

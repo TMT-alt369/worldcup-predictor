@@ -1,4 +1,9 @@
 match_id,date,group,home_team,away_team,home_score,away_score,status
-1,2026-06-12,Group A,Mexico,South Africa,2,0,Completed
-2,2026-06-12,Group A,South Korea,Czechia,1,1,Completed
-3,2026-06-13,Group B,Canada,Bosnia and Herzegovina,1,0,Completed
+A1,2026-06-12,Group A,Mexico,South Africa,2,0,finished
+A2,2026-06-13,Group A,Canada,Bosnia and Herzegovina,1,1,finished
+A3,2026-06-18,Group A,Mexico,Canada,,,scheduled
+A4,2026-06-18,Group A,South Africa,Bosnia and Herzegovina,0,0,live
+B1,2026-06-14,Group B,United States,Paraguay,1,0,finished
+B2,2026-06-15,Group B,Brazil,Germany,2,2,finished
+B3,2026-06-20,Group B,United States,Brazil,,,scheduled
+B4,2026-06-20,Group B,Paraguay,Germany,1,2,live
