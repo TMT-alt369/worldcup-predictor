@@ -22,18 +22,55 @@ def mobile_css() -> str:
     }
     @media (max-width: 768px) {
         [data-testid="stSidebar"] {
-            max-width: min(88vw, 330px);
+            width: min(84vw, 320px) !important;
+            min-width: 0 !important;
+            max-width: min(84vw, 320px) !important;
+            box-shadow: 18px 0 42px rgba(0, 0, 0, 0.42);
+            overflow-x: hidden !important;
+        }
+        [data-testid="stSidebar"] > div:first-child {
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: hidden !important;
+        }
+        [data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: hidden !important;
+            padding-bottom: 5.5rem;
         }
         [data-testid="stSidebar"] [role="radiogroup"] label {
             padding: 9px 10px;
             font-size: 0.96rem;
+            width: 100%;
+            max-width: 100%;
+            overflow-wrap: anywhere;
         }
         .block-container {
             padding: 1rem 0.82rem 7.5rem !important;
             max-width: 100% !important;
+            width: 100% !important;
         }
-        [data-testid="stSidebar"] {
-            transform: translateX(0);
+        [data-testid="stAppViewContainer"],
+        [data-testid="stAppViewContainer"] > .main {
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+        }
+        [data-testid="collapsedControl"] {
+            z-index: 100002 !important;
+            left: 0.55rem !important;
+            top: 0.55rem !important;
+        }
+        [data-testid="collapsedControl"] button,
+        [data-testid="stSidebarCollapseButton"] button,
+        button[aria-label="Close sidebar"],
+        button[title="Close sidebar"] {
+            min-width: 46px !important;
+            min-height: 46px !important;
+            border-radius: 999px !important;
+            background: rgba(214, 178, 94, 0.18) !important;
+            border: 1px solid rgba(214, 178, 94, 0.38) !important;
+            color: #f6e5a8 !important;
         }
         .hero {
             grid-template-columns: 1fr !important;

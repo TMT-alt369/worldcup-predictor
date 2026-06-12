@@ -3,6 +3,7 @@ import html
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit.components.v1 as components
 
 from utils.live_api import (
     load_live_matches_from_secrets as load_live_data,
@@ -928,6 +929,47 @@ for group_name, pages in PAGE_GROUPS.items():
     if any("Elo" in item for item in pages) and "xG 模型分析" not in pages:
         pages.insert(1, "xG 模型分析")
         break
+
+with st.sidebar:
+    components.html(
+        """
+        <style>
+          .mobile-close-menu {
+            display: none;
+            width: 100%;
+            min-height: 46px;
+            border-radius: 8px;
+            border: 1px solid rgba(214, 178, 94, 0.46);
+            background: linear-gradient(135deg, #d6b25e, #f3d98b);
+            color: #06101f;
+            font-weight: 900;
+            font-size: 15px;
+            cursor: pointer;
+            margin: 0 0 10px;
+          }
+          @media (max-width: 768px) {
+            .mobile-close-menu { display: block; }
+          }
+        </style>
+        <button class="mobile-close-menu" type="button" onclick="
+          const doc = window.parent.document;
+          const selectors = [
+            'button[aria-label=&quot;Close sidebar&quot;]',
+            'button[title=&quot;Close sidebar&quot;]',
+            '[data-testid=&quot;stSidebarCollapseButton&quot;] button'
+          ];
+          let target = selectors.map(selector => doc.querySelector(selector)).find(Boolean);
+          if (!target) {
+            target = Array.from(doc.querySelectorAll('button')).find(button => {
+              const label = `${button.getAttribute('aria-label') || ''} ${button.title || ''} ${button.innerText || ''}`.toLowerCase();
+              return label.includes('close') || label.includes('keyboard_double_arrow_left') || label.includes('chevron_left');
+            });
+          }
+          if (target) target.click();
+        ">關閉選單 / 收合側欄</button>
+        """,
+        height=58,
+    )
 
 selected_group = st.sidebar.selectbox("功能分類", list(PAGE_GROUPS.keys()))
 page = st.sidebar.radio("頁面", PAGE_GROUPS[selected_group])
