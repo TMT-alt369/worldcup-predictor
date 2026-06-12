@@ -79,7 +79,15 @@ def load_team_meta() -> pd.DataFrame:
 
 
 def load_worldcup_team_history() -> pd.DataFrame:
-    return pd.read_csv(DATA_DIR / "worldcup_team_history_2002_2022.csv")
+    source = DATA_DIR / "world_cup_team_history.csv"
+    if not source.exists():
+        source = DATA_DIR / "worldcup_team_history_2002_2022.csv"
+    history = pd.read_csv(source)
+    if "appearances" in history.columns and "tournaments_played" not in history.columns:
+        history["tournaments_played"] = history["appearances"]
+    if "appearances" not in history.columns and "tournaments_played" in history.columns:
+        history["appearances"] = history["tournaments_played"]
+    return history
 
 
 def load_players() -> pd.DataFrame:

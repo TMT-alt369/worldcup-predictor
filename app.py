@@ -1494,6 +1494,95 @@ def h2h_summary(home_team: str, away_team: str) -> dict:
     }
 
 
+def _history_number(row: pd.Series, column: str, fallback: float = 0) -> float:
+    if row is None or column not in row.index:
+        return fallback
+    value = pd.to_numeric(row.get(column), errors="coerce")
+    return fallback if pd.isna(value) else float(value)
+
+
+def team_history_row(team: str) -> dict:
+    canonical = resolve_team_name(team)
+    history_row = find_team_row(team_history_df, canonical)
+    if history_row is not None:
+        return {
+            "team": canonical,
+            "tournaments_played": int(_history_number(history_row, "appearances", _history_number(history_row, "tournaments_played"))),
+            "best_finish": history_row.get("best_finish") or "資料待補",
+            "wins": int(_history_number(history_row, "wins")),
+            "draws": int(_history_number(history_row, "draws")),
+            "losses": int(_history_number(history_row, "losses")),
+            "goals_for": int(_history_number(history_row, "goals_for")),
+            "goals_against": int(_history_number(history_row, "goals_against")),
+            "win_rate": _history_number(history_row, "win_rate"),
+            "has_data": True,
+        }
+
+    summary = team_summary(wc_team_stats_df, canonical)
+    if summary.get("has_data", False):
+        return {
+            "team": canonical,
+            "tournaments_played": int(pd.to_numeric(summary.get("tournaments_played"), errors="coerce") or 0),
+            "best_finish": _v26_best_finish_from_stats(summary),
+            "wins": int(pd.to_numeric(summary.get("wins"), errors="coerce") or 0),
+            "draws": int(pd.to_numeric(summary.get("draws"), errors="coerce") or 0),
+            "losses": int(pd.to_numeric(summary.get("losses"), errors="coerce") or 0),
+            "goals_for": int(pd.to_numeric(summary.get("goals_for"), errors="coerce") or 0),
+            "goals_against": int(pd.to_numeric(summary.get("goals_against"), errors="coerce") or 0),
+            "win_rate": float(pd.to_numeric(summary.get("win_rate"), errors="coerce") or 0),
+            "has_data": True,
+        }
+
+    return {
+        "team": canonical,
+        "tournaments_played": "資料待補",
+        "best_finish": "資料待補",
+        "wins": "資料待補",
+        "draws": "資料待補",
+        "losses": "資料待補",
+        "goals_for": "資料待補",
+        "goals_against": "資料待補",
+        "win_rate": 0.0,
+        "has_data": False,
+    }
+
+
+def render_worldcup_history_block(home_team: str, away_team: str) -> None:
+    st.subheader("歷史世界盃戰績")
+    history = pd.DataFrame([team_history_row(home_team), team_history_row(away_team)])
+    history["team"] = history["team"].map(lambda team: team_name(team))
+    history["win_rate"] = history.apply(
+        lambda row: format_percent(row["win_rate"]) if row.get("has_data", False) else "資料待補",
+        axis=1,
+    )
+    display = history[
+        [
+            "team",
+            "tournaments_played",
+            "best_finish",
+            "wins",
+            "draws",
+            "losses",
+            "goals_for",
+            "goals_against",
+            "win_rate",
+        ]
+    ].rename(
+        columns={
+            "team": "球隊",
+            "tournaments_played": "參賽屆數",
+            "best_finish": "最佳成績",
+            "wins": "勝場",
+            "draws": "平手",
+            "losses": "敗場",
+            "goals_for": "進球",
+            "goals_against": "失球",
+            "win_rate": "勝率",
+        }
+    )
+    st.dataframe(display, use_container_width=True, hide_index=True)
+
+
 def render_key_players_block(home_team: str, away_team: str) -> None:
     st.subheader("關鍵球員")
     players = pd.concat([key_players_for(home_team), key_players_for(away_team)], ignore_index=True)
