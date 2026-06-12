@@ -11,35 +11,64 @@ MATCH_RESULTS_PATH = DATA_DIR / "match_results.csv"
 REQUIRED_COLUMNS = [
     "match_id",
     "date",
+    "match_time",
     "group",
     "home_team",
     "away_team",
     "home_score",
     "away_score",
     "status",
+    "minute",
+    "venue",
 ]
 
 STATUS_LABELS = {
     "scheduled": "未開始",
     "live": "進行中",
+    "halftime": "中場",
     "finished": "已結束",
+    "postponed": "延賽",
+    "cancelled": "取消",
+}
+
+STATUS_ALIASES = {
+    "completed": "finished",
+    "complete": "finished",
+    "done": "finished",
+    "final": "finished",
+    "ft": "finished",
+    "in_progress": "live",
+    "playing": "live",
+    "1h": "live",
+    "2h": "live",
+    "half_time": "halftime",
+    "half time": "halftime",
+    "ht": "halftime",
+    "not_started": "scheduled",
+    "upcoming": "scheduled",
+    "ns": "scheduled",
+    "canceled": "cancelled",
+    "canc": "cancelled",
+    "pst": "postponed",
 }
 
 
 def sample_match_results() -> pd.DataFrame:
-    return pd.DataFrame(
-        [
-            ["A1", "2026-06-12", "Group A", "Mexico", "South Africa", 2, 0, "finished"],
-            ["A2", "2026-06-13", "Group A", "Canada", "Bosnia and Herzegovina", 1, 1, "finished"],
-            ["A3", "2026-06-18", "Group A", "Mexico", "Canada", pd.NA, pd.NA, "scheduled"],
-            ["A4", "2026-06-18", "Group A", "South Africa", "Bosnia and Herzegovina", 0, 0, "live"],
-            ["B1", "2026-06-14", "Group B", "United States", "Paraguay", 1, 0, "finished"],
-            ["B2", "2026-06-15", "Group B", "Brazil", "Germany", 2, 2, "finished"],
-            ["B3", "2026-06-20", "Group B", "United States", "Brazil", pd.NA, pd.NA, "scheduled"],
-            ["B4", "2026-06-20", "Group B", "Paraguay", "Germany", 1, 2, "live"],
-        ],
-        columns=REQUIRED_COLUMNS,
-    )
+    rows = [
+        ["A1", "2026-06-12", "2026-06-12 03:00", "Group A", "Mexico", "South Africa", 2, 0, "finished", 90, "Estadio Azteca"],
+        ["A2", "2026-06-13", "2026-06-13 06:00", "Group A", "Canada", "Bosnia and Herzegovina", 1, 1, "finished", 90, "BMO Field"],
+        ["A3", "2026-06-18", "2026-06-18 08:00", "Group A", "Mexico", "Canada", pd.NA, pd.NA, "scheduled", 0, "BC Place"],
+        ["A4", "2026-06-18", "2026-06-18 11:00", "Group A", "South Africa", "Bosnia and Herzegovina", 0, 0, "live", 63, "Lumen Field"],
+        ["B1", "2026-06-14", "2026-06-14 09:00", "Group B", "United States", "Paraguay", 1, 0, "finished", 90, "SoFi Stadium"],
+        ["B2", "2026-06-15", "2026-06-15 03:00", "Group B", "Brazil", "Germany", 2, 2, "finished", 90, "MetLife Stadium"],
+        ["B3", "2026-06-20", "2026-06-20 07:00", "Group B", "United States", "Brazil", pd.NA, pd.NA, "scheduled", 0, "AT&T Stadium"],
+        ["B4", "2026-06-20", "2026-06-20 10:00", "Group B", "Paraguay", "Germany", 1, 2, "halftime", 45, "NRG Stadium"],
+        ["C1", "2026-06-16", "2026-06-16 04:00", "Group C", "Argentina", "France", 3, 1, "finished", 90, "Hard Rock Stadium"],
+        ["C2", "2026-06-16", "2026-06-16 07:00", "Group C", "Japan", "Korea Republic", 0, 0, "finished", 90, "Levi's Stadium"],
+        ["C3", "2026-06-21", "2026-06-21 05:00", "Group C", "Argentina", "Japan", pd.NA, pd.NA, "postponed", 0, "Mercedes-Benz Stadium"],
+        ["C4", "2026-06-21", "2026-06-21 09:00", "Group C", "France", "Korea Republic", pd.NA, pd.NA, "scheduled", 0, "Gillette Stadium"],
+    ]
+    return pd.DataFrame(rows, columns=REQUIRED_COLUMNS)
 
 
 def ensure_match_results_file(path: Path | None = None) -> Path:
@@ -50,29 +79,25 @@ def ensure_match_results_file(path: Path | None = None) -> Path:
     return source
 
 
-def normalize_match_results(df: pd.DataFrame) -> pd.DataFrame:
+def _canonical_status(value: object) -> str:
+    status = str(value or "scheduled").strip().lower()
+    status = STATUS_ALIASES.get(status, status)
+    return status if status in STATUS_LABELS else "scheduled"
+
+
+def normalize_match_results(df: pd.DataFrame | None) -> pd.DataFrame:
     data = df.copy() if df is not None else pd.DataFrame()
     for column in REQUIRED_COLUMNS:
         if column not in data.columns:
             data[column] = pd.NA
     data = data[REQUIRED_COLUMNS].copy()
     data["date"] = pd.to_datetime(data["date"], errors="coerce")
-    data["status"] = data["status"].astype(str).str.strip().str.lower()
-    data["status"] = data["status"].replace(
-        {
-            "completed": "finished",
-            "complete": "finished",
-            "done": "finished",
-            "in_progress": "live",
-            "playing": "live",
-            "not_started": "scheduled",
-        }
-    )
-    data.loc[~data["status"].isin(STATUS_LABELS), "status"] = "scheduled"
+    data["match_time"] = pd.to_datetime(data["match_time"], errors="coerce")
+    data["status"] = data["status"].map(_canonical_status)
     data["home_score"] = pd.to_numeric(data["home_score"], errors="coerce")
     data["away_score"] = pd.to_numeric(data["away_score"], errors="coerce")
-    text_columns = ["match_id", "group", "home_team", "away_team"]
-    for column in text_columns:
+    data["minute"] = pd.to_numeric(data["minute"], errors="coerce").fillna(0).astype(int)
+    for column in ["match_id", "group", "home_team", "away_team", "venue"]:
         data[column] = data[column].fillna("").astype(str).str.strip()
     return data
 
@@ -93,15 +118,21 @@ def scoreboard_table(results: pd.DataFrame) -> pd.DataFrame:
     )
     output["status_label"] = output["status"].map(STATUS_LABELS).fillna("未開始")
     output["date_display"] = output["date"].dt.strftime("%Y/%m/%d").fillna("日期待補")
+    output["time_display"] = output["match_time"].dt.strftime("%Y/%m/%d %H:%M").fillna(output["date_display"])
     return output[
         [
             "match_id",
+            "time_display",
             "date_display",
             "group",
             "home_team",
             "away_team",
+            "home_score",
+            "away_score",
             "score",
             "status_label",
+            "minute",
+            "venue",
         ]
     ]
 

@@ -1,9 +1,13 @@
-match_id,date,group,home_team,away_team,home_score,away_score,status
-A1,2026-06-12,Group A,Mexico,South Africa,2,0,finished
-A2,2026-06-13,Group A,Canada,Bosnia and Herzegovina,1,1,finished
-A3,2026-06-18,Group A,Mexico,Canada,,,scheduled
-A4,2026-06-18,Group A,South Africa,Bosnia and Herzegovina,0,0,live
-B1,2026-06-14,Group B,United States,Paraguay,1,0,finished
-B2,2026-06-15,Group B,Brazil,Germany,2,2,finished
-B3,2026-06-20,Group B,United States,Brazil,,,scheduled
-B4,2026-06-20,Group B,Paraguay,Germany,1,2,live
+match_id,date,match_time,group,home_team,away_team,home_score,away_score,status,minute,venue
+A1,2026-06-12,2026-06-12 03:00,Group A,Mexico,South Africa,2,0,finished,90,Estadio Azteca
+A2,2026-06-13,2026-06-13 06:00,Group A,Canada,Bosnia and Herzegovina,1,1,finished,90,BMO Field
+A3,2026-06-18,2026-06-18 08:00,Group A,Mexico,Canada,,,scheduled,0,BC Place
+A4,2026-06-18,2026-06-18 11:00,Group A,South Africa,Bosnia and Herzegovina,0,0,live,63,Lumen Field
+B1,2026-06-14,2026-06-14 09:00,Group B,United States,Paraguay,1,0,finished,90,SoFi Stadium
+B2,2026-06-15,2026-06-15 03:00,Group B,Brazil,Germany,2,2,finished,90,MetLife Stadium
+B3,2026-06-20,2026-06-20 07:00,Group B,United States,Brazil,,,scheduled,0,AT&T Stadium
+B4,2026-06-20,2026-06-20 10:00,Group B,Paraguay,Germany,1,2,halftime,45,NRG Stadium
+C1,2026-06-16,2026-06-16 04:00,Group C,Argentina,France,3,1,finished,90,Hard Rock Stadium
+C2,2026-06-16,2026-06-16 07:00,Group C,Japan,Korea Republic,0,0,finished,90,Levi's Stadium
+C3,2026-06-21,2026-06-21 05:00,Group C,Argentina,Japan,,,postponed,0,Mercedes-Benz Stadium
+C4,2026-06-21,2026-06-21 09:00,Group C,France,Korea Republic,,,scheduled,0,Gillette Stadium

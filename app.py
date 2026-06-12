@@ -5,10 +5,6 @@ import plotly.express as px
 import streamlit as st
 import streamlit.components.v1 as components
 
-from utils.live_api import (
-    load_live_matches_from_secrets as load_live_data,
-    load_live_matches_with_debug,
-)
 from worldcup_predictor.backtest import backtest
 from worldcup_predictor.betting import analyze_1x2
 from worldcup_predictor.data_loader import (
@@ -75,9 +71,15 @@ from utils.ai_monte_carlo_engine import (
 )
 from utils.realtime_worldcup_center import (
     calculate_group_standings,
-    load_realtime_match_results,
     qualification_scenarios,
     scoreboard_table,
+)
+from utils.live_data_client import (
+    fetch_group_standings,
+    fetch_live_matches,
+    fetch_match_results,
+    fetch_player_stats,
+    fetch_team_stats,
 )
 try:
     from utils.xg_model import PREDICTION_WEIGHTS_XG, prepare_xg_data, xg_match_summary, xg_analysis_text
@@ -1220,6 +1222,26 @@ def v7_simulation() -> pd.DataFrame:
     )
 
 
+@st.cache_data(ttl=60, show_spinner=False)
+def cached_v29_live_matches() -> object:
+    return fetch_live_matches(st.secrets)
+
+
+@st.cache_data(ttl=120, show_spinner=False)
+def cached_v29_group_standings() -> object:
+    return fetch_group_standings(st.secrets)
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def cached_v29_team_stats() -> object:
+    return fetch_team_stats(st.secrets)
+
+
+@st.cache_data(ttl=21600, show_spinner=False)
+def cached_v29_player_stats() -> object:
+    return fetch_player_stats(st.secrets)
+
+
 def selected_fixture(label: str = "選擇比賽") -> pd.Series:
     labels = {
         f"{taipei_time_text(row.datetime_taipei)} | {team_name(row.home_team)} vs {team_name(row.away_team)}": row.match_id
@@ -2238,6 +2260,149 @@ def realtime_worldcup_center_page() -> None:
     st.info("排序規則：積分高者優先，其次為淨勝球、進球數，最後依隊名字母順序。")
 
 
+def realtime_worldcup_center_page() -> None:
+    page_header("即時世界盃中心", "Live API / Mock 資料、即時比分、小組積分與晉級情境")
+    live_result = cached_v29_live_matches()
+    standings_result = cached_v29_group_standings()
+    matches = live_result.data.copy()
+    standings = standings_result.data.copy()
+    scenarios = qualification_scenarios(standings)
+    scoreboard = scoreboard_table(matches)
+
+    status_counts = matches["status"].value_counts().to_dict() if not matches.empty else {}
+    source_badge = "Live API" if live_result.source_mode == "Live API" else "Mock"
+    if live_result.fallback_used:
+        st.warning("目前使用備援資料")
+    else:
+        st.success(f"資料來源模式：{source_badge}")
+    st.caption(f"最後更新時間：{live_result.updated_at}｜Provider：{live_result.provider}｜{live_result.message}")
+
+    cols = st.columns(5)
+    with cols[0]:
+        display_card("總場次", str(len(matches)), "即時資料")
+    with cols[1]:
+        display_card("進行中", str(status_counts.get("live", 0)), "Live")
+    with cols[2]:
+        display_card("中場", str(status_counts.get("halftime", 0)), "Halftime")
+    with cols[3]:
+        display_card("已結束", str(status_counts.get("finished", 0)), "Finished")
+    with cols[4]:
+        display_card("未開始", str(status_counts.get("scheduled", 0)), "Scheduled")
+
+    st.subheader("A. 今日賽事")
+    if scoreboard.empty:
+        st.info("目前沒有可顯示的即時賽程。")
+    else:
+        today_view = scoreboard.rename(
+            columns={
+                "match_id": "比賽 ID",
+                "time_display": "比賽時間",
+                "group": "小組",
+                "home_team": "主隊",
+                "away_team": "客隊",
+                "home_score": "主隊比分",
+                "away_score": "客隊比分",
+                "status_label": "狀態",
+                "minute": "比賽分鐘",
+                "venue": "場地",
+            }
+        )[
+            ["比賽 ID", "比賽時間", "小組", "主隊", "客隊", "主隊比分", "客隊比分", "狀態", "比賽分鐘", "場地"]
+        ]
+        st.dataframe(today_view, use_container_width=True, hide_index=True)
+
+    st.subheader("B. 進行中賽事")
+    live_view = scoreboard[scoreboard["status_label"].isin(["進行中", "中場"])].copy()
+    if live_view.empty:
+        st.info("目前沒有進行中賽事。")
+    else:
+        st.dataframe(
+            live_view.rename(
+                columns={
+                    "time_display": "比賽時間",
+                    "group": "小組",
+                    "home_team": "主隊",
+                    "away_team": "客隊",
+                    "score": "比分",
+                    "status_label": "狀態",
+                    "minute": "比賽分鐘",
+                    "venue": "場地",
+                }
+            )[["比賽時間", "小組", "主隊", "比分", "客隊", "狀態", "比賽分鐘", "場地"]],
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    st.subheader("C. 最新完賽結果")
+    finished_view = scoreboard[scoreboard["status_label"].eq("已結束")].copy()
+    if finished_view.empty:
+        st.info("目前沒有完賽結果。")
+    else:
+        st.dataframe(
+            finished_view.rename(
+                columns={
+                    "time_display": "比賽時間",
+                    "group": "小組",
+                    "home_team": "主隊",
+                    "away_team": "客隊",
+                    "score": "比分",
+                    "venue": "場地",
+                }
+            )[["比賽時間", "小組", "主隊", "比分", "客隊", "場地"]],
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    st.subheader("D. 小組積分榜")
+    if standings.empty:
+        st.info("目前沒有足夠資料計算小組積分榜。")
+    else:
+        for group_name, group_table in standings.groupby("group", sort=True):
+            st.markdown(f"**{group_name}**")
+            st.dataframe(
+                group_table.rename(
+                    columns={
+                        "rank": "排名",
+                        "team": "球隊",
+                        "played": "場次",
+                        "wins": "勝",
+                        "draws": "平",
+                        "losses": "敗",
+                        "goals_for": "進球",
+                        "goals_against": "失球",
+                        "goal_difference": "淨勝球",
+                        "points": "積分",
+                    }
+                )[["排名", "球隊", "場次", "勝", "平", "敗", "進球", "失球", "淨勝球", "積分"]],
+                use_container_width=True,
+                hide_index=True,
+            )
+
+    st.subheader("E. 即時晉級情境")
+    if scenarios.empty:
+        st.info("目前沒有足夠資料分析晉級情境。")
+    else:
+        for group_name, group_table in scenarios.groupby("group", sort=True):
+            st.markdown(f"**{group_name}**")
+            st.dataframe(
+                group_table.rename(
+                    columns={
+                        "rank": "目前排名",
+                        "team": "球隊",
+                        "status": "出線狀態",
+                    }
+                )[["目前排名", "球隊", "出線狀態"]],
+                use_container_width=True,
+                hide_index=True,
+            )
+
+    st.subheader("F. 最後更新資訊")
+    st.info(
+        "快取設定：live match 60 秒，小組積分 120 秒，歷史/隊伍資料 1 小時，球員資料 6 小時。"
+        "若 API key 缺失、rate limit、timeout、欄位缺失或網路錯誤，會自動使用備援資料。"
+    )
+
+
 def render_team_history_comparison(home_team: str, away_team: str) -> None:
     comparison = pd.DataFrame(
         [team_summary(wc_team_stats_df, home_team), team_summary(wc_team_stats_df, away_team)]
@@ -2788,7 +2953,9 @@ def presentation_mode_page() -> None:
     sim_df = v7_simulation()
     rankings = build_elo_rankings(team_meta_df).head(20)
     player_db = player_database(players_df, team_meta_df)
-    live_matches, _, live_source = load_live_data(st.secrets, live_matches_df, live_events_df, target_date=pd.Timestamp.now(tz="Asia/Taipei").date())
+    live_result = cached_v29_live_matches()
+    live_matches = live_result.data
+    live_source = live_result.source_mode
 
     cols = st.columns(4)
     with cols[0]:
@@ -2880,7 +3047,9 @@ def dashboard_page() -> None:
     champion = sim_df.iloc[0]
     row = fixture_odds_df.iloc[0]
     prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
-    live_matches, _, live_source = load_live_data(st.secrets, live_matches_df, live_events_df, target_date=pd.Timestamp.now(tz="Asia/Taipei").date())
+    live_result = cached_v29_live_matches()
+    live_matches = live_result.data
+    live_source = live_result.source_mode
 
     cols = st.columns(4)
     with cols[0]:
@@ -3181,6 +3350,75 @@ def live_matches_page() -> None:
     )
     chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
     st.plotly_chart(chart, use_container_width=True)
+
+
+def live_matches_page() -> None:
+    page_header("即時賽況", "Live API / Mock 即時比分與比賽狀態")
+    refresh_seconds = 60
+    st.markdown(f"<meta http-equiv='refresh' content='{refresh_seconds}'>", unsafe_allow_html=True)
+
+    live_result = cached_v29_live_matches()
+    matches = live_result.data.copy()
+    scoreboard = scoreboard_table(matches)
+
+    if live_result.fallback_used:
+        st.warning("目前使用備援資料")
+    else:
+        st.success(f"資料來源模式：{live_result.source_mode}")
+    st.caption(f"最後更新時間：{live_result.updated_at}｜Provider：{live_result.provider}｜{live_result.message}")
+
+    if scoreboard.empty:
+        st.info("目前沒有可顯示的即時賽事資料。")
+        return
+
+    def match_option(row: pd.Series) -> str:
+        minute = row.get("minute", "")
+        minute_text = f"｜{int(minute)}'" if pd.notna(minute) and float(minute or 0) > 0 else ""
+        return (
+            f"{row.get('time_display', 'N/A')}｜"
+            f"{row.get('home_team', 'TBD')} {row.get('score', '待開賽')} {row.get('away_team', 'TBD')}"
+            f"｜{row.get('status_label', '資料待補')}{minute_text}"
+        )
+
+    options = {match_option(row): row.get("match_id") for _, row in scoreboard.iterrows()}
+    selected = st.selectbox("選擇比賽", list(options.keys()))
+    selected_id = options[selected]
+    row = scoreboard[scoreboard["match_id"] == selected_id].iloc[0]
+
+    st.markdown(
+        f"""
+        <div class="display-card score-card">
+          <div class="score-teams">{html.escape(str(row.get('home_team', 'TBD')))} vs {html.escape(str(row.get('away_team', 'TBD')))}</div>
+          <div class="score-value">{html.escape(str(row.get('score', '待開賽')))}</div>
+          <div class="score-note">
+            {html.escape(str(row.get('group', '資料待補')))}｜{html.escape(str(row.get('status_label', '資料待補')))}
+            ｜分鐘：{html.escape(str(int(row.get('minute', 0) or 0)))}
+            ｜時間：{html.escape(str(row.get('time_display', 'N/A')))}
+            ｜場地：{html.escape(str(row.get('venue', '資料待補')))}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    table = scoreboard.rename(
+        columns={
+            "match_id": "比賽 ID",
+            "time_display": "比賽時間",
+            "group": "小組",
+            "home_team": "主隊",
+            "away_team": "客隊",
+            "score": "比分",
+            "status_label": "狀態",
+            "minute": "比賽分鐘",
+            "venue": "場地",
+        }
+    )
+    st.dataframe(
+        table[["比賽 ID", "比賽時間", "小組", "主隊", "比分", "客隊", "狀態", "比賽分鐘", "場地"]],
+        use_container_width=True,
+        hide_index=True,
+    )
 
 
 def _player_center_data() -> pd.DataFrame:
@@ -5098,7 +5336,9 @@ def dashboard_page() -> None:
     row = fixture_odds_df.iloc[0]
     prediction = predict_match(matches_df, row["home_team"], row["away_team"], wc_team_stats_df)
     champion = sim_df.iloc[0]
-    live_matches, _, live_source = load_live_data(st.secrets, live_matches_df, live_events_df, target_date=pd.Timestamp.now(tz="Asia/Taipei").date())
+    live_result = cached_v29_live_matches()
+    live_matches = live_result.data
+    live_source = live_result.source_mode
     market_table = market_probability_table(row, prediction)
     xg_summary = pd.DataFrame()
     try:
