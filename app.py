@@ -59,6 +59,7 @@ from utils.dynamic_worldcup_engine import (
 )
 from utils.player_impact_engine import (
     load_player_pool,
+    match_absence_ranking,
     match_player_impact,
     normalize_players,
     team_player_impact,
@@ -3104,50 +3105,137 @@ def player_impact_analysis_page() -> None:
                 hide_index=True,
             )
 
-    impact = match_player_impact(players, home_team, away_team, home_out, away_out)
     home_champion = sim_df.loc[sim_df["team"].eq(home_team), "champion_probability"]
     away_champion = sim_df.loc[sim_df["team"].eq(away_team), "champion_probability"]
     home_champion_base = float(home_champion.iloc[0]) if not home_champion.empty else 0.0
     away_champion_base = float(away_champion.iloc[0]) if not away_champion.empty else 0.0
-    adjusted_home_win = max(0, min(1, float(prediction.home_win_probability) + float(impact["home_win_probability_change"])))
-    adjusted_away_win = max(0, min(1, float(prediction.away_win_probability) + float(impact["away_win_probability_change"])))
-    adjusted_home_xg = max(0, float(prediction.expected_home_goals) + float(impact["home_xg_change"]))
-    adjusted_away_xg = max(0, float(prediction.expected_away_goals) + float(impact["away_xg_change"]))
+    impact = match_player_impact(
+        players,
+        home_team,
+        away_team,
+        home_out,
+        away_out,
+        prediction=prediction,
+        home_champion_probability=home_champion_base,
+        away_champion_probability=away_champion_base,
+    )
+    base_values = impact["base"]
+    adjusted_values = impact["adjusted"]
+    adjusted_home_win = float(adjusted_values["home_win_probability"])
+    adjusted_draw = float(adjusted_values["draw_probability"])
+    adjusted_away_win = float(adjusted_values["away_win_probability"])
+    adjusted_home_xg = float(adjusted_values["home_xg"])
+    adjusted_away_xg = float(adjusted_values["away_xg"])
 
     st.subheader("缺陣影響摘要")
     metric_cols = st.columns(4)
     with metric_cols[0]:
-        display_card("主勝率變化", format_percent(float(impact["home_win_probability_change"])), f"調整後 {format_percent(adjusted_home_win)}")
+        display_card(
+            "主勝率",
+            f"{format_percent(float(base_values['home_win_probability']))} → {format_percent(adjusted_home_win)}",
+            f"差異 {format_percent(float(impact['home_win_probability_change']))}",
+        )
     with metric_cols[1]:
-        display_card("客勝率變化", format_percent(float(impact["away_win_probability_change"])), f"調整後 {format_percent(adjusted_away_win)}")
+        display_card(
+            "客勝率",
+            f"{format_percent(float(base_values['away_win_probability']))} → {format_percent(adjusted_away_win)}",
+            f"差異 {format_percent(float(impact['away_win_probability_change']))}",
+        )
     with metric_cols[2]:
-        display_card("主隊 xG 變化", f"{float(impact['home_xg_change']):+.2f}", f"調整後 {adjusted_home_xg:.2f}")
+        display_card(
+            "主隊 xG",
+            f"{float(base_values['home_xg']):.2f} → {adjusted_home_xg:.2f}",
+            f"差異 {float(impact['home_xg_change']):+.2f}",
+        )
     with metric_cols[3]:
-        display_card("客隊 xG 變化", f"{float(impact['away_xg_change']):+.2f}", f"調整後 {adjusted_away_xg:.2f}")
+        display_card(
+            "客隊 xG",
+            f"{float(base_values['away_xg']):.2f} → {adjusted_away_xg:.2f}",
+            f"差異 {float(impact['away_xg_change']):+.2f}",
+        )
+
+    score_cols = st.columns(3)
+    with score_cols[0]:
+        display_card("預測比分", str(impact["predicted_score_change"]), "Poisson 重新計算")
+    with score_cols[1]:
+        display_card(
+            "和局率",
+            f"{format_percent(float(base_values['draw_probability']))} → {format_percent(adjusted_draw)}",
+            f"差異 {format_percent(float(impact['draw_probability_change']))}",
+        )
+    with score_cols[2]:
+        total_loss = float(impact["home"]["impact_loss"]) + float(impact["away"]["impact_loss"])
+        display_card("總影響損失", f"{total_loss:.1f}", "依 impact_score 加總")
 
     champion_cols = st.columns(2)
     with champion_cols[0]:
         display_card(
-            "主隊冠軍率變化",
-            format_percent(float(impact["home"]["champion_probability_delta"])),
-            f"約 {format_percent(max(0, home_champion_base + float(impact['home']['champion_probability_delta'])))}",
+            "主隊冠軍率",
+            f"{format_percent(home_champion_base)} → {format_percent(max(0, home_champion_base + float(impact['home']['champion_probability_delta'])))}",
+            f"差異 {format_percent(float(impact['home']['champion_probability_delta']))}",
         )
     with champion_cols[1]:
         display_card(
-            "客隊冠軍率變化",
-            format_percent(float(impact["away"]["champion_probability_delta"])),
-            f"約 {format_percent(max(0, away_champion_base + float(impact['away']['champion_probability_delta'])))}",
+            "客隊冠軍率",
+            f"{format_percent(away_champion_base)} → {format_percent(max(0, away_champion_base + float(impact['away']['champion_probability_delta'])))}",
+            f"差異 {format_percent(float(impact['away']['champion_probability_delta']))}",
         )
 
     scenario_df = pd.DataFrame(
         [
-            {"球隊": team_name(home_team), "影響損失": impact["home"]["impact_loss"], "勝率變化": impact["home_win_probability_change"], "xG 變化": impact["home_xg_change"], "冠軍率變化": impact["home"]["champion_probability_delta"]},
-            {"球隊": team_name(away_team), "影響損失": impact["away"]["impact_loss"], "勝率變化": impact["away_win_probability_change"], "xG 變化": impact["away_xg_change"], "冠軍率變化": impact["away"]["champion_probability_delta"]},
+            {
+                "球隊": team_name(home_team),
+                "原勝率": base_values["home_win_probability"],
+                "調整後勝率": adjusted_home_win,
+                "勝率變化": impact["home_win_probability_change"],
+                "原 xG": base_values["home_xg"],
+                "調整後 xG": adjusted_home_xg,
+                "xG 變化": impact["home_xg_change"],
+                "冠軍率變化": impact["home"]["champion_probability_delta"],
+            },
+            {
+                "球隊": team_name(away_team),
+                "原勝率": base_values["away_win_probability"],
+                "調整後勝率": adjusted_away_win,
+                "勝率變化": impact["away_win_probability_change"],
+                "原 xG": base_values["away_xg"],
+                "調整後 xG": adjusted_away_xg,
+                "xG 變化": impact["away_xg_change"],
+                "冠軍率變化": impact["away"]["champion_probability_delta"],
+            },
         ]
     )
-    for column in ["勝率變化", "冠軍率變化"]:
+    for column in ["原勝率", "調整後勝率", "勝率變化", "冠軍率變化"]:
         scenario_df[column] = pd.to_numeric(scenario_df[column], errors="coerce").fillna(0).map(format_percent)
     st.dataframe(scenario_df, use_container_width=True, hide_index=True)
+
+    ranking_df = match_absence_ranking(players, home_team, away_team, prediction=prediction, top_n=10)
+    if not ranking_df.empty:
+        st.subheader("球員缺陣影響排行 Top 10")
+        ranking_display = ranking_df.rename(
+            columns={
+                "player_name": "球員",
+                "team": "國家",
+                "position": "位置",
+                "impact_score": "影響分數",
+                "win_probability_loss": "勝率損失",
+            }
+        )
+        ranking_display["國家"] = ranking_display["國家"].map(team_name)
+        ranking_display["勝率損失"] = pd.to_numeric(ranking_display["勝率損失"], errors="coerce").fillna(0).map(format_percent)
+        st.dataframe(ranking_display, use_container_width=True, hide_index=True)
+        ranking_chart = px.bar(
+            ranking_df.sort_values("win_probability_loss", ascending=True),
+            x="win_probability_loss",
+            y="player_name",
+            color="impact_score",
+            orientation="h",
+            labels={"win_probability_loss": "勝率損失", "player_name": "球員", "impact_score": "影響分數"},
+            color_continuous_scale=["#415a77", GOLD_LIGHT],
+        )
+        ranking_chart.update_xaxes(tickformat=".1%")
+        ranking_chart.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=INK)
+        st.plotly_chart(ranking_chart, use_container_width=True)
 
     try:
         log_df = pd.read_csv("data/player_impact_log.csv")
