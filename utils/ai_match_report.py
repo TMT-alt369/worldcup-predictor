@@ -4,15 +4,28 @@ import pandas as pd
 
 
 def _pct(value: float) -> str:
-    return f"{float(value) * 100:.1f}%"
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        number = 0.0
+    if pd.isna(number):
+        number = 0.0
+    return f"{number * 100:.1f}%"
 
 
 def _safe_prediction_value(prediction, names: list[str], default: float = 0.0) -> float:
     for name in names:
-        if isinstance(prediction, dict) and name in prediction:
-            return float(prediction.get(name) or default)
-        if hasattr(prediction, name):
-            return float(getattr(prediction, name) or default)
+        try:
+            if isinstance(prediction, dict) and name in prediction:
+                value = prediction.get(name, default)
+            elif hasattr(prediction, name):
+                value = getattr(prediction, name, default)
+            else:
+                continue
+            number = float(value if value is not None else default)
+            return float(default) if pd.isna(number) else number
+        except (TypeError, ValueError):
+            continue
     return float(default)
 
 

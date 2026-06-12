@@ -3043,19 +3043,21 @@ def player_impact_analysis_page() -> None:
     with cols[2]:
         display_card("原客勝率", format_percent(float(prediction.away_win_probability)), team_name(away_team))
 
-    home_players = team_player_impact(players, home_team, top_n=10)
-    away_players = team_player_impact(players, away_team, top_n=10)
+    home_all_players = team_player_impact(players, home_team, top_n=60)
+    away_all_players = team_player_impact(players, away_team, top_n=60)
+    home_players = home_all_players.head(10).copy()
+    away_players = away_all_players.head(10).copy()
     left, right = st.columns(2)
     with left:
         st.subheader(f"{team_name(home_team)} 核心球員")
-        if home_players.empty:
+        if home_all_players.empty:
             st.info("目前尚未匯入該隊球員資料")
             home_out = []
         else:
             home_out = st.multiselect(
                 "模擬主隊缺陣",
-                home_players["player_name"].tolist(),
-                default=home_players.loc[~home_players["is_available"], "player_name"].tolist()[:2],
+                home_all_players["player_name"].tolist(),
+                default=home_all_players.loc[~home_all_players["is_available"], "player_name"].tolist()[:3],
                 key="home_player_absence",
             )
             st.dataframe(
@@ -3077,14 +3079,14 @@ def player_impact_analysis_page() -> None:
             )
     with right:
         st.subheader(f"{team_name(away_team)} 核心球員")
-        if away_players.empty:
+        if away_all_players.empty:
             st.info("目前尚未匯入該隊球員資料")
             away_out = []
         else:
             away_out = st.multiselect(
                 "模擬客隊缺陣",
-                away_players["player_name"].tolist(),
-                default=away_players.loc[~away_players["is_available"], "player_name"].tolist()[:2],
+                away_all_players["player_name"].tolist(),
+                default=away_all_players.loc[~away_all_players["is_available"], "player_name"].tolist()[:3],
                 key="away_player_absence",
             )
             st.dataframe(
@@ -3409,13 +3411,25 @@ def ai_worldcup_simulator_page() -> None:
 
     st.subheader("洲別冠軍機率")
     confed = continent_champion_probabilities(sim_df, team_meta_df)
-    if confed.empty:
+    missing_teams = []
+    if not confed.empty and "missing_teams" in confed.columns:
+        missing_text = " ".join(confed["missing_teams"].dropna().astype(str).tolist()).strip()
+        missing_teams = [team.strip() for team in missing_text.split(",") if team.strip()]
+    confed_chart = confed[
+        confed["confederation"].isin(["UEFA", "CONMEBOL", "AFC", "CAF", "CONCACAF", "OFC"])
+    ].copy() if not confed.empty and "confederation" in confed.columns else pd.DataFrame()
+    confed_chart["champion_probability"] = pd.to_numeric(confed_chart.get("champion_probability", 0), errors="coerce").fillna(0)
+    if confed_chart.empty or confed_chart["champion_probability"].sum() <= 0:
         st.info("洲別資料不足。")
+        if missing_teams:
+            st.warning("資料待補：" + "、".join(missing_teams[:20]))
     else:
-        pie = px.pie(confed, names="confederation", values="champion_probability", color_discrete_sequence=[GOLD, "#8aa0c3", "#2dd4bf", "#f97316", "#a78bfa", "#ef4444"])
+        pie = px.pie(confed_chart, names="confederation", values="champion_probability", color_discrete_sequence=[GOLD, "#8aa0c3", "#2dd4bf", "#f97316", "#a78bfa", "#ef4444"])
         pie.update_traces(textinfo="label+percent")
         pie.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color=INK)
         st.plotly_chart(pie, use_container_width=True)
+        if missing_teams:
+            st.warning("資料待補：" + "、".join(missing_teams[:20]))
 
 
 def champion_path_page() -> None:

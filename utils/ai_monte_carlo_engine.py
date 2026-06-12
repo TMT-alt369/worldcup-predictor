@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from itertools import combinations
+from pathlib import Path
 
 import pandas as pd
 
 from utils.simulation import run_worldcup_monte_carlo
 
 
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+VALID_CONFEDERATIONS = {"UEFA", "CONMEBOL", "AFC", "CAF", "CONCACAF", "OFC"}
 STAGE_COLUMNS = [
     "group_qualified_probability",
     "round_16_probability",
@@ -67,21 +70,56 @@ def dark_horse_ranking(simulation_df: pd.DataFrame, limit: int = 10) -> pd.DataF
 
 
 def continent_champion_probabilities(simulation_df: pd.DataFrame, team_meta: pd.DataFrame) -> pd.DataFrame:
-    if simulation_df is None or simulation_df.empty or team_meta is None or team_meta.empty:
-        return pd.DataFrame(columns=["confederation", "champion_probability"])
-    meta = team_meta.copy()
+    if simulation_df is None or simulation_df.empty:
+        return pd.DataFrame(columns=["confederation", "champion_probability", "missing_teams"])
+
+    mapping_path = DATA_DIR / "team_confederations.csv"
+    if mapping_path.exists():
+        meta = pd.read_csv(mapping_path)
+        if "team_code" in meta.columns and "team" not in meta.columns:
+            meta["team"] = meta["team_code"]
+    else:
+        meta = pd.DataFrame() if team_meta is None else team_meta.copy()
+
+    if meta.empty:
+        missing = sorted(simulation_df["team"].dropna().astype(str).unique().tolist())
+        return pd.DataFrame([{"confederation": "資料待補", "champion_probability": 0.0, "missing_teams": ", ".join(missing)}])
+
     if "team" not in meta.columns and "team_en" in meta.columns:
         meta["team"] = meta["team_en"]
+    if "team_code" not in meta.columns:
+        meta["team_code"] = ""
     if "confederation" not in meta.columns:
-        meta["confederation"] = "Unknown"
-    merged = simulation_df.merge(meta[["team", "confederation"]], on="team", how="left")
-    merged["champion_probability"] = pd.to_numeric(merged.get("champion_probability", 0), errors="coerce").fillna(0)
-    return (
-        merged.groupby("confederation", as_index=False)["champion_probability"]
+        meta["confederation"] = ""
+
+    meta = meta[["team", "team_code", "confederation"]].copy()
+    meta["team_key"] = meta["team"].astype(str).str.strip().str.lower()
+    meta["code_key"] = meta["team_code"].astype(str).str.strip().str.lower()
+    meta["confederation"] = meta["confederation"].where(meta["confederation"].isin(VALID_CONFEDERATIONS), "")
+
+    simulation = simulation_df.copy()
+    simulation["team_key"] = simulation["team"].astype(str).str.strip().str.lower()
+    merged = simulation.merge(meta[["team_key", "confederation"]], on="team_key", how="left")
+    if merged["confederation"].isna().any() or merged["confederation"].eq("").any():
+        missing_mask = merged["confederation"].isna() | merged["confederation"].eq("")
+        missing_teams = sorted(merged.loc[missing_mask, "team"].dropna().astype(str).unique().tolist())
+    else:
+        missing_teams = []
+    valid = merged[merged["confederation"].isin(VALID_CONFEDERATIONS)].copy()
+    if valid.empty:
+        return pd.DataFrame([{"confederation": "資料待補", "champion_probability": 0.0, "missing_teams": ", ".join(missing_teams)}])
+
+    valid["champion_probability"] = pd.to_numeric(valid.get("champion_probability", 0), errors="coerce").fillna(0)
+    result = (
+        valid.groupby("confederation", as_index=False)["champion_probability"]
         .sum()
         .sort_values("champion_probability", ascending=False)
         .reset_index(drop=True)
     )
+    result["missing_teams"] = ""
+    if missing_teams:
+        result.loc[0, "missing_teams"] = ", ".join(missing_teams)
+    return result
 
 
 def stage_probability_table(simulation_df: pd.DataFrame) -> pd.DataFrame:
