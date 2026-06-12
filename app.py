@@ -30,6 +30,7 @@ from worldcup_predictor.elo import build_elo_rankings
 from worldcup_predictor.history import head_to_head_record, team_summary, top_team_stats
 from worldcup_predictor.model import poisson_probability, predict_match, prediction_to_frame, team_strength
 from worldcup_predictor.players import player_database, squad_summary
+from worldcup_predictor.team_resolver import find_team_row, resolve_team_name
 from worldcup_predictor.tournament import run_tournament_simulation
 from worldcup_predictor.ui import disclaimer_box, format_percent, signal_dataframe
 from utils.simulation import run_worldcup_monte_carlo
@@ -1373,6 +1374,124 @@ def h2h_summary(home_team: str, away_team: str) -> dict:
 def render_h2h_summary_block(home_team: str, away_team: str) -> None:
     st.subheader("歷史交手摘要")
     st.dataframe(pd.DataFrame([h2h_summary(home_team, away_team)]), use_container_width=True, hide_index=True)
+
+
+def _v26_best_finish_from_stats(summary: dict) -> str:
+    if not summary.get("has_data", False):
+        return "資料待補"
+    titles = pd.to_numeric(summary.get("titles"), errors="coerce")
+    top4 = pd.to_numeric(summary.get("top4_finishes"), errors="coerce")
+    if pd.notna(titles) and titles > 0:
+        return "Champion"
+    if pd.notna(top4) and top4 > 0:
+        return "Top 4"
+    return "資料待補"
+
+
+def team_history_row(team: str) -> dict:
+    summary = team_summary(wc_team_stats_df, team)
+    canonical = resolve_team_name(team)
+    history_row = find_team_row(team_history_df, canonical)
+    best_finish = "資料待補"
+    if history_row is not None and "best_finish" in history_row.index:
+        best_finish = history_row.get("best_finish") or "資料待補"
+    elif summary.get("has_data", False):
+        best_finish = _v26_best_finish_from_stats(summary)
+
+    if not summary.get("has_data", False):
+        return {
+            "team": canonical,
+            "tournaments_played": "資料待補",
+            "best_finish": "資料待補",
+            "wins": "資料待補",
+            "draws": "資料待補",
+            "losses": "資料待補",
+            "goals_for": "資料待補",
+            "goals_against": "資料待補",
+            "win_rate": 0.0,
+            "has_data": False,
+        }
+
+    return {
+        "team": canonical,
+        "tournaments_played": int(pd.to_numeric(summary.get("tournaments_played"), errors="coerce") or 0),
+        "best_finish": best_finish,
+        "wins": int(pd.to_numeric(summary.get("wins"), errors="coerce") or 0),
+        "draws": int(pd.to_numeric(summary.get("draws"), errors="coerce") or 0),
+        "losses": int(pd.to_numeric(summary.get("losses"), errors="coerce") or 0),
+        "goals_for": int(pd.to_numeric(summary.get("goals_for"), errors="coerce") or 0),
+        "goals_against": int(pd.to_numeric(summary.get("goals_against"), errors="coerce") or 0),
+        "win_rate": float(pd.to_numeric(summary.get("win_rate"), errors="coerce") or 0),
+        "has_data": True,
+    }
+
+
+def render_worldcup_history_block(home_team: str, away_team: str) -> None:
+    st.subheader("歷史世界盃戰績")
+    history = pd.DataFrame([team_history_row(home_team), team_history_row(away_team)])
+    history["team"] = history["team"].map(lambda team: team_name(team))
+    history["win_rate"] = history.apply(
+        lambda row: format_percent(row["win_rate"]) if row.get("has_data", False) else "資料待補",
+        axis=1,
+    )
+    display = history[
+        [
+            "team",
+            "tournaments_played",
+            "best_finish",
+            "wins",
+            "draws",
+            "losses",
+            "goals_for",
+            "goals_against",
+            "win_rate",
+        ]
+    ].rename(
+        columns={
+            "team": "球隊",
+            "tournaments_played": "參賽屆數",
+            "best_finish": "最佳成績",
+            "wins": "勝場",
+            "draws": "平手",
+            "losses": "敗場",
+            "goals_for": "進球",
+            "goals_against": "失球",
+            "win_rate": "勝率",
+        }
+    )
+    st.dataframe(display, use_container_width=True, hide_index=True)
+
+
+def h2h_summary(home_team: str, away_team: str) -> dict:
+    home = resolve_team_name(home_team)
+    away = resolve_team_name(away_team)
+    record = head_to_head_record(wc_head_to_head_df, home, away)
+    if record.empty or not bool(record.iloc[0].get("has_data", False)):
+        return {
+            "對戰": f"{team_name(home_team)} vs {team_name(away_team)}",
+            "世界盃交手次數": 0,
+            "主隊勝場": 0,
+            "平手": 0,
+            "客隊勝場": 0,
+            "最近一次交手年份": "1930-2022 世界盃無交手紀錄",
+        }
+
+    row = record.iloc[0]
+    team_a = resolve_team_name(row["team_a"])
+    if team_a == home:
+        home_wins = int(row["team_a_wins"])
+        away_wins = int(row["team_b_wins"])
+    else:
+        home_wins = int(row["team_b_wins"])
+        away_wins = int(row["team_a_wins"])
+    return {
+        "對戰": f"{team_name(home_team)} vs {team_name(away_team)}",
+        "世界盃交手次數": int(row["matches"]),
+        "主隊勝場": home_wins,
+        "平手": int(row["draws"]),
+        "客隊勝場": away_wins,
+        "最近一次交手年份": int(row["last_meeting_year"]),
+    }
 
 
 def render_key_players_block(home_team: str, away_team: str) -> None:
