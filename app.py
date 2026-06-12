@@ -934,41 +934,170 @@ with st.sidebar:
     components.html(
         """
         <style>
-          .mobile-close-menu {
-            display: none;
-            width: 100%;
-            min-height: 46px;
-            border-radius: 8px;
-            border: 1px solid rgba(214, 178, 94, 0.46);
-            background: linear-gradient(135deg, #d6b25e, #f3d98b);
-            color: #06101f;
-            font-weight: 900;
-            font-size: 15px;
-            cursor: pointer;
-            margin: 0 0 10px;
-          }
-          @media (max-width: 768px) {
-            .mobile-close-menu { display: block; }
-          }
+          html, body { margin: 0; padding: 0; background: transparent; }
         </style>
-        <button class="mobile-close-menu" type="button" onclick="
-          const doc = window.parent.document;
-          const selectors = [
-            'button[aria-label=&quot;Close sidebar&quot;]',
-            'button[title=&quot;Close sidebar&quot;]',
-            '[data-testid=&quot;stSidebarCollapseButton&quot;] button'
-          ];
-          let target = selectors.map(selector => doc.querySelector(selector)).find(Boolean);
-          if (!target) {
-            target = Array.from(doc.querySelectorAll('button')).find(button => {
-              const label = `${button.getAttribute('aria-label') || ''} ${button.title || ''} ${button.innerText || ''}`.toLowerCase();
-              return label.includes('close') || label.includes('keyboard_double_arrow_left') || label.includes('chevron_left');
-            });
+        <script>
+        (() => {
+          const doc = window.parent && window.parent.document;
+          if (!doc) return;
+
+          const styleId = "v26-mobile-sidebar-style";
+          if (!doc.getElementById(styleId)) {
+            const style = doc.createElement("style");
+            style.id = styleId;
+            style.textContent = `
+              .v26-mobile-sidebar-close {
+                display: none;
+              }
+              @media (max-width: 768px) {
+                .v26-mobile-sidebar-close {
+                  display: block;
+                  position: fixed;
+                  z-index: 2147483647;
+                  left: 12px;
+                  top: 60px;
+                  width: min(76vw, 292px);
+                  min-height: 48px;
+                  border-radius: 10px;
+                  border: 1px solid rgba(214, 178, 94, 0.58);
+                  background: linear-gradient(135deg, #d6b25e, #f3d98b);
+                  color: #06101f;
+                  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36);
+                  font: 900 15px/1.2 "Noto Sans TC", "Segoe UI", sans-serif;
+                  cursor: pointer;
+                }
+                body.v26-sidebar-force-closed [data-testid="stSidebar"] {
+                  transform: translateX(-110%) !important;
+                  left: 0 !important;
+                  pointer-events: none !important;
+                }
+                body.v26-sidebar-force-closed [data-testid="stAppViewContainer"],
+                body.v26-sidebar-force-closed [data-testid="stAppViewContainer"] > .main {
+                  margin-left: 0 !important;
+                  width: 100vw !important;
+                  max-width: 100vw !important;
+                }
+                body.v26-sidebar-force-closed .main .block-container {
+                  width: 100% !important;
+                  max-width: 100% !important;
+                }
+                body.v26-sidebar-force-closed .v26-mobile-sidebar-close {
+                  display: none !important;
+                }
+              }
+            `;
+            doc.head.appendChild(style);
           }
-          if (target) target.click();
-        ">關閉選單 / 收合側欄</button>
+
+          let button = doc.getElementById("v26-mobile-sidebar-close");
+          if (!button) {
+            button = doc.createElement("button");
+            button.id = "v26-mobile-sidebar-close";
+            button.className = "v26-mobile-sidebar-close";
+            button.type = "button";
+            button.textContent = "關閉選單 / 收合側欄";
+            doc.body.appendChild(button);
+          }
+
+          const findNativeClose = () => {
+            const selectors = [
+              'button[aria-label="Close sidebar"]',
+              'button[title="Close sidebar"]',
+              'button[aria-label="Collapse sidebar"]',
+              'button[title="Collapse sidebar"]',
+              '[data-testid="stSidebarCollapseButton"] button'
+            ];
+            for (const selector of selectors) {
+              const target = doc.querySelector(selector);
+              if (target) return target;
+            }
+            return Array.from(doc.querySelectorAll("button")).find((candidate) => {
+              const label = `${candidate.getAttribute("aria-label") || ""} ${candidate.title || ""} ${candidate.innerText || ""}`.toLowerCase();
+              return label.includes("close sidebar")
+                || label.includes("collapse sidebar")
+                || label.includes("keyboard_double_arrow_left")
+                || label.includes("chevron_left");
+            });
+          };
+
+          const sidebarStillOpen = () => {
+            const sidebar = doc.querySelector('[data-testid="stSidebar"]');
+            if (!sidebar) return false;
+            const rect = sidebar.getBoundingClientRect();
+            return rect.width > 0 && rect.right > 56 && rect.left > -80;
+          };
+
+          const syncButton = () => {
+            if (window.parent.innerWidth > 768 || doc.body.classList.contains("v26-sidebar-force-closed")) {
+              button.style.display = "none";
+              return;
+            }
+            button.style.display = "block";
+          };
+
+          const closeSidebar = () => {
+            doc.body.classList.remove("v26-sidebar-force-closed");
+            const nativeClose = findNativeClose();
+            if (nativeClose) {
+              nativeClose.click();
+            }
+            doc.body.classList.add("v26-sidebar-force-closed");
+            window.setTimeout(() => {
+              if (sidebarStillOpen()) {
+                doc.body.classList.add("v26-sidebar-force-closed");
+              }
+              syncButton();
+            }, 240);
+          };
+
+          const inlineClose = `
+            (function(){
+              document.body.classList.add('v26-sidebar-force-closed');
+              const selectors = [
+                'button[aria-label="Close sidebar"]',
+                'button[title="Close sidebar"]',
+                'button[aria-label="Collapse sidebar"]',
+                'button[title="Collapse sidebar"]',
+                '[data-testid="stSidebarCollapseButton"] button'
+              ];
+              let target = selectors.map(selector => document.querySelector(selector)).find(Boolean);
+              if (!target) {
+                target = Array.from(document.querySelectorAll('button')).find(button => {
+                  const label = ((button.getAttribute('aria-label') || '') + ' ' + (button.title || '') + ' ' + (button.innerText || '')).toLowerCase();
+                  return label.includes('close sidebar')
+                    || label.includes('collapse sidebar')
+                    || label.includes('keyboard_double_arrow_left')
+                    || label.includes('chevron_left');
+                });
+              }
+              if (target) target.click();
+            })();
+          `;
+          button.setAttribute("onclick", inlineClose);
+          button.addEventListener("click", closeSidebar);
+          syncButton();
+          window.setTimeout(syncButton, 600);
+          window.setInterval(syncButton, 1400);
+
+          if (!doc.body.dataset.v26SidebarListener) {
+            doc.body.dataset.v26SidebarListener = "1";
+            doc.addEventListener("click", (event) => {
+              const target = event.target && event.target.closest ? event.target.closest("button") : null;
+              if (!target) return;
+              const label = `${target.getAttribute("aria-label") || ""} ${target.title || ""} ${target.innerText || ""}`.toLowerCase();
+              if (label.includes("open sidebar")
+                || label.includes("expand sidebar")
+                || label.includes("keyboard_double_arrow_right")
+                || label.includes("chevron_right")) {
+                doc.body.classList.remove("v26-sidebar-force-closed");
+                window.setTimeout(syncButton, 280);
+              }
+            }, true);
+          }
+        })();
+        </script>
         """,
-        height=58,
+        height=0,
     )
 
 selected_group = st.sidebar.selectbox("功能分類", list(PAGE_GROUPS.keys()))
