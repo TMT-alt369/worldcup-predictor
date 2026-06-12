@@ -937,6 +937,53 @@ for group_name, pages in PAGE_GROUPS.items():
         pages.insert(1, "xG 模型分析")
         break
 
+PAGE_GROUPS = {
+    "首頁": [
+        "首頁",
+    ],
+    "賽程中心": [
+        "世界盃賽程表",
+        "即時世界盃中心",
+        "賽果更新中心",
+        "即時賽況",
+    ],
+    "預測中心": [
+        "單場分析",
+        "冠軍機率",
+        "晉級機率",
+        "世界盃模擬器",
+        "AI 分析中心",
+    ],
+    "資料中心": [
+        "Elo 世界排名",
+        "球隊資料庫",
+        "球員資料庫",
+        "歷史世界盃戰績",
+        "歷史交手分析",
+    ],
+    "AI 工具": [
+        "串關分析",
+        "對戰比較",
+        "賠率試算",
+    ],
+    "學習中心": [
+        "世界盃玩法教學",
+        "足球術語教學",
+    ],
+}
+
+PAGE_ROUTE_ALIASES = {
+    "首頁": "世界盃情報中心",
+    "單場分析": "單場分析頁",
+    "冠軍機率": "冠軍機率預測",
+    "晉級機率": "晉級機率分析",
+    "串關分析": "AI 串關分析",
+    "對戰比較": "對戰比較中心",
+    "賠率試算": "賠率試算中心",
+    "世界盃玩法教學": "世足玩法教學",
+    "歷史世界盃戰績": "歷史世界盃數據分析",
+}
+
 with st.sidebar:
     components.html(
         """
@@ -1109,6 +1156,7 @@ with st.sidebar:
 
 selected_group = st.sidebar.selectbox("功能分類", list(PAGE_GROUPS.keys()))
 page = st.sidebar.radio("頁面", PAGE_GROUPS[selected_group])
+page = PAGE_ROUTE_ALIASES.get(page, page)
 st.sidebar.divider()
 st.sidebar.caption("世界盃資料平台：賽程、預測、球隊、球員、即時足球資料")
 
@@ -4661,6 +4709,20 @@ def all_market_prediction_page() -> None:
         )
 
 
+def ai_analysis_center_page() -> None:
+    page_header("AI 分析中心", "整合 AI 賽事分析與 AI 世界盃模擬")
+    st.caption("此頁整合原本分散的 AI 分析功能，降低 Sidebar 選單長度；原功能仍保留在內部。")
+    mode = st.radio(
+        "選擇分析功能",
+        ["AI 賽事分析", "AI 世界盃模擬"],
+        horizontal=True,
+    )
+    if mode == "AI 賽事分析":
+        ai_match_report_page()
+    else:
+        ai_worldcup_simulator_page()
+
+
 def ai_match_report_page() -> None:
     page_header("AI 賽事分析報告", "規則式整合勝率、Elo、近期狀態、xG、市場機率與比分傾向")
     st.warning("本頁僅供機率分析，不構成下注建議。")
@@ -5155,6 +5217,8 @@ elif page == "賠率試算中心":
     odds_calculator_page()
 elif page == "全玩法預測中心":
     all_market_prediction_page()
+elif page == "AI 分析中心":
+    ai_analysis_center_page()
 elif page == "AI 賽事分析報告":
     ai_match_report_page()
 elif page == "AI 串關分析":
