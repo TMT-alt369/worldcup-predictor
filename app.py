@@ -69,6 +69,7 @@ from utils.ai_monte_carlo_engine import (
     run_ai_monte_carlo,
     stage_probability_table as ai_stage_probability_table,
 )
+from utils.pre_match_analysis import build_pre_match_analysis
 from utils.realtime_worldcup_center import (
     calculate_group_standings,
     qualification_scenarios,
@@ -1279,6 +1280,76 @@ def render_ai_match_report(
     st.markdown(
         "<div class='display-card'>"
         + "".join(f"<div class='card-note'>{html.escape(line)}</div>" for line in lines)
+        + "</div>",
+        unsafe_allow_html=True,
+    )
+
+
+def render_pre_match_analysis_card(row: pd.Series, prediction) -> None:
+    st.subheader("AI 賽前對戰分析")
+    try:
+        shots = prepare_xg_data(pd.read_csv("data/xg_shots.csv"))
+    except Exception:
+        shots = pd.DataFrame()
+
+    try:
+        player_source = player_database(players_df, team_meta_df)
+    except Exception:
+        player_source = players_df.copy()
+
+    try:
+        analysis = build_pre_match_analysis(
+            row,
+            prediction,
+            team_meta=team_meta_df,
+            matches=matches_df,
+            history=team_history_df,
+            players=player_source,
+            shots=shots,
+            team_label_func=team_name,
+        )
+    except Exception:
+        st.info("目前資料不足，僅提供基礎分析。")
+        return
+
+    summary = analysis["summary"]
+    home_label = analysis["home_label"]
+    away_label = analysis["away_label"]
+    home_goals, away_goals = summary["predicted_score"]
+
+    cols = st.columns(4)
+    with cols[0]:
+        display_card("主隊勝率", format_percent(float(summary["home_win_probability"])), home_label)
+    with cols[1]:
+        display_card("平手機率", format_percent(float(summary["draw_probability"])), "模型推估")
+    with cols[2]:
+        display_card("客隊勝率", format_percent(float(summary["away_win_probability"])), away_label)
+    with cols[3]:
+        display_card("分析信心", f"{float(summary['analysis_confidence']):.1f}%", f"風險：{summary['risk_level']}")
+
+    st.markdown(
+        f"""
+        <div class="display-card">
+          <div class="card-label">預測比分</div>
+          <div class="card-value">{html.escape(home_label)} {home_goals}：{away_goals} {html.escape(away_label)}</div>
+          <div class="card-note">AI 預測結果：{html.escape(home_label)}勝率 {float(summary["home_win_probability"]) * 100:.1f}%、
+          {html.escape(away_label)}勝率 {float(summary["away_win_probability"]) * 100:.1f}%、平局 {float(summary["draw_probability"]) * 100:.1f}%</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    comparison = analysis["comparison"].copy()
+    st.dataframe(comparison, use_container_width=True, hide_index=True)
+
+    if analysis["is_estimated"]:
+        notes = "、".join(analysis["notes"][:3]) if analysis["notes"] else "部分資料使用 fallback"
+        st.caption(f"部分資料推估：{notes}")
+
+    st.markdown(
+        "<div class='display-card'>"
+        + "".join(f"<div class='card-note'>• {html.escape(line)}</div>" for line in analysis["lines"])
+        + "<div class='card-note'><strong>本分析由模型根據現有資料推估，僅供參考，非保證賽果。</strong></div>"
         + "</div>",
         unsafe_allow_html=True,
     )
@@ -3766,6 +3837,7 @@ def match_analysis_page() -> None:
         hide_index=True,
     )
 
+    render_pre_match_analysis_card(row, prediction)
     render_worldcup_history_block(row["home_team"], row["away_team"])
     render_h2h_summary_block(row["home_team"], row["away_team"])
     render_key_players_block(row["home_team"], row["away_team"])
